@@ -16,4 +16,6 @@ int main(){
     a=20;
     b=70;
     cout<<gcd(a,b)<<endl;
+    cout<<"Type something and press enter to exit"<<endl;
+    cin>>a;
 }
