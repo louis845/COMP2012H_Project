@@ -13,4 +13,7 @@ int main(){
     long a=9;
     long b=12;
     cout<<gcd(a,b)<<endl;
+    a=20;
+    b=70;
+    cout<<gcd(a,b)<<endl;
 }
