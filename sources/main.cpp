@@ -13,9 +13,4 @@ int main(){
     long a=9;
     long b=12;
     cout<<gcd(a,b)<<endl;
-    cout<<"Hello world2!"<<endl;
-    cout<<"Hello world3!"<<endl;
-    cout<<"Hello world4!"<<endl;
-    cout<<"Hello world4!"<<endl;
-    cout<<"Hello world6!"<<endl;
 }
