@@ -18,4 +18,6 @@ int main(){
     cout<<gcd(a,b)<<endl;
     cout<<"Type something and press enter to exit"<<endl;
     cin>>a;
+
+    cout<<"test\n";
 }
