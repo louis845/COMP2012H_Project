@@ -6,21 +6,23 @@
 /**
  * Implementation of double, actually this just uses the primitive type.
 */
-class Double : public Field final{
+class Double final : public Field {
 
 public:
-    double val;
+    const double val;
 
     Double(double);
 
-    virtual Ring* addImpl (const Ring* r) const;
+    const Ring* addImpl (const Ring* r) const override;
     
-    virtual Ring* minusImpl (const Ring* r) const;
+    const Ring* minusImpl (const Ring* r) const override;
     
-    virtual Ring* multImpl (const Ring* r) const;
+    const Ring* multImpl (const Ring* r) const override;
     
-    virtual Ring* divImpl (const Ring* div) const;
+    const Field* divImpl (const Ring* div) const override;
     
-    virtual Ring* remainderImpl (const Ring* div) const;
+    const Ring* remainderImpl (const Ring* div) const override;
+
+    const Field* invert() const override;
 };
 #endif

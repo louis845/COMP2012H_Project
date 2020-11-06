@@ -6,8 +6,9 @@
 #include <string>
 
 enum RingType{
-    //Error type is when a Ring via Ring(). This should be impossible as there are pure virtual.
-    ERROR
+    //Special type is for the zero element and the one element. Make sure to add comparison in the operator==
+    SPECIAL,
+    DOUBLE, 
 };
 
 /**
@@ -30,7 +31,7 @@ protected:
     /**
      * ONLY call this function in R.cpp/R.h. The pointer should be immediately assigned to R so it gets properly deallocated with the destructor/copy assignment... of R
     */
-    virtual Ring* copy() const=0;
+    virtual const Ring* copy() const=0;
 
     /**
     * Console output
@@ -53,25 +54,84 @@ protected:
     /**
     * Usual +
     */
-    virtual Ring* addImpl (const Ring* r) const=0;
+    virtual const Ring* addImpl (const Ring* r) const=0;
     /**
     * Usual -
     */
-    virtual Ring* minusImpl (const Ring* r) const=0;
+    virtual const Ring* minusImpl (const Ring* r) const=0;
     /**
     * Usual multiplication
     */
-    virtual Ring* multImpl (const Ring* r) const=0;
+    virtual const Ring* multImpl (const Ring* r) const=0;
     /**
     * The 'integral' part of division, express this=div*k+r. Returns k.
     */
-    virtual Ring* divImpl (const Ring* div) const=0;
+    virtual const Ring* divImpl (const Ring* div) const=0;
     /**
      * The 'remainder' part of division, see operator*. In fields this should always be 0
     */
-    virtual Ring* remainderImpl (const Ring* div) const=0;
+    virtual const Ring* remainderImpl (const Ring* div) const=0;
+
+    virtual bool equalsImpl(const Ring* compare) const=0;
+
+    /**
+     * The 'degree' of the element, for example degree of a polynomial, absolute value etc...
+    */
+    virtual int euclideanFunc() const=0;
 
     friend class R;
+};
+
+/**
+ * Special Element Zero class.
+*/
+class ZeroElmt final : public Ring{
+private:
+    ZeroElmt();
+
+    const Ring* copy() const override;
+
+    const Ring* addImpl(const Ring* r) const override;
+
+    const Ring* minusImpl(const Ring* r) const override;
+
+    const Ring* multImpl(const Ring* r) const override;
+
+    const Ring* divImpl(const Ring* r) const override;
+
+    const Ring* remainderImpl(const Ring* r) const override;
+
+    bool equalsImpl(const Ring* compare) const override;
+
+    int euclideanFunc() const override;
+
+    friend R;
+};
+
+/**
+ * Special Element One class.
+*/
+class OneElmt final : public Ring{
+private:
+    OneElmt();
+
+    const Ring* copy() const override;
+
+    const Ring* addImpl(const Ring* r) const override;
+
+    const Ring* minusImpl(const Ring* r) const override;
+
+    const Ring* multImpl(const Ring* r) const override;
+
+    const Ring* divImpl(const Ring* r) const override;
+
+    const Ring* remainderImpl(const Ring* r) const override;
+
+    bool equalsImpl(const Ring* compare) const override;
+
+    int euclideanFunc() const override;
+
+    friend R;
 };
 
 #endif
