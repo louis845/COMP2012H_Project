@@ -7,8 +7,9 @@
 
 class Field : public Ring{
 protected:
-    virtual Field* divImpl (const Ring* r) const override;
-    virtual Field* invert () const = 0;
+    Field(RingType);
+    virtual const Field* divImpl (const Ring* r) const override;
+    virtual const Field* invert () const = 0;
 };
 
 #endif

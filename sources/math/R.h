@@ -12,7 +12,10 @@ class R final{
 private:
     const Ring* impl;
 public:
-    R(Ring*);
+    static R ONE{new OneElmt{}};
+    static R ZERO{new ZeroElmt{}};
+
+    R(const Ring*);
 
     ~R();
 
@@ -34,6 +37,10 @@ public:
     R operator/ (const R&) const;
 
     R operator% (const R&) const;
+
+    bool operator== (const R&) const;
+
+    int euclideanFunc() const;
 
     //Console and latex output. See Ring.h and Ring.cpp
     std::string to_string() const;

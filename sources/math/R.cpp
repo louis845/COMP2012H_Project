@@ -2,7 +2,7 @@
 
 using namespace std;
 
-R::R(Ring* impl): impl(impl){
+R::R(const Ring* impl): impl(impl){
 #if DEBUG_MODE
     if(impl==nullptr){
         throw "impl cannot be nullptr!";
@@ -52,6 +52,14 @@ R R::operator/(const R& other) const{
 
 R R::operator%(const R& other) const{
     return R{impl->remainderImpl(other.impl)};
+}
+
+bool R::operator==(const R& other) const{
+    return impl->equalsImpl(impl);
+}
+
+int R::euclideanFunc() const{
+    return impl->euclideanFunc();
 }
 
 string R::to_string() const{
