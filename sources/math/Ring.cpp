@@ -12,7 +12,7 @@ const Ring* ZeroElmt::copy() const{
 }
 
 const Ring* ZeroElmt::addImpl(const Ring* other) const{
-    return other; //test
+    return other; //test22
 }
 
 const Ring* ZeroElmt::minusImpl(const Ring* other) const{
