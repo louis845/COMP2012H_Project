@@ -20,9 +20,11 @@ public:
     const Ring* multImpl (const Ring* r) const override;
     
     const Field* divImpl (const Ring* div) const override;
-    
-    const Ring* remainderImpl (const Ring* div) const override;
 
     const Field* invert() const override;
+    
+    const Double* copy() const override;
+
+    bool equalsImpl(const Ring* other) const override;
 };
 #endif

@@ -9,7 +9,13 @@ class Field : public Ring{
 protected:
     Field(RingType);
     virtual const Field* divImpl (const Ring* r) const override;
-    virtual const Field* invert () const = 0;
+
+    /*
+     * It is not necessary to consider euclidean functions and remainder of fields. Returns -1 (int) and R::ZERO respectively.
+    */
+    int euclideanFunc() const override final;
+
+    const Ring* remainderImpl(const Ring* r) const final override;
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "math/Ring.h"
 #include <string>
+#include <iostream>
 
 /**
  * Wrapper class for Rings. Use this class for computation (operators + - * / % etc).
@@ -12,11 +13,25 @@ class R final{
 private:
     const Ring* impl;
 public:
-    static R ONE{new OneElmt{}};
-    static R ZERO{new ZeroElmt{}};
 
+    /**
+     * ONE and ZERO. They are not necessarily unique, some other functions may create other ZeroElmt hence R with R.impl=ZeroElmt.
+    */
+    static const ZeroElmt* const impl0;
+    static const OneElmt* const impl1;
+    static const R ONE;
+    static const R ZERO;
+
+    /**
+     * Creates an ring wrapper, given a preallocated pointer to a ring implementation class. DO NOT
+     * allow two ring wrappers (R) to contain the same pointer.
+    */
     R(const Ring*);
 
+
+    /**
+     * Destructor and copy/move constr/assignment, which handles the pointer accordingly.
+    */
     ~R();
 
     R(const R&);
@@ -51,5 +66,10 @@ public:
     
     std::string to_signed_latex() const;
 };
+
+/**
+ * Overloading to allow cout to output the contents of R. The output is R.to_string(). 
+*/
+const std::ostream& operator<< (const std::ostream&, const R&);
 
 #endif

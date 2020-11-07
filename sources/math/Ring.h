@@ -2,12 +2,13 @@
 #define MATH_RING_H
 
 #include "debug.h"
+#include "math/Field.h"
 #include "math/R.h"
 #include <string>
 
 enum RingType{
     //Special type is for the zero element and the one element. Make sure to add comparison in the operator==
-    SPECIAL,
+    SPECIAL_ZERO,SPECIAL_ONE,
     DOUBLE, 
 };
 
@@ -36,20 +37,20 @@ protected:
     /**
     * Console output
     */
-    virtual std::string to_string() const;
+    virtual std::string to_string() const=0;
     /**
     * Console output, but signed
     */
-    virtual std::string to_signed_string() const;
+    virtual std::string to_signed_string() const=0;
 
     /**
     * Latex output
     */
-    virtual std::string to_latex() const;
+    virtual std::string to_latex() const=0;
     /**
     * Latex output, signed
     */
-    virtual std::string to_signed_latex() const;
+    virtual std::string to_signed_latex() const=0;
 
     /**
     * Usual +
@@ -79,7 +80,19 @@ protected:
     */
     virtual int euclideanFunc() const=0;
 
+    /**
+     * Partial inverse, this is same as computing 
+     * a*this+r=1, and returning a (r is the remainder).
+    */
+    virtual const Ring* invert () const = 0;
+
+    virtual const Ring* negate() const = 0;
+
     friend class R;
+
+    friend class ZeroElmt;
+
+    friend class OneElmt;
 };
 
 /**
@@ -105,7 +118,20 @@ private:
 
     int euclideanFunc() const override;
 
+    std::string to_string() const;
+    
+    std::string to_signed_string() const;
+
+    std::string to_latex() const;
+
+    std::string to_signed_latex() const;
+
+    const Ring* invert() const override;
+
+    const Ring* negate() const override;
+
     friend R;
+    friend Field;
 };
 
 /**
@@ -130,6 +156,18 @@ private:
     bool equalsImpl(const Ring* compare) const override;
 
     int euclideanFunc() const override;
+
+    std::string to_string() const;
+    
+    std::string to_signed_string() const;
+
+    std::string to_latex() const;
+
+    std::string to_signed_latex() const;
+
+    const Ring* invert() const override;
+
+    const Ring* negate() const override;
 
     friend R;
 };
