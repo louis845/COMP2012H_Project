@@ -6,8 +6,8 @@
 
 enum RingType{
     //Special type is for the zero element and the one element. Make sure to add comparison in the operator==
-    SPECIAL_ZERO,SPECIAL_ONE,
-    DOUBLE, 
+    SPECIAL_ZERO,
+    DOUBLE, LONG
 };
 
 /**
@@ -16,16 +16,16 @@ enum RingType{
 class Ring{
 public:
     virtual ~Ring();
-protected:
     /**
      * Type of the ring.
     */
     const RingType type;
+protected:
 
     Ring(RingType);
 
     /**
-     * Operations can only be done with compatible types. Used for debugging.
+     * Binary operations below can only be done with compatible types. Used for debugging.
     */
     virtual bool is_type_compatible(const Ring& other) const final;
 
@@ -76,9 +76,14 @@ protected:
     virtual bool equalsImpl(const Ring* compare) const=0;
 
     /**
-     * The 'degree' of the element, for example degree of a polynomial, absolute value etc...
+     * Compares according to the Euclidean function. For integers and Gaussian integers this is just comparing the absolute value
+     * For polynomials this is comparing the degree of the polynomial.
+     * 
+     * Returns: 1 if the Euclidean function of this is larger than compare
+     * 0 if they are the same
+     * -1 if compare is larger than this
     */
-    virtual int euclideanFunc() const=0;
+    virtual int euclideanFuncCompare(const Ring* compare) const=0;
 
     /**
      * Partial inverse, this is same as computing 
@@ -116,7 +121,7 @@ private:
 
     bool equalsImpl(const Ring* compare) const override;
 
-    int euclideanFunc() const override;
+    int euclideanFuncCompare(const Ring* compare) const override;
 
     std::string to_string() const;
     

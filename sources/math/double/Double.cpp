@@ -35,7 +35,9 @@ const Double* Double::copy() const{
 }
 
 bool Double::equalsImpl(const Ring* other) const{
-    return val == (static_cast<const Double*>(other))->val;
+    // short circuit for the second condition, or else the cast would be invalid.
+    return (other->type==RingType::SPECIAL_ZERO && val==0) ||
+     (other->type!=RingType::SPECIAL_ZERO && val==(static_cast<const Double*>(other))->val);
 }
 
 string Double::to_string() const{

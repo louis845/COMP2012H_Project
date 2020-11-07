@@ -10,8 +10,18 @@ const Field* Field::divImpl(const Ring* r) const{
     return dynamic_cast<const Field*>(multImpl(f->invert()));
 }
 
-int Field::euclideanFunc() const{
-    return -1;
+/**
+ * There are four cases, say the elements are a,b
+ * a=0, b!=0 : E(a)<E(b)
+ * a=0, b=0 : E(a)=E(b)
+ * a!=0, b!=0 : E(a)=E(b)
+ * a!=0, b=0 : E(a)>E(b)
+*/
+int Field::euclideanFuncCompare(const Ring* r) const{
+    if(R::impl0->equalsImpl(this)){
+        return R::impl0->euclideanFuncCompare(r);
+    }
+    return R::impl0->equalsImpl(r)?1:0;
 }
 
 const Ring* Field::remainderImpl(const Ring* r) const{
