@@ -2,13 +2,11 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "C/C++: g++.exe build active file",
-            "command": "g++",
+            "label": "C/C++: GNU make file",
+            "command": "make",
             "args": [
-                "-g",
-                "${workspaceFolder}/sources/*.cpp",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "-f",
+                "${workspaceFolder}/sources/makefile"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/sources"

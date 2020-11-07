@@ -1,9 +1,9 @@
+#ifndef MATH_FIELD_H
+#define MATH_FIELD_H
+
 #include "debug.h"
 #include "math/ring.h"
 #include <string>
-
-#ifndef MATH_FIELD_H
-#define MATH_FIELD_H
 
 class Field : public Ring{
 protected:
