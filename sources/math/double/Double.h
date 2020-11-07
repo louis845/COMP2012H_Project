@@ -3,15 +3,21 @@
 
 #include "math/Field.h"
 
+using namespace std;
+
 /**
  * Implementation of double, actually this just uses the primitive type.
 */
 class Double final : public Field {
-
 public:
-    const double val;
-
     Double(double);
+protected:
+    /**
+     * Precision in decimal places, of the string/latex representation.
+    */
+    static int PRECISION;
+
+    const double val;
 
     const Ring* addImpl (const Ring* r) const override;
     
@@ -25,6 +31,16 @@ public:
     
     const Double* copy() const override;
 
+    const Double* negate() const override;
+
     bool equalsImpl(const Ring* other) const override;
+
+    string to_string() const override;
+
+    string to_signed_string() const override;
+
+    string to_latex() const override;
+
+    string to_signed_latex() const override;
 };
 #endif

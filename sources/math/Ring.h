@@ -2,8 +2,6 @@
 #define MATH_RING_H
 
 #include "debug.h"
-#include "math/Field.h"
-#include "math/R.h"
 #include <string>
 
 enum RingType{
@@ -16,6 +14,8 @@ enum RingType{
  * DO NOT use this class or it's subclasses directly for computation! Wrap it using R{}. See R.cpp and R.h
 */
 class Ring{
+public:
+    virtual ~Ring();
 protected:
     /**
      * Type of the ring.
@@ -130,46 +130,14 @@ private:
 
     const Ring* negate() const override;
 
-    friend R;
-    friend Field;
+    friend class R;
+    friend class Field;
 };
 
 /**
- * Special Element One class.
+ * Inclusion of this header should guarantee the inclusion of R.h (since Ring impls must be used with R)
+ * But R.h requires the definition of Ring, so it must be included after the definitions.
 */
-class OneElmt final : public Ring{
-private:
-    OneElmt();
-
-    const Ring* copy() const override;
-
-    const Ring* addImpl(const Ring* r) const override;
-
-    const Ring* minusImpl(const Ring* r) const override;
-
-    const Ring* multImpl(const Ring* r) const override;
-
-    const Ring* divImpl(const Ring* r) const override;
-
-    const Ring* remainderImpl(const Ring* r) const override;
-
-    bool equalsImpl(const Ring* compare) const override;
-
-    int euclideanFunc() const override;
-
-    std::string to_string() const;
-    
-    std::string to_signed_string() const;
-
-    std::string to_latex() const;
-
-    std::string to_signed_latex() const;
-
-    const Ring* invert() const override;
-
-    const Ring* negate() const override;
-
-    friend R;
-};
+#include "math/R.h"
 
 #endif

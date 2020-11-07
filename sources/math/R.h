@@ -18,8 +18,6 @@ public:
      * ONE and ZERO. They are not necessarily unique, some other functions may create other ZeroElmt hence R with R.impl=ZeroElmt.
     */
     static const ZeroElmt* const impl0;
-    static const OneElmt* const impl1;
-    static const R ONE;
     static const R ZERO;
 
     /**
@@ -70,6 +68,6 @@ public:
 /**
  * Overloading to allow cout to output the contents of R. The output is R.to_string(). 
 */
-const std::ostream& operator<< (const std::ostream&, const R&);
+std::ostream& operator<< (std::ostream&, const R&);
 
 #endif

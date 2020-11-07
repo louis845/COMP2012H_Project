@@ -4,9 +4,7 @@ using namespace std;
 
 //See R.h for details.
 const ZeroElmt* const R::impl0 = new ZeroElmt{};
-const OneElmt* const R::impl1 = new OneElmt{};
 const R R::ZERO{R::impl0};
-const R R::ONE{R::impl1};
 
 R::R(const Ring* impl): impl(impl){
 #if DEBUG_MODE
@@ -42,7 +40,7 @@ R& R::operator=(const R&& move_from){
 
 R R::operator+(const R& other) const{
 #if DEBUG_MODE
-    if(impl->is_type_compatible(*other.impl)){
+    if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use + on non-same types!";
     }
 #endif
@@ -51,7 +49,7 @@ R R::operator+(const R& other) const{
 
 R R::operator-(const R& other) const{
 #if DEBUG_MODE
-    if(impl->is_type_compatible(*other.impl)){
+    if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use - on non-same types!";
     }
 #endif
@@ -60,7 +58,7 @@ R R::operator-(const R& other) const{
 
 R R::operator*(const R& other) const{
 #if DEBUG_MODE
-    if(impl->is_type_compatible(*other.impl)){
+    if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use * on non-same types!";
     }
 #endif
@@ -69,7 +67,7 @@ R R::operator*(const R& other) const{
 
 R R::operator/(const R& other) const{
 #if DEBUG_MODE
-    if(impl->is_type_compatible(*other.impl)){
+    if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use / on non-same types!";
     }
 #endif
@@ -78,7 +76,7 @@ R R::operator/(const R& other) const{
 
 R R::operator%(const R& other) const{
 #if DEBUG_MODE
-    if(impl->is_type_compatible(*other.impl)){
+    if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use / on non-same types!";
     }
 #endif
@@ -87,7 +85,7 @@ R R::operator%(const R& other) const{
 
 bool R::operator==(const R& other) const{
 #if DEBUG_MODE
-    if(impl->is_type_compatible(*other.impl)){
+    if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use == on non-same types!";
     }
 #endif
