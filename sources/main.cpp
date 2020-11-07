@@ -4,19 +4,16 @@
 */
 
 #include <iostream>
+#include <string>
+#include "math/double/Double.h";
 
 using namespace std;
 
 int main(){
-    cout<<"Hello world!"<<endl;
-    long a=9;
-    long b=12;
-    cout<<gcd(a,b)<<endl;
-    a=20;
-    b=70;
-    cout<<gcd(a,b)<<endl;
-    cout<<"Type something and press enter to exit"<<endl;
-    cin>>a;
+    /*R a={new Double{1}};
+    R b={new Double{2}};*/
 
     cout<<"test\n";
+    string s="test";
+    cout<<s;
 }
