@@ -36,9 +36,9 @@ public:
 
     R& operator= (const R&);
 
-    R(const R&&);
+    R(R&&);
     
-    R& operator= (const R&&);
+    R& operator= (R&&);
 
     //Usual binary operations. Implemented by impl->addImpl etc.
     R operator+ (const R&) const;
@@ -51,9 +51,45 @@ public:
 
     R operator% (const R&) const;
 
+    /**
+     * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
+     * For integers this compares the absolute value, and for polynomials this compares the degree, etc
+    */
+    bool operator> (const R&) const;
+
+    /**
+     * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
+     * For integers this compares the absolute value, and for polynomials this compares the degree, etc
+    */
+    bool operator< (const R&) const;
+
+    /**
+     * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
+     * For integers this compares the absolute value, and for polynomials this compares the degree, etc
+    */
+    bool operator>= (const R&) const;
+
+    /**
+     * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
+     * For integers this compares the absolute value, and for polynomials this compares the degree, etc
+    */
+    bool operator<= (const R&) const;
+
+    /**
+     * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
+     * For integers this compares the absolute value, and for polynomials this compares the degree, etc. Notice that -1 == 1 since their absolute
+     * value are same. Use exactly_equals for an exact comparison (see exactly_equals).
+    */
     bool operator== (const R&) const;
 
-    int euclideanFunc() const;
+    /**
+     * Tests if the values are exactly equal. Note that in Double some tolerance may be needed.
+    */
+    bool exactly_equals(const R&) const;
+
+    bool is_zero() const;
+
+    int euclidean_func_compare(const R&) const;
 
     //Console and latex output. See Ring.h and Ring.cpp
     std::string to_string() const;

@@ -1,0 +1,76 @@
+#include "math/Long/Long.h"
+#include <string>
+#include <cmath>
+
+Long::Long(long long val) : Ring(RingType::LONG), val(val){}
+
+const Ring* Long::addImpl(const Ring* r) const{
+    return new Long{val+(dynamic_cast<const Long*>(r)->val)};
+}
+
+const Ring* Long::multImpl(const Ring* r) const{
+    return new Long{val*(dynamic_cast<const Long*>(r)->val)};
+}
+
+const Ring* Long::minusImpl(const Ring* r) const{
+    return new Long{val-(dynamic_cast<const Long*>(r)->val)};
+}
+
+const Ring* Long::divImpl(const Ring* r) const{
+    return new Long{val/(dynamic_cast<const Long*>(r)->val)};
+}
+
+const Ring* Long::remainderImpl(const Ring* r) const {
+    return new Long{val%(dynamic_cast<const Long*>(r)->val)};
+}
+
+const Ring* Long::invert() const{
+    return new Long{1/val};
+}
+
+const Long* Long::negate() const{
+    return new Long{-val};
+}
+
+const Long* Long::copy() const{
+    return new Long{val};
+}
+
+int Long::euclideanFuncCompare(const Ring* other) const{
+    long long otherval;
+    if(other->type==RingType::SPECIAL_ZERO){
+        otherval=0;
+    }else{
+        otherval=std::abs( static_cast<const Long*>(other)->val );
+    }
+    long long thisval=std::abs(val);
+    return thisval==otherval? 0 : ( thisval<otherval? -1 : 1 );
+}
+
+bool Long::equalsImpl(const Ring* other) const{
+    // short circuit for the second condition, or else the cast would be invalid.
+    return (other->type==RingType::SPECIAL_ZERO && val==0) ||
+     (other->type!=RingType::SPECIAL_ZERO && val==(static_cast<const Long*>(other))->val);
+}
+
+string Long::to_string() const{
+    return std::to_string(val);
+}
+
+string Long::to_signed_string() const{
+    if(val>=0){
+        return "+"+std::to_string(val);
+    }
+    return std::to_string(val);
+}
+
+string Long::to_latex() const{
+    return std::to_string(val);
+}
+
+string Long::to_signed_latex() const{
+    if(val>=0){
+        return "+"+std::to_string(val);
+    }
+    return std::to_string(val);
+}

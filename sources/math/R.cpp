@@ -22,8 +22,9 @@ R::R(const R& copy_from){
     impl=copy_from.impl->copy();
 }
 
-R::R(const R&& move_from){
+R::R(R&& move_from){
     impl=move_from.impl;
+    move_from.impl=nullptr;
 }
 
 R& R::operator=(const R& copy_from){
@@ -32,9 +33,10 @@ R& R::operator=(const R& copy_from){
     return *this;
 }
 
-R& R::operator=(const R&& move_from){
+R& R::operator=(R&& move_from){
     delete impl;
     impl=move_from.impl;
+    move_from.impl=nullptr;
     return *this;
 }
 
@@ -83,7 +85,52 @@ R R::operator%(const R& other) const{
     return R{impl->remainderImpl(other.impl)};
 }
 
+bool R::operator<=(const R& other) const{
+#if DEBUG_MODE
+    if(!(impl->is_type_compatible(*other.impl))){
+        throw "cannot use == on non-same types!";
+    }
+#endif
+    return impl->euclideanFuncCompare(other.impl) <= 0;
+}
+
+bool R::operator<(const R& other) const{
+#if DEBUG_MODE
+    if(!(impl->is_type_compatible(*other.impl))){
+        throw "cannot use == on non-same types!";
+    }
+#endif
+    return impl->euclideanFuncCompare(other.impl) < 0;
+}
+
+bool R::operator>(const R& other) const{
+#if DEBUG_MODE
+    if(!(impl->is_type_compatible(*other.impl))){
+        throw "cannot use == on non-same types!";
+    }
+#endif
+    return impl->euclideanFuncCompare(other.impl) > 0;
+}
+
+bool R::operator>=(const R& other) const{
+#if DEBUG_MODE
+    if(!(impl->is_type_compatible(*other.impl))){
+        throw "cannot use == on non-same types!";
+    }
+#endif
+    return impl->euclideanFuncCompare(other.impl) >= 0;
+}
+
 bool R::operator==(const R& other) const{
+#if DEBUG_MODE
+    if(!(impl->is_type_compatible(*other.impl))){
+        throw "cannot use == on non-same types!";
+    }
+#endif
+    return impl->euclideanFuncCompare(other.impl) == 0;
+}
+
+bool R::exactly_equals(const R& other) const{
 #if DEBUG_MODE
     if(!(impl->is_type_compatible(*other.impl))){
         throw "cannot use == on non-same types!";
@@ -92,8 +139,12 @@ bool R::operator==(const R& other) const{
     return impl->equalsImpl(impl);
 }
 
-int R::euclideanFunc() const{
-    return impl->euclideanFunc();
+bool R::is_zero() const{
+    return impl->type==RingType::SPECIAL_ZERO || impl->equalsImpl(R::impl0);
+}
+
+int R::euclidean_func_compare(const R& other) const{
+    return impl->euclideanFuncCompare(other.impl);
 }
 
 string R::to_string() const{

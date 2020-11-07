@@ -1,4 +1,4 @@
-
+#include "R.h"
 /**
  * Returns the GCD of a,b using the Euclidean algorithm.
  * 
@@ -18,3 +18,5 @@ template <class T> T gcd(T a, T b){
     }
     return b;
 }
+
+R gcd (R a, R b);

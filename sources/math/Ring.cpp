@@ -8,7 +8,7 @@ Ring::~Ring(){
 }
 
 bool Ring::is_type_compatible(const Ring& other) const{
-    return type==other.type || type==RingType::SPECIAL_ZERO || type==RingType::SPECIAL_ONE || other.type==RingType::SPECIAL_ZERO || other.type==RingType::SPECIAL_ONE;
+    return type==other.type || type==RingType::SPECIAL_ZERO || other.type==RingType::SPECIAL_ZERO;
 }
 
 /**
@@ -52,15 +52,18 @@ const Ring* ZeroElmt::negate() const{
 
 bool ZeroElmt::equalsImpl(const Ring* compare) const{
     //Added comparison not equal to ONE, to avoid infinite loop.
-    return compare->type!=RingType::SPECIAL_ONE && (compare->type==RingType::SPECIAL_ZERO || compare->equalsImpl(this));
+    return compare->type==RingType::SPECIAL_ZERO || compare->equalsImpl(this);
 }
 
 const Ring* ZeroElmt::invert() const{
     throw "Cannot invert zero element!";
 }
 
-int ZeroElmt::euclideanFunc() const{
-    return -1;
+/**
+ * The euclidean function are equal if and only if both are zero, otherwise zero must be smaller than other elements.
+*/
+int ZeroElmt::euclideanFuncCompare(const Ring* other) const{
+    return equalsImpl(other)? 0 : -1;
 }
 
 std::string ZeroElmt::to_string() const{
