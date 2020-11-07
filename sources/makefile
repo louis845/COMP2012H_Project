@@ -9,7 +9,7 @@ SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp
 DEBUG = -g
 
 
-link: main.o Ring.o R.o Field.o Double.o Long.o Test.o
+link: main.o Ring.o R.o Field.o Double.o Long.o tools.o
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(OUTPUT_DIRECTORY)*.o
 
 main.o: main.cpp
@@ -30,5 +30,5 @@ Double.o: math/double/Double.cpp
 Long.o: math/long/Long.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Long.o $(HEADER_ROOT_DIRECTORY) -c math/long/Long.cpp
 
-Test.o: math/test.cpp
-	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Test.o $(HEADER_ROOT_DIRECTORY) -c math/test.cpp
+tools.o: math/tools.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)tools.o $(HEADER_ROOT_DIRECTORY) -c math/tools.cpp

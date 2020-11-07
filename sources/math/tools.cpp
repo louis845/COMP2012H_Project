@@ -1,4 +1,4 @@
-#include "test.h"
+#include "tools.h"
 #include <iostream>
 R gcd(R a,R b){
     if(b>a){

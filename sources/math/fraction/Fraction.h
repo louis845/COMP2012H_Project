@@ -10,9 +10,9 @@ public:
     Fraction(R,R);
 protected:
 
-    const R over;
+    R over;
 
-    const R under;
+    R under;
 
     const Ring* addImpl (const Ring* r) const override;
     
