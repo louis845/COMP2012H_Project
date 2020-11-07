@@ -1,6 +1,9 @@
 #include "math/fraction/Fraction.h"
 
-Fraction::Fraction(R over,R under) : Field(RingType::DOUBLE), val(val){}
+Fraction::Fraction(R over,R under) : Field(RingType::FRACTION){
+#if DEBUG
+#endif
+}
 
 const Ring* Fraction::addImpl(const Ring* r) const{
     return new Fraction{val+(dynamic_cast<const Fraction*>(r)->val)};
