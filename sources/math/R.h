@@ -87,9 +87,11 @@ public:
     */
     bool exactly_equals(const R&) const;
 
+    int euclidean_func_compare(const R&) const;
+
     bool is_zero() const;
 
-    int euclidean_func_compare(const R&) const;
+    R operator-() const;
 
     //Console and latex output. See Ring.h and Ring.cpp
     std::string to_string() const;
@@ -110,6 +112,15 @@ public:
      * Promotes other to match the type of this.
     */
     R promote(const R& other) const;
+
+    bool is_one() const;
+
+    bool is_unit() const;
+
+    /**
+     * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
+    */
+    void split(R*& morph, R*& unit) const;
 };
 
 /**

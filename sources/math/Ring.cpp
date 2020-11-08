@@ -9,11 +9,15 @@ using namespace std;
 NestedRingType::NestedRingType(const RingType& cur_type){
     current_type=cur_type;
     sub_type=nullptr;
+    is_complex=cur_type==RingType::COMPLEXIFY;
+    no_fraction = cur_type==RingType::FRACTION? 1 : 0;
+    no_polynomial = cur_type==RingType::POLYNOMIAL? 1 : 0;
 }
 
 NestedRingType::NestedRingType(const RingType& cur_type,NestedRingType* type){
     current_type=cur_type;
-    sub_type=type;
+    sub_type=nullptr;
+    set_sub_type_no_copy(type);
 }
 
 NestedRingType::~NestedRingType(){
@@ -28,7 +32,8 @@ NestedRingType::NestedRingType(const NestedRingType& type){
 
 NestedRingType::NestedRingType(NestedRingType&& type){
     current_type=type.current_type;
-    sub_type=type.sub_type;
+    sub_type=nullptr;
+    set_sub_type_no_copy(type.sub_type);
     type.sub_type=nullptr;
 }
 
@@ -40,8 +45,7 @@ NestedRingType& NestedRingType::operator=(const NestedRingType& type){
 
 NestedRingType& NestedRingType::operator=(NestedRingType&& type){
     current_type=type.current_type;
-    delete sub_type;
-    sub_type=type.sub_type;
+    set_sub_type_no_copy(type.sub_type);
     type.sub_type=nullptr;
     return *this;
 }
@@ -74,13 +78,24 @@ bool NestedRingType::deep_equals(const NestedRingType& other) const{
     }
 }
 
-NestedRingType& NestedRingType::set_sub_type(NestedRingType* type){
+NestedRingType& NestedRingType::set_sub_type(const NestedRingType* type){
     delete sub_type;
 
+    is_complex= current_type==RingType::COMPLEXIFY || (type!=nullptr && type->is_complex);
     if(type!=nullptr){
+        no_fraction=type->no_fraction;
+        no_polynomial=type->no_polynomial;
         sub_type=type->deep_copy();
     }else{
+        no_fraction=0;
+        no_polynomial=0;
         sub_type=nullptr;
+    }
+    if(current_type==RingType::FRACTION){
+        ++no_fraction;
+    }
+    if(current_type==RingType::POLYNOMIAL){
+        ++no_polynomial;
     }
     return *this;
 }
@@ -89,6 +104,21 @@ NestedRingType& NestedRingType::set_sub_type_no_copy(NestedRingType* type){
     delete sub_type;
 
     sub_type=type;
+    is_complex= current_type==RingType::COMPLEXIFY || (type!=nullptr && type->is_complex);
+    if(type!=nullptr){
+        no_fraction=type->no_fraction;
+        no_polynomial=type->no_polynomial;
+    }else{
+        no_fraction=0;
+        no_polynomial=0;
+    }
+    if(current_type==RingType::FRACTION){
+        ++no_fraction;
+    }
+    if(current_type==RingType::POLYNOMIAL){
+        ++no_polynomial;
+    }
+    
     return *this;
 }
 
@@ -242,4 +272,16 @@ std::string ZeroElmt::to_signed_latex() const{
 
 const Ring* ZeroElmt::promote(const Ring* const& r) const{
     throw "It should not be needed to promote any element to match the type of ZeroElmt!";
+}
+
+bool ZeroElmt::is_unit() const{
+    return false;
+}
+
+bool ZeroElmt::is_one() const{
+    return false;
+}
+
+void ZeroElmt::split_canonical(const Ring*& r1, const Ring*& r2) const{
+    throw "Cannot split the zero element!";
 }

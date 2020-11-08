@@ -26,6 +26,9 @@ class NestedRingType final{
 private:
     NestedRingType* sub_type;
     RingType current_type;
+    bool is_complex;
+    int no_fraction;
+    int no_polynomial;
 
     NestedRingType* deep_copy() const;
 public:
@@ -69,7 +72,7 @@ public:
     /**
      * Deep deallocates the current subtype (if not nullptr) and deep copies the given subtype to sub_type. Returns *this.
     */
-    NestedRingType& set_sub_type(NestedRingType* subtype);
+    NestedRingType& set_sub_type(const NestedRingType* subtype);
 
     /**
      * Deep deallocates the current subtype (if not nullptr) and assigns the given subtype to sub_type. DOES NOT deep copy. Returns *this.
@@ -128,9 +131,13 @@ public:
 
     Ring(Ring &&) = delete;
 
-    Ring& operator= (const Ring &) = delete;
+    virtual Ring& operator= (const Ring &) = delete;
 
-    Ring& operator= (Ring &&) = delete;
+    virtual Ring& operator= (Ring &&) = delete;
+
+    /**
+     * Gets the detailed type.
+    */
 
     const NestedRingType& get_type() const;
 protected:
@@ -174,8 +181,7 @@ protected:
      * In the implementation in subclasses, it is ensured in the wrapper class R that the ring of the argument is always directly compatiable with the ring of this, given by this->get_type().deep_equals( r->get_type()) )
      * Therefore the pointer can be static_cast ed to the appropriate type.
      * 
-     * SPECIAL_ZERO checks. For the SPECIAL_ZERO, there is no need to check for SPECIAL_ZERO in all the arithmetic operations (such as add minus remainder euclideanFuncCompare etc). 
-     * However it is necessary to check for SPECIAL_ZERO in equalsImpl. 
+     * SPECIAL_ZERO checks. For the SPECIAL_ZERO, there is no need to check for SPECIAL_ZERO in all the cases/
     */
 
     /**
@@ -200,7 +206,7 @@ protected:
     virtual const Ring* remainderImpl (const Ring* div) const=0;
 
     /**
-     * Whether they are equal. Need to check for SPECIAL_ZERO (cannot directly cast to appropriate type)
+     * Whether they are equal. No need to check for SPECIAL_ZERO (can cast to appropriate type)
     */
 
     virtual bool equalsImpl(const Ring* compare) const=0;
@@ -224,6 +230,21 @@ protected:
     virtual const Ring* invert () const = 0;
 
     virtual const Ring* negate() const = 0;
+
+    /**
+     * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
+    */
+    virtual void split_canonical(const Ring*& morph, const Ring*& unit) const=0;
+
+    /**
+     * Checks whether the element is invertible.
+    */
+    virtual bool is_unit() const=0;
+
+    /*
+    * Checks whether the element is exactly one.
+    */
+    virtual bool is_one() const=0;
 
     friend class R;
 
@@ -268,6 +289,12 @@ private:
     const Ring* negate() const override;
 
     const Ring* promote(const Ring* const& r) const override;
+
+    bool is_unit() const override;
+
+    bool is_one() const override;
+
+    void split_canonical(const Ring*&,const Ring*&) const override;
 
     friend class R;
     friend class Field;

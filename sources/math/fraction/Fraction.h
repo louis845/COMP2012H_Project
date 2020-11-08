@@ -7,12 +7,14 @@ public:
 /**
  * Fraction(over, under). This represents a fraction over/under. 
 */
-    Fraction(R,R);
+    Fraction(const R&,const R&);
+
+    ~Fraction() override;
 protected:
 
-    R over;
+    R* over;
 
-    R under;
+    R* under;
 
     const Ring* addImpl (const Ring* r) const override;
     
@@ -37,4 +39,12 @@ protected:
     virtual string to_latex() const override;
 
     virtual string to_signed_latex() const override;
+
+    const Fraction* promote(const Ring* const&) const override;
+
+    bool is_unit() const override;
+
+    bool is_one() const override;
+
+    void split_canonical(const Ring*&, const Ring*&) const override;
 };
