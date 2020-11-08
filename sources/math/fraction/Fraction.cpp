@@ -1,8 +1,14 @@
 #include "math/fraction/Fraction.h"
 
 Fraction::Fraction(R over,R under) : Field(RingType::FRACTION){
-#if DEBUG
+    int comp=Ring::compatibility(over.get_type(),under.get_type());
+
+#if DEBUG_MODE
+    if(comp==-2){
+        throw "Fraction must have same types in over and under!";
+    }
 #endif
+
 }
 
 const Ring* Fraction::addImpl(const Ring* r) const{

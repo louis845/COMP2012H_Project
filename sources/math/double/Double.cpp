@@ -36,8 +36,8 @@ const Double* Double::copy() const{
 
 bool Double::equalsImpl(const Ring* other) const{
     // short circuit for the second condition, or else the cast would be invalid.
-    return (other->type==RingType::SPECIAL_ZERO && val==0) ||
-     (other->type!=RingType::SPECIAL_ZERO && val==(static_cast<const Double*>(other))->val);
+    return (other->type_shallow==RingType::SPECIAL_ZERO && val==0) ||
+     (other->type_shallow!=RingType::SPECIAL_ZERO && val==(static_cast<const Double*>(other))->val);
 }
 
 string Double::to_string() const{
@@ -72,4 +72,14 @@ string Double::to_signed_latex() const{
     str << setprecision(PRECISION);
     str << val;
     return str.str();
+}
+
+/**
+ * Type is primitive anyway, so only subset is itself
+*/
+const Double* Double::promote(const Ring* const& r) const{
+    if(r->type_shallow==RingType::SPECIAL_ZERO){
+        return new Double{0};
+    }
+    return static_cast<const Double*>(r)->copy();
 }

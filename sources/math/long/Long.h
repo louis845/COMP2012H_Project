@@ -42,5 +42,7 @@ protected:
     string to_latex() const override;
 
     string to_signed_latex() const override;
+
+    const Long* promote(const Ring* const &r) const override;
 };
 #endif
