@@ -115,6 +115,8 @@ int main(){
         cout<<b<<"\n";
     }
 
+    Ring::is_type_compatible(RingType::SPECIAL_ZERO,RingType::LONG);
+
     int i;
     cin>>i;
     return 0;

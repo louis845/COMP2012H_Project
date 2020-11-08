@@ -99,6 +99,17 @@ public:
     std::string to_latex() const;
     
     std::string to_signed_latex() const;
+
+    const RingType& get_type_shallow() const;
+
+    const NestedRingType& get_type() const;
+
+    bool is_type_compatible(const R&) const;
+
+    /**
+     * Promotes other to match the type of this.
+    */
+    R promote(const R& other) const;
 };
 
 /**

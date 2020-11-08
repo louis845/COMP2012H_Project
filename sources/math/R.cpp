@@ -14,6 +14,9 @@ R::R(const Ring* impl): impl(impl){
 #endif
 }
 
+/**
+ * Destructor, copy constructor, etc.
+*/
 R::~R(){
     delete impl;
 }
@@ -40,107 +43,284 @@ R& R::operator=(R&& move_from){
     return *this;
 }
 
+/**
+ * Binary operations/comparison
+*/
+
 R R::operator+(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use + on non-same types!";
+    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+    if(i==-2){
+        throw "cannot use + on non-compatible types!";
     }
-#endif
-    return R{impl->addImpl(other.impl)};
+
+    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+        return R{impl->copy()};
+    }
+
+    if(i==0){
+        return R{impl->addImpl(other.impl)};
+    }else if(i==1){
+        const Ring* pro=impl->promote(other.impl);
+        const Ring* result=impl->addImpl(pro);
+        delete pro;
+        return result;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        const Ring* result=pro->addImpl(other.impl);
+        delete pro;
+        return result;
+    }
 }
 
 R R::operator-(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use - on non-same types!";
+    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(i==-2){
+        throw "cannot use - on non-compatible types!";
     }
-#endif
-    return R{impl->minusImpl(other.impl)};
+
+    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+        return R{impl->copy()};
+    }
+
+    if(i==0){
+        return R{impl->minusImpl(other.impl)};
+    }else if(i==1){
+        const Ring* pro=impl->promote(other.impl);
+        const Ring* result=impl->minusImpl(pro);
+        delete pro;
+        return result;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        const Ring* result=pro->minusImpl(other.impl);
+        delete pro;
+        return result;
+    }
 }
 
 R R::operator*(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use * on non-same types!";
+    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(i==-2){
+        throw "cannot use * on non-compatible types!";
     }
-#endif
-    return R{impl->multImpl(other.impl)};
+
+    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+        return R{other.impl->copy()};
+    }
+    
+    if(i==0){
+        return R{impl->multImpl(other.impl)};
+    }else if(i==1){
+        const Ring* pro=impl->promote(other.impl);
+        const Ring* result=impl->multImpl(pro);
+        delete pro;
+        return result;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        const Ring* result=pro->multImpl(other.impl);
+        delete pro;
+        return result;
+    }
 }
 
 R R::operator/(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use / on non-same types!";
+    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(i==-2){
+        throw "cannot use / on non-compatible types!";
     }
-#endif
-    return R{impl->divImpl(other.impl)};
+
+    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+        throw "Divide by zero!";
+    }
+
+    if(i==0){
+        return R{impl->divImpl(other.impl)};
+    }else if(i==1){
+        const Ring* pro=impl->promote(other.impl);
+        const Ring* result=impl->divImpl(pro);
+        delete pro;
+        return result;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        const Ring* result=pro->divImpl(other.impl);
+        delete pro;
+        return result;
+    }
 }
 
 R R::operator%(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use / on non-same types!";
+    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(i==-2){
+        throw "cannot use % on non-compatible types!";
     }
-#endif
-    return R{impl->remainderImpl(other.impl)};
+
+    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+        throw "Divide by zero!";
+    }
+
+    if(i==0){
+        return R{impl->remainderImpl(other.impl)};
+    }else if(i==1){
+        const Ring* pro=impl->promote(other.impl);
+        const Ring* result=impl->remainderImpl(pro);
+        delete pro;
+        return result;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        const Ring* result=pro->remainderImpl(other.impl);
+        delete pro;
+        return result;
+    }
 }
 
 bool R::operator<=(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use == on non-same types!";
+    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(compat==-2){
+        throw "cannot use <= on non-compatible types!";
     }
-#endif
-    return impl->euclideanFuncCompare(other.impl) <= 0;
+
+    int compare;
+
+    if(compat==0){
+        compare=impl->euclideanFuncCompare(other.impl);
+    }else if(compat==1){
+        const Ring* pro=impl->promote(other.impl);
+        compare=impl->euclideanFuncCompare(pro);
+        delete pro;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        compare=pro->euclideanFuncCompare(other.impl);
+        delete pro;
+    }
+
+    return compare<=0;
 }
 
 bool R::operator<(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use == on non-same types!";
+    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(compat==-2){
+        throw "cannot use < on non-compatible types!";
     }
-#endif
-    return impl->euclideanFuncCompare(other.impl) < 0;
+
+    int compare;
+
+    if(compat==0){
+        compare=impl->euclideanFuncCompare(other.impl);
+    }else if(compat==1){
+        const Ring* pro=impl->promote(other.impl);
+        compare=impl->euclideanFuncCompare(pro);
+        delete pro;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        compare=pro->euclideanFuncCompare(other.impl);
+        delete pro;
+    }
+
+    return compare<0;
 }
 
 bool R::operator>(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use == on non-same types!";
+    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(compat==-2){
+        throw "cannot use > on non-compatible types!";
     }
-#endif
-    return impl->euclideanFuncCompare(other.impl) > 0;
+
+    int compare;
+
+    if(compat==0){
+        compare=impl->euclideanFuncCompare(other.impl);
+    }else if(compat==1){
+        const Ring* pro=impl->promote(other.impl);
+        compare=impl->euclideanFuncCompare(pro);
+        delete pro;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        compare=pro->euclideanFuncCompare(other.impl);
+        delete pro;
+    }
+
+    return compare>0;
 }
 
 bool R::operator>=(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use == on non-same types!";
+    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(compat==-2){
+        throw "cannot use >= on non-compatible types!";
     }
-#endif
-    return impl->euclideanFuncCompare(other.impl) >= 0;
+
+    int compare;
+
+    if(compat==0){
+        compare=impl->euclideanFuncCompare(other.impl);
+    }else if(compat==1){
+        const Ring* pro=impl->promote(other.impl);
+        compare=impl->euclideanFuncCompare(pro);
+        delete pro;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        compare=pro->euclideanFuncCompare(other.impl);
+        delete pro;
+    }
+
+    return compare>=0;
 }
 
 bool R::operator==(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use == on non-same types!";
+    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(compat==-2){
+        throw "cannot use == on non-compatible types!";
     }
-#endif
-    return impl->euclideanFuncCompare(other.impl) == 0;
+
+    int compare;
+
+    if(compat==0){
+        compare=impl->euclideanFuncCompare(other.impl);
+    }else if(compat==1){
+        const Ring* pro=impl->promote(other.impl);
+        compare=impl->euclideanFuncCompare(pro);
+        delete pro;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        compare=pro->euclideanFuncCompare(other.impl);
+        delete pro;
+    }
+
+    return compare==0;
 }
 
 bool R::exactly_equals(const R& other) const{
-#if DEBUG_MODE
-    if(!(impl->is_type_compatible(*other.impl))){
-        throw "cannot use == on non-same types!";
+
+    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+
+    if(i==-2){
+        throw "cannot use exactly_equals on non-compatible types!";
     }
-#endif
-    return impl->equalsImpl(impl);
+
+    if(i==0){
+        return impl->equalsImpl(other.impl);
+    }else if(i==1){
+        const Ring* pro=impl->promote(other.impl);
+        bool result=impl->equalsImpl(pro);
+        delete pro;
+        return result;
+    }else{
+        const Ring* pro=other.impl->promote(impl);
+        bool result=pro->equalsImpl(other.impl);
+        delete pro;
+        return result;
+    }
 }
 
 bool R::is_zero() const{
-    return impl->type==RingType::SPECIAL_ZERO || impl->equalsImpl(R::impl0);
+    return impl->type_shallow==RingType::SPECIAL_ZERO || impl->equalsImpl(R::impl0);
 }
 
 int R::euclidean_func_compare(const R& other) const{
@@ -161,6 +341,22 @@ string R::to_latex() const{
     
 string R::to_signed_latex() const{
     return impl->to_signed_latex();
+}
+
+const RingType& R::get_type_shallow() const{
+    return impl->type_shallow;
+}
+
+const NestedRingType& R::get_type() const{
+    return impl->get_type();
+}
+
+bool R::is_type_compatible(const R& o) const{
+    return Ring::is_type_compatible(get_type(),o.get_type());
+}
+
+R R::promote(const R& other) const{
+    return R{impl->promote(other.impl)};
 }
 
 std::ostream& operator<< (std::ostream& out, const R& val){
