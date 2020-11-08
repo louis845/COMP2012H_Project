@@ -80,3 +80,24 @@ const Long* Long::promote(const Ring* const& r) const{
     }
     return static_cast<const Long*>(r)->copy();
 }
+
+bool Long::is_one() const{
+    return val==1;
+}
+
+bool Long::is_unit() const{
+    return val==1 || val==-1;
+}
+
+void Long::split_canonical(const Ring*& morph, const Ring*& unit) const{
+    if(val==0){
+        morph=new Long{0};
+        unit=new Long{1};
+    }else if(val>0){
+        morph=new Long{val};
+        unit=new Long{1};
+    }else{
+        morph=new Long{-val};
+        unit=new Long{-1};
+    }
+}

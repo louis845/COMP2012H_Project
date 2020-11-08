@@ -83,3 +83,16 @@ const Double* Double::promote(const Ring* const& r) const{
     }
     return static_cast<const Double*>(r)->copy();
 }
+
+bool Double::is_one() const{
+    return val==1;
+}
+
+bool Double::is_unit() const{
+    return val!=0;
+}
+
+void Double::split_canonical(const Ring*& morph, const Ring*& unit) const{
+    morph=new Double{val};
+    unit=new Double{1.0};
+}

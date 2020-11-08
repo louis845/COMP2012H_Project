@@ -63,12 +63,12 @@ R R::operator+(const R& other) const{
         const Ring* pro=impl->promote(other.impl);
         const Ring* result=impl->addImpl(pro);
         delete pro;
-        return result;
+        return R{result};
     }else{
         const Ring* pro=other.impl->promote(impl);
         const Ring* result=pro->addImpl(other.impl);
         delete pro;
-        return result;
+        return R{result};
     }
 }
 
@@ -89,12 +89,12 @@ R R::operator-(const R& other) const{
         const Ring* pro=impl->promote(other.impl);
         const Ring* result=impl->minusImpl(pro);
         delete pro;
-        return result;
+        return R{result};
     }else{
         const Ring* pro=other.impl->promote(impl);
         const Ring* result=pro->minusImpl(other.impl);
         delete pro;
-        return result;
+        return R{result};
     }
 }
 
@@ -115,12 +115,12 @@ R R::operator*(const R& other) const{
         const Ring* pro=impl->promote(other.impl);
         const Ring* result=impl->multImpl(pro);
         delete pro;
-        return result;
+        return R{result};
     }else{
         const Ring* pro=other.impl->promote(impl);
         const Ring* result=pro->multImpl(other.impl);
         delete pro;
-        return result;
+        return R{result};
     }
 }
 
@@ -141,12 +141,12 @@ R R::operator/(const R& other) const{
         const Ring* pro=impl->promote(other.impl);
         const Ring* result=impl->divImpl(pro);
         delete pro;
-        return result;
+        return R{result};
     }else{
         const Ring* pro=other.impl->promote(impl);
         const Ring* result=pro->divImpl(other.impl);
         delete pro;
-        return result;
+        return R{result};
     }
 }
 
@@ -167,12 +167,12 @@ R R::operator%(const R& other) const{
         const Ring* pro=impl->promote(other.impl);
         const Ring* result=impl->remainderImpl(pro);
         delete pro;
-        return result;
+        return R{result};
     }else{
         const Ring* pro=other.impl->promote(impl);
         const Ring* result=pro->remainderImpl(other.impl);
         delete pro;
-        return result;
+        return R{result};
     }
 }
 
@@ -319,6 +319,10 @@ bool R::exactly_equals(const R& other) const{
     }
 }
 
+R R::operator-() const{
+    return R{impl->negate()};
+}
+
 bool R::is_zero() const{
     return impl->type_shallow==RingType::SPECIAL_ZERO || impl->equalsImpl(R::impl0);
 }
@@ -357,6 +361,21 @@ bool R::is_type_compatible(const R& o) const{
 
 R R::promote(const R& other) const{
     return R{impl->promote(other.impl)};
+}
+
+void R::split(R*& morph, R*& unit) const{
+    const Ring *m, *u;
+    impl->split_canonical(m,u);
+    morph=new R{m};
+    unit=new R{u};
+}
+
+bool R::is_one() const{
+    return impl->is_one();
+}
+
+bool R::is_unit() const{
+    return impl->is_unit();
 }
 
 std::ostream& operator<< (std::ostream& out, const R& val){

@@ -44,5 +44,11 @@ protected:
     string to_signed_latex() const override;
 
     const Double* promote(const Ring* const& r) const override;
+
+    bool is_one() const override;
+
+    bool is_unit() const override;
+
+    void split_canonical(const Ring*&, const Ring*&) const override;
 };
 #endif
