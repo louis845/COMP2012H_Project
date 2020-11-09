@@ -14,18 +14,42 @@ private:
     const Ring* impl;
 public:
     /**
+     * This function is used internally by implementations of fields/rings etc.. 
+    */
+    const Ring* get_impl() const;
+    /**
      * ONE and ZERO. They are not necessarily unique, some other functions may create other ZeroElmt hence R with R.impl=ZeroElmt.
+     * Notice the pointer is INTENDED to not be deallocated throughout the whole program execution. DO NOT use impl0 to create a new R,
+     * it is already in ZERO! To do that, use the copy constructor on ZERO: R{R::ZERO}. 
     */
     static const ZeroElmt* const impl0;
     static const R ZERO;
 
     /**
+     * Dynamically allocates and copies the array.
+    */
+    static R* array_copy(R* const& arr, int length);
+
+    /**
+     * Dynamically allocates and copies the array. The new array is zero until index==shift. 
+     * The length of returned array will be length+shift. Notice that
+     * array_copy(arr,len,0) is equivalent to array_copy(arr,len)
+    */
+    static R* array_copy(R* const& arr, int length, int shift);
+
+    /**
+     * Creates a ring wrapper to point to zero.
+    */
+    R();
+
+    /**
      * Creates an ring wrapper, given a preallocated pointer to a ring implementation class. DO NOT
      * allow two ring wrappers (R) to contain the same pointer. Pass null pointer ONLY IF the R is used for
-     * storing multivalued return functions (such as quotAndRemainder)
+     * storing multivalued return functions (such as quotAndRemainder). The passed pointer has to point to a
+     * new dynamically allocated value, and it will directly be used internally in R. So there is no need to
+     * delete the given pointer.
     */
     R(const Ring*);
-
 
     /**
      * Destructor and copy/move constr/assignment, which handles the pointer accordingly.
@@ -93,6 +117,8 @@ public:
 
     R operator-() const;
 
+    R invert() const;
+
     //Console and latex output. See Ring.h and Ring.cpp
     std::string to_string() const;
     
@@ -101,6 +127,18 @@ public:
     std::string to_latex() const;
     
     std::string to_signed_latex() const;
+
+    std::string to_leading_coeff() const;
+
+    std::string to_coeff() const;
+
+    std::string to_latex_leading_coeff() const;
+
+    std::string to_latex_coeff() const;
+
+    bool needs_bracket() const;
+
+    bool needs_bracket_latex() const;
 
     const RingType& get_type_shallow() const;
 
@@ -112,6 +150,16 @@ public:
      * Promotes other to match the type of this.
     */
     R promote(const R& other) const;
+
+    /**
+     * For internal use of Ring subclasses. Calls impl->promote(r)
+    */
+    const Ring* promote_exp(const Ring* const& r) const;
+
+    /**
+     * Returns the element with value 1, matching the type of this.
+    */
+    R promote_one() const;
 
     bool is_one() const;
 

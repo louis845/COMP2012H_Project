@@ -45,6 +45,8 @@ protected:
 
     const Double* promote(const Ring* const& r) const override;
 
+    const Double* promote_one() const override;
+
     bool is_one() const override;
 
     bool is_unit() const override;

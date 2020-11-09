@@ -80,13 +80,23 @@ public:
     NestedRingType& set_sub_type_no_copy(NestedRingType* subtype);
 
     const RingType& get_current_type() const;
+
+    std::string to_string() const;
 };
+
+//Outputs a nested ring type.
+std::ostream& operator<< (std::ostream&, const NestedRingType&);
 
 /**
  * DO NOT use this class or it's subclasses directly for computation! Wrap it using R{}. See R.cpp and R.h. All instances should be dynamically allocated and passed into
  * the wrapper class R.
 */
 class Ring{
+#if DEBUG_MODE
+private:
+    int* RING_DEBUG_NUM_CREATE; //Keeps track of the number of R (wrapper) this ring resides in.
+#endif
+
 public:
     virtual ~Ring();
     /**
@@ -123,7 +133,6 @@ public:
     */
     static bool is_type_subset(const NestedRingType& supset, const NestedRingType& subset);
 
-
     /**
      * We do not allow copy and assignment
     */
@@ -140,17 +149,15 @@ public:
     */
 
     const NestedRingType& get_type() const;
-protected:
-
-    NestedRingType* type;
-
-
-    Ring(RingType);
 
     /**
-     * ONLY call this function in R.cpp/R.h. The pointer should be immediately assigned to R so it gets properly deallocated with the destructor/copy assignment... of R
+     * The pointer should be immediately assigned to R so it gets properly deallocated with the destructor/copy assignment... of R
     */
     virtual const Ring* copy() const=0;
+    NestedRingType* type;
+protected:
+
+    Ring(RingType);
 
     /**
     * Console output
@@ -171,6 +178,36 @@ protected:
     virtual std::string to_signed_latex() const=0;
 
     /**
+     * Console output. The default implementation returns to_string() if it is not one, and returns the sign - for negative one.
+    */
+    virtual std::string to_leading_coeff() const;
+
+    /**
+     * Console output. The default implementation returns to_string() if it is not one, and returns the sign +/- for one and negative one.
+    */
+    virtual std::string to_coeff() const;
+
+    /**
+     * Latex output. The default implementation returns to_string() if it is not one, and returns the sign - for negative one.
+    */
+    virtual std::string to_latex_leading_coeff() const;
+
+    /**
+     * Latex output. The default implementation returns to_string() if it is not one, and returns the sign +/- for one and negative one.
+    */
+    virtual std::string to_latex_coeff() const;
+
+    /**
+     * Indicates whether the display of this element needs brackets (if it is a sum of parts?). Default is false.
+    */
+    virtual bool needs_bracket() const;
+
+    /**
+     * Indicates whether the display of this element needs brackets in Latex (if it is a sum of parts?). Default is false.
+    */
+    virtual bool needs_bracket_latex() const;
+
+    /**
      * Allocates and promotes the given Ring r to the same value, matching exactly the type of 'this'.
      * Make sure that the given r is a subset of this, given by is_type_subset.
     */
@@ -179,7 +216,7 @@ protected:
     /**
      * BINARY OPERATIONS AND COMPARISON OF RING IMPLEMENTATIONS. For functions that return a Ring* pointer, it is expected a new Ring (or subclasses) should be dynamically allocated.
      * In the implementation in subclasses, it is ensured in the wrapper class R that the ring of the argument is always directly compatiable with the ring of this, given by this->get_type().deep_equals( r->get_type()) )
-     * Therefore the pointer can be static_cast ed to the appropriate type.
+     * Therefore the pointer can be dynamic_cast ed to the appropriate type.
      * 
      * SPECIAL_ZERO checks. For the SPECIAL_ZERO, there is no need to check for SPECIAL_ZERO in all the cases/
     */
@@ -233,9 +270,14 @@ protected:
      * Partial inverse, this is same as computing 
      * a*this+r=1, and returning a (r is the remainder).
     */
-    virtual const Ring* invert () const = 0;
+    virtual const Ring* invert() const = 0;
 
     virtual const Ring* negate() const = 0;
+
+    /**
+     * Dynamically allocates a ring element equal to one with type same as the type of this.
+    */
+    virtual const Ring* promote_one() const = 0;
 
     /**
      * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
@@ -251,6 +293,16 @@ protected:
     * Checks whether the element is exactly one.
     */
     virtual bool is_one() const=0;
+
+    /*
+    * Checks whether the element is exactly zero.
+    */
+    virtual bool is_zero() const;
+
+    /*
+    * Checks whether the element is exactly negative one.
+    */
+    virtual bool is_neg_one() const;
 
     friend class R;
 
@@ -282,13 +334,21 @@ private:
 
     int euclideanFuncCompare(const Ring* compare) const override;
 
-    std::string to_string() const;
+    std::string to_string() const override;
     
-    std::string to_signed_string() const;
+    std::string to_signed_string() const override;
 
-    std::string to_latex() const;
+    std::string to_latex() const override;
 
-    std::string to_signed_latex() const;
+    std::string to_signed_latex() const override;
+
+    std::string to_leading_coeff() const override;
+
+    std::string to_coeff() const override;
+
+    std::string to_latex_leading_coeff() const override;
+
+    std::string to_latex_coeff() const override;
 
     const Ring* invert() const override;
 
@@ -296,9 +356,15 @@ private:
 
     const Ring* promote(const Ring* const& r) const override;
 
+    const Ring* promote_one() const override;
+
     bool is_unit() const override;
 
     bool is_one() const override;
+
+    bool is_zero() const override;
+
+    bool is_neg_one() const override;
 
     void split_canonical(const Ring*&,const Ring*&) const override;
 
