@@ -19,4 +19,6 @@ template <class T> T gcd(T a, T b){
     return b;
 }
 
+long long gcd(long long, long long);
+
 R gcd (R a, R b);
