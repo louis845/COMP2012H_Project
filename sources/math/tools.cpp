@@ -24,6 +24,9 @@ long long gcd(long long a,long long b){
         a=b;
         b=temp;
     }
+    if(b==0){
+        return a;
+    }
     //The euclidean function of a is larger than or equal to b here.
     long long remainder = a % b;
     while(remainder != 0){

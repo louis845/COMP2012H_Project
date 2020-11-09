@@ -171,6 +171,34 @@ R R::operator%(const R& other) const{
     }
 }
 
+void R::quotAndRemainder(const R& div, R& quot, R& rem) const{
+    int i=Ring::compatibility(impl->get_type(), div.impl->get_type());
+
+    if(i==-2){
+        throw "cannot use % on non-compatible types!";
+    }
+
+    if(div.get_type_shallow()==RingType::SPECIAL_ZERO){
+        throw "Divide by zero!";
+    }
+
+    const Ring *q, *r;
+
+    if(i==0){
+        impl->quotAndRemainder(div.impl, q, r);
+    }else if(i==1){
+        const Ring* pro=impl->promote(div.impl);
+        impl->quotAndRemainder(pro, q, r);
+        delete pro;
+    }else{
+        const Ring* pro=div.impl->promote(impl);
+        pro->quotAndRemainder(div.impl, q, r);
+        delete pro;
+    }
+    quot=R{q};
+    rem=R{r};
+}
+
 bool R::operator<=(const R& other) const{
     int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
 
@@ -319,7 +347,13 @@ R R::operator-() const{
 }
 
 bool R::is_zero() const{
-    return impl->type_shallow==RingType::SPECIAL_ZERO || impl->equalsImpl(R::impl0);
+    if(impl->type_shallow==RingType::SPECIAL_ZERO){
+        return true;
+    }
+    const Ring* pro=impl->promote(R::impl0);
+    bool result=impl->equalsImpl(pro);
+    delete pro;
+    return result;
 }
 
 int R::euclidean_func_compare(const R& other) const{
@@ -363,13 +397,6 @@ void R::split(R& morph, R& unit) const{
     impl->split_canonical(m,u);
     morph=R{m};
     unit=R{u};
-}
-
-void R::quotAndRemainder(const R& div, R& quot, R& rem) const{
-    const Ring *q, *r;
-    impl->quotAndRemainder(div.impl, q, r);
-    quot=R{q};
-    rem=R{r};
 }
 
 bool R::is_one() const{

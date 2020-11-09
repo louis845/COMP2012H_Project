@@ -13,7 +13,6 @@ class R final{
 private:
     const Ring* impl;
 public:
-
     /**
      * ONE and ZERO. They are not necessarily unique, some other functions may create other ZeroElmt hence R with R.impl=ZeroElmt.
     */

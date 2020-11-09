@@ -1,6 +1,6 @@
 #include "math/fraction/Fraction.h"
 #include "math/tools.h"
-
+#include <iostream>
 Fraction::Fraction(const R& over,const R& under) : Field(RingType::FRACTION){
     int comp=Ring::compatibility(over.get_type(),under.get_type());
 
@@ -23,7 +23,7 @@ Fraction::Fraction(const R& over,const R& under) : Field(RingType::FRACTION){
         ud=new R{under};
         type->set_sub_type(&(ov->get_type()));
     }
-
+    
     if(ud->is_zero()){
         throw "Divide by zero!";
     }
