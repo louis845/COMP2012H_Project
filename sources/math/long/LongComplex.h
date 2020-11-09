@@ -12,8 +12,8 @@ using namespace std;
 class LongComplex final : public Ring {
 public:
     LongComplex(const long long&, const long long&);
+    
 protected:
-
     const long long re, im;
 
     const Ring* addImpl (const Ring* r) const override;
@@ -46,7 +46,13 @@ protected:
 
     string to_signed_latex() const override;
 
+    bool needs_bracket() const override;
+
+    bool needs_bracket_latex() const override;
+
     const LongComplex* promote(const Ring* const &r) const override;
+
+    const LongComplex* promote_one() const override;
 
     bool is_one() const override;
 

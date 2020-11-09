@@ -45,6 +45,8 @@ protected:
 
     const Long* promote(const Ring* const &r) const override;
 
+    const Long* promote_one() const override;
+
     bool is_one() const override;
 
     bool is_unit() const override;

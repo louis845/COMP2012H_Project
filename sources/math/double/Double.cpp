@@ -37,7 +37,7 @@ const Double* Double::copy() const{
 bool Double::equalsImpl(const Ring* other) const{
     // short circuit for the second condition, or else the cast would be invalid.
     return (other->type_shallow==RingType::SPECIAL_ZERO && val==0) ||
-     (other->type_shallow!=RingType::SPECIAL_ZERO && val==(static_cast<const Double*>(other))->val);
+     (other->type_shallow!=RingType::SPECIAL_ZERO && val==(dynamic_cast<const Double*>(other))->val);
 }
 
 string Double::to_string() const{
@@ -81,7 +81,11 @@ const Double* Double::promote(const Ring* const& r) const{
     if(r->type_shallow==RingType::SPECIAL_ZERO){
         return new Double{0};
     }
-    return static_cast<const Double*>(r)->copy();
+    return dynamic_cast<const Double*>(r)->copy();
+}
+
+const Double* Double::promote_one() const{
+    return new Double{1.0};
 }
 
 bool Double::is_one() const{

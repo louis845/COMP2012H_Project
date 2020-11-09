@@ -9,7 +9,7 @@ SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp
 DEBUG = -g
 
 
-link: main.o Ring.o R.o Field.o Double.o Long.o Fraction.o LongComplex.o tools.o
+link: main.o Ring.o R.o Field.o Double.o Long.o Fraction.o LongComplex.o Polynomial.o tools.o
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(OUTPUT_DIRECTORY)*.o
 
 main.o: main.cpp
@@ -35,6 +35,9 @@ LongComplex.o: math/long/LongComplex.cpp
 
 Fraction.o: math/fraction/Fraction.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Fraction.o $(HEADER_ROOT_DIRECTORY) -c math/fraction/Fraction.cpp
+
+Polynomial.o: math/polynomial/Polynomial.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Polynomial.o $(HEADER_ROOT_DIRECTORY) -c math/polynomial/Polynomial.cpp
 
 tools.o: math/tools.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)tools.o $(HEADER_ROOT_DIRECTORY) -c math/tools.cpp
