@@ -22,7 +22,8 @@ public:
 
     /**
      * Creates an ring wrapper, given a preallocated pointer to a ring implementation class. DO NOT
-     * allow two ring wrappers (R) to contain the same pointer.
+     * allow two ring wrappers (R) to contain the same pointer. Pass null pointer ONLY IF the R is used for
+     * storing multivalued return functions (such as quotAndRemainder)
     */
     R(const Ring*);
 
@@ -118,9 +119,14 @@ public:
     bool is_unit() const;
 
     /**
-     * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
+     * Splits the element into a product this*unit=morph, where unit is invertible.
     */
-    void split(R*& morph, R*& unit) const;
+    void split(R& morph, R& unit) const;
+
+    /**
+     * Finds both the quotient and remainder of this/div.
+    */
+    void quotAndRemainder(const R& div, R& quot,R& rem) const;
 };
 
 /**

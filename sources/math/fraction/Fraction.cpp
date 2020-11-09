@@ -38,15 +38,12 @@ Fraction::Fraction(const R& over,const R& under) : Field(RingType::FRACTION){
     mover=mover/cd;
     munder=munder/cd;
 
-    R *morph, *unit;
+    R morph{nullptr}, unit{nullptr};
 
     munder.split(morph,unit);
 
-    munder=*morph;
-    mover = mover * (*unit);
-
-    delete morph;
-    delete unit;
+    munder=morph;
+    mover = mover * unit;
 }
 
 Fraction::~Fraction(){

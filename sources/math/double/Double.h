@@ -11,13 +11,13 @@ using namespace std;
 class Double final : public Field {
 public:
     Double(double);
+
+    const double val;
 protected:
     /**
      * Precision in decimal places, of the string/latex representation.
     */
     static int PRECISION;
-
-    const double val;
 
     const Ring* addImpl (const Ring* r) const override;
     

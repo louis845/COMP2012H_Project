@@ -206,6 +206,12 @@ protected:
     virtual const Ring* remainderImpl (const Ring* div) const=0;
 
     /**
+     * Finds both the quotient and remainder. This can be overriden for optimization in algorithms that requires both the remainder and quotient, to avoid computing twice. The default
+     * implementation is to compute the divImpl and remainderImpl separately and then pass onto the quot and rem. Note that quot and rem are dynamically allocated in this function.
+    */
+    virtual void quotAndRemainder(const Ring* div, const Ring*& quot, const Ring*& rem) const;
+
+    /**
      * Whether they are equal. No need to check for SPECIAL_ZERO (can cast to appropriate type)
     */
 
