@@ -1,19 +1,20 @@
-#ifndef MATH_LONG_LONG_H
-#define MATH_LONG_LONG_H
+#ifndef MATH_LONG_LONGCPX_H
+#define MATH_LONG_LONGCPX_H
 
 #include "math/Ring.h"
 
 using namespace std;
 
 /**
- * Implementation of long, actually this just uses the primitive type long long.
+ * Implementation of complex long, actually this just uses two primitive types long long.
+ * See Gaussian Integers on wiki.
 */
-class Long final : public Ring {
+class LongComplex final : public Ring {
 public:
-    Long(long long);
-
-    const long long val;
+    LongComplex(const long long&, const long long&);
 protected:
+
+    const long long re, im;
 
     const Ring* addImpl (const Ring* r) const override;
     
@@ -23,13 +24,15 @@ protected:
     
     const Ring* divImpl (const Ring* div) const override;
 
-    const Ring* remainderImpl (const Ring* rem) const override;
+    const Ring* remainderImpl (const Ring* div) const override;
+
+    void quotAndRemainder (const Ring* div, const Ring*& quot, const Ring*& rem) const override;
 
     const Ring* invert() const override;
     
-    const Long* copy() const override;
+    const LongComplex* copy() const override;
 
-    const Long* negate() const override;
+    const LongComplex* negate() const override;
 
     int euclideanFuncCompare(const Ring* other) const override;
 
@@ -43,7 +46,7 @@ protected:
 
     string to_signed_latex() const override;
 
-    const Long* promote(const Ring* const &r) const override;
+    const LongComplex* promote(const Ring* const &r) const override;
 
     bool is_one() const override;
 

@@ -7,11 +7,6 @@ const ZeroElmt* const R::impl0 = new ZeroElmt{};
 const R R::ZERO{R::impl0};
 
 R::R(const Ring* impl): impl(impl){
-#if DEBUG_MODE
-    if(impl==nullptr){
-        throw "impl cannot be nullptr!";
-    }
-#endif
 }
 
 /**
@@ -363,11 +358,18 @@ R R::promote(const R& other) const{
     return R{impl->promote(other.impl)};
 }
 
-void R::split(R*& morph, R*& unit) const{
+void R::split(R& morph, R& unit) const{
     const Ring *m, *u;
     impl->split_canonical(m,u);
-    morph=new R{m};
-    unit=new R{u};
+    morph=R{m};
+    unit=R{u};
+}
+
+void R::quotAndRemainder(const R& div, R& quot, R& rem) const{
+    const Ring *q, *r;
+    impl->quotAndRemainder(div.impl, q, r);
+    quot=R{q};
+    rem=R{r};
 }
 
 bool R::is_one() const{

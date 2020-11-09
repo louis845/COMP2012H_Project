@@ -200,6 +200,11 @@ const NestedRingType& Ring::get_type() const{
     return *type;
 }
 
+void Ring::quotAndRemainder(const Ring* div, const Ring*& quot, const Ring*& rem) const{
+    quot=divImpl(div);
+    rem=remainderImpl(div);
+}
+
 /**
  * Implementation of ZeroElmt. The return values are straightforward (operations by 0 and 1). Notice that a copy (new allocation) has to be returned for the functions,
  * since the functions are used internally by the R class, and a new R object (no matter statically or dynamically allocated) is created with
