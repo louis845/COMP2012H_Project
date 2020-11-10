@@ -227,6 +227,14 @@ string LongComplex::to_signed_latex() const{
     return to_signed_string();
 }
 
+bool LongComplex::needs_bracket() const{
+    return re!=0 && im!=0;
+}
+
+bool LongComplex::needs_bracket_latex() const{
+    return re!=0 && im!=0;
+}
+
 /**
  * The only subsets are itself, long and zero
 */
@@ -235,10 +243,14 @@ const LongComplex* LongComplex::promote(const Ring* const& r) const{
         return new LongComplex{0,0};
     }
     if(r->type_shallow==RingType::LONG){
-        const Long* lo=static_cast<const Long*>(r);
+        const Long* lo=dynamic_cast<const Long*>(r);
         return new LongComplex{lo->val,0};
     }
-    return static_cast<const LongComplex*>(r)->copy();
+    return dynamic_cast<const LongComplex*>(r)->copy();
+}
+
+const LongComplex* LongComplex::promote_one() const{
+    return new LongComplex{1,0};
 }
 
 bool LongComplex::is_one() const{

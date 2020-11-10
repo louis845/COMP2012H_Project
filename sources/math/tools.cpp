@@ -1,10 +1,13 @@
 #include "tools.h"
-#include <iostream>
+
 R gcd(R a,R b){
     if(b>a){
         R temp=a;
         a=b;
         b=temp;
+    }
+    if(b.is_zero()){
+        return a;
     }
     //The euclidean function of a is larger than or equal to b here.
     R remainder = a % b;

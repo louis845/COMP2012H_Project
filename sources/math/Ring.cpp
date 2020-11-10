@@ -1,4 +1,5 @@
 #include "math/Ring.h"
+#include <sstream>
 
 using namespace std;
 
@@ -184,16 +185,59 @@ int Ring::compatibility(const NestedRingType& a,const NestedRingType& b){
     return -2;
 }
 
+string ring_type_to_string(const RingType& type){
+    switch(type){
+    case SPECIAL_ZERO:
+        return "ZERO";
+    case DOUBLE:
+        return "DOUBLE";
+    case LONG:
+        return "LONG";
+    case FRACTION:
+        return "FRACTION";
+    case POLYNOMIAL:
+        return "POLYNOMIAL";
+    case COMPLEXIFY:
+        return "COMPLEX";
+    }
+    return "ERROR UNKNOWN TYPE";
+}
+
+string NestedRingType::to_string() const{
+    ostringstream str;
+
+    str<<ring_type_to_string(current_type);
+
+    NestedRingType* itr=sub_type;
+    while(itr!=nullptr){
+        str<<" "<<ring_type_to_string(itr->current_type);
+        itr=itr->sub_type;
+    }
+
+    return str.str();
+}
+
+std::ostream& operator<< (std::ostream& out, const NestedRingType& type){
+    out<<type.to_string();
+    return out;
+}
+
 /**
  * RING FUNCTIONS
 */
 
 Ring::Ring(RingType t): type_shallow(t){
     type=new NestedRingType{t};
+#if DEBUG_MODE
+    RING_DEBUG_NUM_CREATE=new int{0};
+#endif
 }
 
 Ring::~Ring(){
     delete type;
+#if DEBUG_MODE
+    delete RING_DEBUG_NUM_CREATE;
+#endif
 }
 
 const NestedRingType& Ring::get_type() const{
@@ -203,6 +247,80 @@ const NestedRingType& Ring::get_type() const{
 void Ring::quotAndRemainder(const Ring* div, const Ring*& quot, const Ring*& rem) const{
     quot=divImpl(div);
     rem=remainderImpl(div);
+}
+
+bool Ring::is_zero() const{
+    const Ring* pro=promote(R::impl0);
+    bool result=equalsImpl(pro);
+    delete pro;
+    return result;
+}
+
+bool Ring::is_neg_one() const{
+    const Ring* r=negate();
+    bool result=r->is_one();
+    delete r;
+    return result;
+}
+
+std::string Ring::to_coeff() const{
+    if(is_one()){
+        return "+";
+    }
+    if(is_neg_one()){
+        return "-";
+    }
+    if(needs_bracket()){
+        return "+("+to_string()+")";
+    }
+    return to_signed_string();
+}
+    
+std::string Ring::to_leading_coeff() const{
+    if(is_one()){
+        return "";
+    }
+    if(is_neg_one()){
+        return "-";
+    }
+    if(needs_bracket()){
+        return "("+to_string()+")";
+    }
+    return to_string();
+}
+
+std::string Ring::to_latex_coeff() const{
+    if(is_one()){
+        return "+";
+    }
+    if(is_neg_one()){
+        return "-";
+    }
+    if(needs_bracket_latex()){
+        return "+("+to_latex()+")";
+    }
+    return to_signed_latex();
+}
+
+std::string Ring::to_latex_leading_coeff() const{
+    if(is_one()){
+        return "";
+    }
+    if(is_neg_one()){
+        return "-";
+    }
+    if(needs_bracket_latex()){
+        return "("+to_latex()+")";
+    }
+    return to_latex();
+}
+
+bool Ring::needs_bracket() const{
+    return false;
+}
+
+bool Ring::needs_bracket_latex() const{
+    return false;
 }
 
 /**
@@ -275,8 +393,28 @@ std::string ZeroElmt::to_signed_latex() const{
     return "+0";
 }
 
+std::string ZeroElmt::to_coeff() const{
+    return "+0";
+}
+    
+std::string ZeroElmt::to_leading_coeff() const{
+    return "0";
+}
+
+std::string ZeroElmt::to_latex_coeff() const{
+    return "+0";
+}
+
+std::string ZeroElmt::to_latex_leading_coeff() const{
+    return "0";
+}
+
 const Ring* ZeroElmt::promote(const Ring* const& r) const{
     throw "It should not be needed to promote any element to match the type of ZeroElmt!";
+}
+
+const Ring* ZeroElmt::promote_one() const{
+    throw "It should not be needed to promote the unit element to match the type of ZeroElmt!";
 }
 
 bool ZeroElmt::is_unit() const{
@@ -284,6 +422,14 @@ bool ZeroElmt::is_unit() const{
 }
 
 bool ZeroElmt::is_one() const{
+    return false;
+}
+
+bool ZeroElmt::is_zero() const{
+    return true;
+}
+
+bool ZeroElmt::is_neg_one() const{
     return false;
 }
 
