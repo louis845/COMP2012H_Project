@@ -17,7 +17,10 @@ const Ring* Long::minusImpl(const Ring* r) const{
 }
 
 const Ring* Long::divImpl(const Ring* r) const{
-    return new Long{val/(dynamic_cast<const Long*>(r)->val)};
+    const Long* l=dynamic_cast<const Long*>(r);
+    cout<<val<<" "<<l->val<<"\n";
+    return new Long{val/l->val};
+    //return new Long{val/(dynamic_cast<const Long*>(r)->val)};
 }
 
 const Ring* Long::remainderImpl(const Ring* r) const {

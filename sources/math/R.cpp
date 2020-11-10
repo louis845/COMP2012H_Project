@@ -465,7 +465,7 @@ R* R::array_copy(R* const& arr, int len){
 R* R::array_copy(R* const& arr, int len, int shift){
     R* newarr = new R[len+shift];
     for(int i=0;i<len;i++){
-        newarr[i+shift]=arr[i+shift];
+        newarr[i+shift]=arr[i];
     }
     return newarr;
 }
