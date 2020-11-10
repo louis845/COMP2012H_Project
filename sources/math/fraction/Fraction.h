@@ -1,3 +1,5 @@
+#ifndef MATH_FRACTION_FRACTION_H
+#define MATH_FRACTION_FRACTION_H
 #include "math/Field.h"
 
 using namespace std;
@@ -60,3 +62,5 @@ protected:
 
     void split_canonical(const Ring*&, const Ring*&) const override;
 };
+
+#endif

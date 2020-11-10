@@ -11,6 +11,7 @@
 #include "math/fraction/Fraction.h"
 #include "math/polynomial/Polynomial.h"
 #include "math/tools.h"
+#include "debug_stress_test.h"
 
 using namespace std;
 
@@ -32,44 +33,32 @@ void test2(const test* const& t){
 }
 
 int main(){
-    {
-        R coeff1[3]={
-            new Fraction{new LongComplex{5,2},new LongComplex{-4,7}},
-            new Fraction{new LongComplex{4,3},new LongComplex{2,5}},
-            new Fraction{new LongComplex{8,-7},new LongComplex{9,-2}}
-        };
+    R c1[]={
+        R{new Fraction{new Long{-7},new Long{9}}},
+        R{new Fraction{new Long{7},new Long{8}}},
+        R{new Fraction{new Long{35},new Long{3}}}
+    };
+    R c2[]={
+        R{new Fraction{new Long{14},new Long{1}}},
+        R{new Fraction{new Long{14},new Long{5}}},
+        R{new Fraction{new Long{1},new Long{1}}}
+    };
+    R c3[]={
+        R{new Fraction{new Long{-7},new Long{3}}},
+        R{new Fraction{new Long{56},new Long{3}}},
+    };
+    R c4[]={
+        R{new Fraction{new Long{14},new Long{1}}},
+        R{new Fraction{new Long{14},new Long{5}}},
+        R{new Fraction{new Long{1},new Long{1}}}
+    };
+    R f1=new Fraction{new Polynomial{c1,3},new Polynomial{c2,3}};
+    R f2=new Fraction{new Polynomial{c3,2},new Polynomial{c4,3}};
+    cout<<f1<<"\n";
+    cout<<f2<<"\n";
 
-        R coeff2[4]={
-            new Fraction{new LongComplex{2,2},new Long{1}},
-            new Fraction{new LongComplex{5,3},new Long{1}},
-            new Fraction{new LongComplex{7,2},new Long{1}},
-            new Fraction{new LongComplex{9,0},new Long{1}}
-        };
+    cout<<f1*f2<<"\n";
 
-        R c=new Polynomial{coeff1,3};
-        R d=new Polynomial{coeff2,4};
-
-        cout<<c<<"\n";
-        cout<<d<<"\n\n";
-
-        R e=c/d;
-        d*e;
-        cout<<c<<"\n";
-        cout<<d<<"\n\n";
-        cout<<(c+d)<<"\n";
-        cout<<(c*d)<<"\n";
-        cout<<(c/d)<<"\n";
-        cout<<(c%d)<<"\n\n";
-
-        cout<<(c/d)<<"\n";
-        cout<<(c%d)<<"\n\n";
-        
-        cout<<c-(d*(c/d)+c%d)<<"\n";
-        cout<<c<<"\n";
-        cout<<d<<"\n\n";
-    }
-
-    int ii;
-    std::cin>>ii;
+    run_test();
     return 0;
 }

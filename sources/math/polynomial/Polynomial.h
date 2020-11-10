@@ -3,8 +3,6 @@
 
 #include "math/Ring.h"
 
-using namespace std;
-
 /**
  * Implementation of polynomials.
 */
@@ -62,13 +60,13 @@ protected:
 
     bool equalsImpl(const Ring* other) const override;
 
-    string to_string() const override;
+    std::string to_string() const override;
 
-    string to_signed_string() const override;
+    std::string to_signed_string() const override;
 
-    string to_latex() const override;
+    std::string to_latex() const override;
 
-    string to_signed_latex() const override;
+    std::string to_signed_latex() const override;
 
     virtual bool needs_bracket() const override;
 

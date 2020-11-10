@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <sstream>
 
+using namespace std;
+
 char Polynomial::PY_CHAR = 't';
 
 Polynomial::Polynomial() : Ring(RingType::POLYNOMIAL){
@@ -190,7 +192,7 @@ void Polynomial::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*&
     const Polynomial* remainder=copy();
     const int newdeg=get_degree_no0check()-div->get_degree_no0check();
     R* new_coeff = new R[newdeg + 1];
-    while (remainder->get_degree_no0check()>=div->get_degree_no0check()) {
+    while (remainder->get_degree_no0check()>=div->get_degree_no0check() && !remainder->is_zero()) {
         R mult = remainder->get_leading_coefficient()/div->get_leading_coefficient(); //Here mult is non-zero since the leading coefficient is always non-zero (remainder has degree larger than div, hence remainder must be non-zero polynomial). 
         new_coeff[remainder->get_degree_no0check()-div->get_degree_no0check()] = mult; //The power is just the difference of the degree, and the multiple is the quotient above.
 

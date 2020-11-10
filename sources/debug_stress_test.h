@@ -11,6 +11,7 @@
 
 std::uniform_int_distribution<int> values(-10,10);
 std::uniform_int_distribution<int> length(1,4);
+std::uniform_int_distribution<int> small(1,3);
 std::default_random_engine rng;
 
 using namespace std;
@@ -19,6 +20,24 @@ void report_error(const R& a, const R& b){
     cout<<a<<"\n";
     cout<<b<<"\n";
     throw "Error!";
+}
+
+int non_zero_value(){
+    int val=values(rng);
+
+    if(val==0){
+        val=1;
+    }
+    return val;
+}
+
+void non_zero_value(int &a,int &b){
+    a=values(rng);
+    b=values(rng);
+
+    if(a==0 && b==0){
+        a=1;
+    }
 }
 
 void test_complex_ops(){
@@ -68,8 +87,8 @@ void test_fraction_ops(){
     int divnum=0;
     int strictdivnum=0;
     for(int i=0;i<1000;++i){
-        R a=new Fraction{new Long{values(rng)},new Long{values(rng)}};
-        R b=new Fraction{new Long{values(rng)},new Long{values(rng)}};
+        R a=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
+        R b=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
 
         R c=a+b;
         R d=a*b;
@@ -110,7 +129,7 @@ void test_fraction_ops(){
 void test_polynomial_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1000;++i){
+    for(int i=0;i<100;++i){
 
         int alen=length(rng);
         int blen=length(rng);
@@ -118,11 +137,11 @@ void test_polynomial_ops(){
         R* bcoeff=new R[blen];
 
         for(int j=0;j<alen;j++){
-            acoeff[j]=new Fraction{new Long{values(rng)},new Long{values(rng)}};
+            acoeff[j]=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
         }
 
         for(int j=0;j<blen;j++){
-            bcoeff[j]=new Fraction{new Long{values(rng)},new Long{values(rng)}};
+            bcoeff[j]=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
         }
 
         R a=new Polynomial{acoeff,alen};
@@ -140,10 +159,10 @@ void test_polynomial_ops(){
 
         if(!b.is_zero()){
             divnum++;
-
             R e=a/b;
-            R f=a%b;
 
+            R f=a%b;
+            
             if(!e.exactly_equals(a/b)){
                 report_error(a,b);
             }
@@ -164,12 +183,17 @@ void test_polynomial_ops(){
     cout << "polynomial ops test: "<<divnum<<" "<<strictdivnum<<"\n";
 }
 
+
+
+
 void test_complex_fraction_ops(){
     int divnum=0;
     int strictdivnum=0;
     for(int i=0;i<1000;++i){
-        R a=new Fraction{new LongComplex{values(rng),values(rng)},new Long{values(rng)}};
-        R b=new Fraction{new Long{values(rng)},new LongComplex{values(rng),values(rng)}};
+        R a=new Fraction{new LongComplex{values(rng),values(rng)},new Long{non_zero_value()}};
+        int val1,val2;
+        non_zero_value(val1,val2);
+        R b=new Fraction{new Long{values(rng)},new LongComplex{val1,val2}};
 
         R c=a+b;
         R d=a*b;
@@ -210,7 +234,7 @@ void test_complex_fraction_ops(){
 void test_complex_polynomial_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1000;++i){
+    for(int i=0;i<1;++i){
 
         int alen=length(rng);
         int blen=length(rng);
@@ -218,11 +242,13 @@ void test_complex_polynomial_ops(){
         R* bcoeff=new R[blen];
 
         for(int j=0;j<alen;j++){
-            acoeff[j]=new Fraction{new Long{values(rng)},new Long{values(rng)}};
+            acoeff[j]=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
         }
 
         for(int j=0;j<blen;j++){
-            bcoeff[j]=new Fraction{new LongComplex{values(rng),values(rng)},new LongComplex{values(rng),values(rng)}};
+            int val1,val2;
+            non_zero_value(val1,val2);
+            bcoeff[j]=new Fraction{new LongComplex{values(rng),values(rng)},new LongComplex{val1,val2}};
         }
 
         R a=new Polynomial{acoeff,alen};
@@ -243,7 +269,8 @@ void test_complex_polynomial_ops(){
 
         if(!b.is_zero()){
             divnum++;
-
+            cout<<a<<"\n";
+            cout<<b<<"\n";
             R e=a/b;
             R f=a%b;
 
@@ -254,8 +281,9 @@ void test_complex_polynomial_ops(){
             if(!f.exactly_equals(a%b)){
                 report_error(a,b);
             }
-
-            if(!a.exactly_equals( (a/b)*b + a%b )){
+            R expr=(a/b)*b + a%b;
+            cout<<"eeee"<<"\n";
+            if(!a.exactly_equals(expr)){
                 report_error(a,b);
             }
 
@@ -268,30 +296,34 @@ void test_complex_polynomial_ops(){
 }
 
 void gen_poly(R& a, R& b){
-    int alen=length(rng);
-    int blen=length(rng);
+    int alen=small(rng);
+    int blen=small(rng);
     R* acoeff=new R[alen];
-    R* bcoeff=new R[blen];
 
     for(int j=0;j<alen;j++){
-        acoeff[j]=new Fraction{new Long{values(rng)},new Long{values(rng)}};
-    }
-
-    for(int j=0;j<blen;j++){
-        bcoeff[j]=new Fraction{new Long{values(rng)},new Long{values(rng)}};
+        acoeff[j]=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
     }
 
     a=new Polynomial{acoeff,alen};
-    b=new Polynomial{bcoeff,blen};
-
     delete[] acoeff;
-    delete[] bcoeff;
+
+    while(b.is_zero()){
+
+        R* bcoeff=new R[blen];
+
+        for(int j=0;j<blen;j++){
+            bcoeff[j]=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
+        }
+
+        b=new Polynomial{bcoeff,blen};
+        delete[] bcoeff;
+    }
 }
 
 void test_fraction_polynomial_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1000;++i){
+    for(int i=0;i<4;++i){
 
         R py1,py2;
 
@@ -304,6 +336,10 @@ void test_fraction_polynomial_ops(){
         R b=new Fraction{py1,py2};
 
         R c=a+b;
+        if(i==3){
+                cout<<a<<"\n";
+                cout<<b<<"\n";
+            }
         R d=a*b;
         if(!c.exactly_equals(a+b)){
             report_error(a,b);
