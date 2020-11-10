@@ -6,7 +6,19 @@ using namespace std;
 const ZeroElmt* const R::impl0 = new ZeroElmt{};
 const R R::ZERO{R::impl0};
 
+R::R(): impl(new ZeroElmt{}){
+    
+}
+
 R::R(const Ring* impl): impl(impl){
+#if DEBUG_MODE
+    if(impl!=nullptr){
+        ++(*(impl->RING_DEBUG_NUM_CREATE));
+        if(*(impl->RING_DEBUG_NUM_CREATE) > 1){
+            throw "Ring impl was in multiple wrappers!";
+        }
+    }
+#endif
 }
 
 /**
@@ -346,14 +358,12 @@ R R::operator-() const{
     return R{impl->negate()};
 }
 
+R R::invert() const{
+    return R{impl->invert()};
+}
+
 bool R::is_zero() const{
-    if(impl->type_shallow==RingType::SPECIAL_ZERO){
-        return true;
-    }
-    const Ring* pro=impl->promote(R::impl0);
-    bool result=impl->equalsImpl(pro);
-    delete pro;
-    return result;
+    return impl->is_zero();
 }
 
 int R::euclidean_func_compare(const R& other) const{
@@ -376,6 +386,30 @@ string R::to_signed_latex() const{
     return impl->to_signed_latex();
 }
 
+string R::to_leading_coeff() const{
+    return impl->to_leading_coeff();
+}
+    
+string R::to_coeff() const{
+    return impl->to_coeff();
+}
+
+string R::to_latex_leading_coeff() const{
+    return impl->to_latex_leading_coeff();
+}
+    
+string R::to_latex_coeff() const{
+    return impl->to_latex_coeff();
+}
+
+bool R::needs_bracket() const{
+    return impl->needs_bracket();
+}
+
+bool R::needs_bracket_latex() const{
+    return impl->needs_bracket_latex();
+}
+
 const RingType& R::get_type_shallow() const{
     return impl->type_shallow;
 }
@@ -390,6 +424,14 @@ bool R::is_type_compatible(const R& o) const{
 
 R R::promote(const R& other) const{
     return R{impl->promote(other.impl)};
+}
+
+const Ring* R::promote_exp(const Ring* const& r) const{
+    return impl->promote(r);
+}
+
+R R::promote_one() const{
+    return R{impl->promote_one()};
 }
 
 void R::split(R& morph, R& unit) const{
@@ -410,4 +452,20 @@ bool R::is_unit() const{
 std::ostream& operator<< (std::ostream& out, const R& val){
     out<<val.to_string();
     return out;
+}
+
+R* R::array_copy(R* const& arr, int len){
+    R* newarr = new R[len];
+    for(int i=0;i<len;i++){
+        newarr[i]=arr[i];
+    }
+    return newarr;
+}
+
+R* R::array_copy(R* const& arr, int len, int shift){
+    R* newarr = new R[len+shift];
+    for(int i=0;i<len;i++){
+        newarr[i+shift]=arr[i+shift];
+    }
+    return newarr;
 }
