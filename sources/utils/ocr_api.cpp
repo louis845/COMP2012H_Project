@@ -46,7 +46,7 @@ QNetworkRequest Ocr::InitRequest() const
 
 
 // Initialize the JSON field
-QJsonObject Ocr::InitJson(QByteArray img_base64, bool using_latex) const
+QJsonObject Ocr::InitJson(QByteArray img_base64) const
 {
     QJsonObject json;
     // json.insert("src", "https://mathpix.com/examples/limit.jpg");
@@ -59,10 +59,8 @@ QJsonObject Ocr::InitJson(QByteArray img_base64, bool using_latex) const
     json.insert("formats", QJsonValue(formats));
 
     QJsonObject data_options;
-    if (using_latex)
-        data_options.insert("include_latex", true);
-    else
-        data_options.insert("include_asciimath", true);
+    data_options.insert("include_latex", true);
+    data_options.insert("include_asciimath", true);
     json.insert("data_options", QJsonValue(data_options));
 
     return json;
@@ -71,7 +69,7 @@ QJsonObject Ocr::InitJson(QByteArray img_base64, bool using_latex) const
 
 // parse the JSON field in the HTTP response
 // refer to https://docs.mathpix.com/#result-object for the response structure
-QString Ocr::ParseJson(QByteArray response) const
+pair<string, string>Ocr::ParseJson(QByteArray response) const
 {
     QJsonParseError err;
     QJsonDocument json = QJsonDocument::fromJson(response, &err);
@@ -82,23 +80,26 @@ QString Ocr::ParseJson(QByteArray response) const
     if (json_object.contains("error"))
         throw string("Error: ") + json_object.value("error").toString().toStdString();
 
-    QString ocr_output;
+    QString latex_output, asciimath_output;
     QJsonArray array = json_object.value("data").toArray();
     for (int i = 0; i < array.size(); ++i)  // may contain multiple lines of output
     {
         QJsonValue value = array.at(i).toObject().value("value");
-        ocr_output += value.toString();
+        if (array.at(i).toObject().value("type") == "latex")
+            latex_output += value.toString();
+        else
+            asciimath_output += value.toString();
     }
     
-    return ocr_output;
+    return {latex_output.toStdString(), asciimath_output.toStdString()};
 }
 
 
-void Ocr::Post(const string& img_path, const bool& using_latex)
+void Ocr::Post(const string& img_path)
 {
     QByteArray img_base64 = Img2Base64(QString::fromStdString(img_path));
     QNetworkRequest request = InitRequest();
-    QJsonObject json = InitJson(img_base64, using_latex);
+    QJsonObject json = InitJson(img_base64);
 
     // network_mgr.post(request, QJsonDocument(json).toJson());
 }
@@ -111,7 +112,7 @@ void Ocr::OnFinish(QNetworkReply* reply)
     if (reply->error() == QNetworkReply::NoError)
     {
         QByteArray response = reply->readAll();
-        result = ParseJson(response).toStdString();
+        result = ParseJson(response);
     }
 
     // status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -128,7 +129,7 @@ pair<string, string> Ocr::Request(const string& img_path, const bool& using_late
     {
         QByteArray img_base64 = Img2Base64(QString::fromStdString(img_path));
         QNetworkRequest request = InitRequest();
-        QJsonObject json = InitJson(img_base64, using_latex);
+        QJsonObject json = InitJson(img_base64);
 
         QNetworkAccessManager mgr;
         QNetworkReply* reply = mgr.post(request, QJsonDocument(json).toJson());
@@ -140,9 +141,9 @@ pair<string, string> Ocr::Request(const string& img_path, const bool& using_late
         if (reply->error() == QNetworkReply::NoError)
         {
             QByteArray response = reply->readAll();
-            result = ParseJson(response).toStdString();
+            result = ParseJson(response);
             reply->deleteLater();
-            return {"Success", result};
+            return result;
         }
         else
         {
