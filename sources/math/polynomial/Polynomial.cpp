@@ -8,6 +8,50 @@ using namespace std;
 
 char Polynomial::PY_CHAR = 't';
 
+Polynomial* Polynomial::polynomial_no_check(const RF* const& coefficient, int length){
+    Polynomial* p=new Polynomial{};
+    
+    int degree=-1;
+    int non_zero_count=0;
+    for(int i=0;i<length;++i){
+        const R& cElem=coefficient[i];
+        if(!cElem.is_zero()){
+            degree=i;
+            ++non_zero_count;
+        }
+    }
+    if(degree==-1){
+        //All coefficients given are zero.
+        p->coeff=new RF[1]{RF{coefficient[0].promote(R::ZERO)}}; //Promote the ZERO element to match the given type.
+        p->length=1;
+        p->type->set_sub_type(& (coefficient[0].get_type()) );
+        p->display_terms=1;
+    }else{
+        p->coeff=new RF[degree+1];
+        p->length=degree+1;
+        for(int i=0;i<=degree;i++){
+            p->coeff[i]=coefficient[i];
+        }
+        p->type->set_sub_type(&(p->coeff->get_type()));
+        p->display_terms=non_zero_count;
+    }
+    return p;
+}
+
+Polynomial* Polynomial::polynomial_no_zero_check(const RF* const& coefficient, int length, int non_zero_count){
+    Polynomial* p=new Polynomial{};
+    
+    int degree=length-1;
+    p->coeff=new RF[degree+1];
+    p->length=degree+1;
+    for(int i=0;i<=degree;i++){
+        p->coeff[i]=coefficient[i];
+    }
+    p->type->set_sub_type(&(p->coeff->get_type()));
+    p->display_terms=non_zero_count;
+    return p;
+}
+
 Polynomial::Polynomial() : Ring(RingType::POLYNOMIAL){
     
 }
@@ -18,7 +62,7 @@ Polynomial::Polynomial(const R* const &coefficient, int length) : Ring(RingType:
         throw "Cannot initialize a polynomial with length 0!";
     }
 #endif
-    R largest_type=R::ZERO; //The type of ring that includes all the rings of non-zero elements
+    RF largest_type=R::ZERO; //The type of ring that includes all the rings of non-zero elements
     int degree=-1;
     int non_zero_count=0;
     for(int i=0;i<length;++i){
@@ -35,12 +79,12 @@ Polynomial::Polynomial(const R* const &coefficient, int length) : Ring(RingType:
     }
     if(degree==-1){
         //All coefficients given are zero.
-        coeff=new R[1]{R{largest_type.promote(R::ZERO)}}; //Promote the ZERO element to match the given type.
+        coeff=new RF[1]{RF{largest_type.promote(R::ZERO)}}; //Promote the ZERO element to match the given type.
         this->length=1;
         type->set_sub_type(& (largest_type.get_type()) );
         display_terms=1;
     }else{
-        coeff=new R[degree+1];
+        coeff=new RF[degree+1];
         this->length=degree+1;
         for(int i=0;i<=degree;i++){
             coeff[i]=largest_type.promote(coefficient[i]);
@@ -62,7 +106,7 @@ const Ring* Polynomial::addImpl(const Ring* r) const{
     }
 #endif
 
-    const R *add1, *add2; //Just redirect the coefficients of this and other to these two pointers, no need to del
+    const RF *add1, *add2; //Just redirect the coefficients of this and other to these two pointers, no need to del
     int len1, len2;
 
     if(length>=other->length){
@@ -77,7 +121,7 @@ const Ring* Polynomial::addImpl(const Ring* r) const{
         len2=length;
     }
 
-    R* add_result=new R[len1];
+    RF* add_result=new RF[len1];
     for(int i=0;i<len2;++i){
         add_result[i]=add1[i]+add2[i];
     }
@@ -85,7 +129,7 @@ const Ring* Polynomial::addImpl(const Ring* r) const{
         add_result[i]=add1[i];
     }
 
-    const Polynomial* newp=new Polynomial{add_result,len1};
+    const Polynomial* newp=polynomial_no_check(add_result,len1);
 
     delete[] add_result;
 
@@ -100,19 +144,19 @@ const Ring* Polynomial::multImpl(const Ring* r) const{
     }
 #endif
 
-    const R* const &c1=coeff;
-    const R* const &c2=other->coeff; //Just redirect the coefficients of this and other to these two pointers, no need to del
+    const RF* const &c1=coeff;
+    const RF* const &c2=other->coeff; //Just redirect the coefficients of this and other to these two pointers, no need to del
     const int &len1=length, &len2=other->length;
     const int deg1=len1-1, deg2=len2-1;
 
-    R* total=new R[deg1+deg2+1];
+    RF* total=new RF[deg1+deg2+1];
     for(int deg=0; deg<=deg1+deg2; ++deg){
         for(int i=std::max(0, deg-deg2); i<=std::min(deg,deg1); ++i){
             total[deg] = total[deg]+c1[i]*c2[deg-i];
         }
     }
 
-    const Polynomial* newp=new Polynomial{total,deg1+deg2+1};
+    const Polynomial* newp=polynomial_no_check(total,deg1+deg2+1);
 
     delete[] total;
 
@@ -127,7 +171,7 @@ const Ring* Polynomial::minusImpl(const Ring* r) const{
     }
 #endif
 
-    const R *add1, *add2; //Just redirect the coefficients of this and other to these two pointers, no need to del
+    const RF *add1, *add2; //Just redirect the coefficients of this and other to these two pointers, no need to del
     int len1, len2;
 
     if(length>=other->length){
@@ -142,7 +186,7 @@ const Ring* Polynomial::minusImpl(const Ring* r) const{
         len2=length;
     }
 
-    R* minus_result=new R[len1];
+    RF* minus_result=new RF[len1];
     for(int i=0;i<len2;++i){
         minus_result[i]=add1[i]-add2[i];
     }
@@ -150,7 +194,7 @@ const Ring* Polynomial::minusImpl(const Ring* r) const{
         minus_result[i]=add1[i];
     }
 
-    const Polynomial* newp=new Polynomial{minus_result,len1};
+    const Polynomial* newp=polynomial_no_check(minus_result,len1);
 
     delete[] minus_result;
 
@@ -171,16 +215,20 @@ const Ring* Polynomial::remainderImpl(const Ring* r) const {
     return rem;
 }
 
-const Polynomial* Polynomial::multiply_const(const R& mult, int degree) const{
+const Polynomial* Polynomial::multiply_const(const RF& mult, int degree) const{
     Polynomial *n=new Polynomial{}; //No need to check and promote, just copy
     n->length=length+degree;
-    n->coeff=R::array_copy(coeff,length,degree);
+    n->coeff=RF::array_copy(coeff,length,degree);
     n->type->set_sub_type(&(type->get_sub_type()));
     n->display_terms=display_terms;
 
     for(int i=0;i<length+degree;i++){
-        R& elem=(n->coeff)[i];
-        elem = mult*elem;
+        RF& elem=(n->coeff)[i];
+        if(elem.is_zero()){
+            elem= mult.promote(R::ZERO);
+        }else{
+            elem = mult*elem;
+        }
     }
 
     return n;
@@ -250,12 +298,12 @@ const Ring* Polynomial::invert() const{
 const Polynomial* Polynomial::negate() const{
     Polynomial *n=new Polynomial{}; //No need to check and promote, just copy
     n->length=length;
-    n->coeff=R::array_copy(coeff,length);
+    n->coeff=RF::array_copy(coeff,length,0);
     n->type->set_sub_type(&(type->get_sub_type()));
     n->display_terms=display_terms;
 
     for(int i=0;i<length;i++){
-        R& elem=(n->coeff)[i];
+        RF& elem=(n->coeff)[i];
         elem = -elem;
     }
 
@@ -265,7 +313,7 @@ const Polynomial* Polynomial::negate() const{
 const Polynomial* Polynomial::copy() const{
     Polynomial *n=new Polynomial{}; //No need to check and promote, just copy
     n->length=length;
-    n->coeff=R::array_copy(coeff,length);
+    n->coeff=RF::array_copy(coeff,length,0);
     n->type->set_sub_type(&(type->get_sub_type()));
     n->display_terms=display_terms;
     return n;
@@ -501,6 +549,6 @@ int Polynomial::get_degree_no0check() const{
     return length-1;
 }
 
-const R& Polynomial::get_leading_coefficient() const{
+const RF& Polynomial::get_leading_coefficient() const{
     return coeff[length-1];
 }

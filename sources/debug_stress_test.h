@@ -378,6 +378,90 @@ void test_fraction_polynomial_ops(){
     cout << "fraction polynomial ops test: "<<divnum<<" "<<strictdivnum<<"\n";
 }
 
+void gen_poly_complex(R& a, R& b){
+    int alen=small(rng);
+    int blen=small(rng);
+    R* acoeff=new R[alen];
+
+    for(int j=0;j<alen;j++){
+        acoeff[j]=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
+    }
+
+    a=new Polynomial{acoeff,alen};
+    delete[] acoeff;
+
+    while(b.is_zero()){
+
+        R* bcoeff=new R[blen];
+
+        for(int j=0;j<blen;j++){
+            bcoeff[j]=new Fraction{new LongComplex{values(rng),values(rng)},new Long{non_zero_value()}};
+        }
+
+        b=new Polynomial{bcoeff,blen};
+        delete[] bcoeff;
+    }
+}
+
+void test_fraction_complex_polynomial_ops(){
+    int divnum=0;
+    int strictdivnum=0;
+    for(int i=0;i<500;++i){
+
+        R py1,py2;
+
+        gen_poly(py1,py2);
+
+        R a=new Fraction{py1,py2};
+
+        gen_poly_complex(py1,py2);
+
+        R b=new Fraction{py1,py2};
+
+        R c=a+b;
+        R d=a*b;
+        if(!c.exactly_equals(a+b)){
+            report_error(a,b);
+        }
+
+        if(!d.exactly_equals(a*b)){
+            report_error(a,b);
+        }
+
+        if(!c.exactly_equals(a+b)){
+            report_error(a,b);
+        }
+
+        if(!d.exactly_equals(a*b)){
+            report_error(a,b);
+        }
+
+        if(!b.is_zero()){
+            divnum++;
+
+            R e=a/b;
+            R f=a%b;
+
+            if(!e.exactly_equals(a/b)){
+                report_error(a,b);
+            }
+
+            if(!f.exactly_equals(a%b)){
+                report_error(a,b);
+            }
+
+            if(!a.exactly_equals( (a/b)*b + a%b )){
+                report_error(a,b);
+            }
+
+            if(!e.is_zero()){
+                strictdivnum++;
+            }
+        }
+    }
+    cout << "fraction polynomial ops test: "<<divnum<<" "<<strictdivnum<<"\n";
+}
+
 void run_test(){
     while(true){
         cout << "input an integer to choose action:\n";
@@ -387,9 +471,11 @@ void run_test(){
         cout << "4 - test_complex_fraction_ops\n";
         cout << "5 - test_complex_polynomial_ops\n";
         cout << "6 - test_fraction_polynomial_ops\n";
+        cout << "7 - test_fraction_complex_polynomial_ops\n";
         cout << "Enter other values to exit:  ";
         int i;
-        cin >> i;
+        i=7;
+        
 
         switch(i){
         case 1:
@@ -409,6 +495,9 @@ void run_test(){
             break;
         case 6:
             test_fraction_polynomial_ops();
+            break;
+        case 7:
+            test_fraction_complex_polynomial_ops();
             break;
         default:
             return;

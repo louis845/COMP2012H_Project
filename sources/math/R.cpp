@@ -38,6 +38,9 @@ R::R(R&& move_from){
 }
 
 R& R::operator=(const R& copy_from){
+    if(this==&copy_from){
+        return *this;
+    }
     delete impl;
     impl=copy_from.impl->copy();
     return *this;
@@ -464,6 +467,149 @@ R* R::array_copy(R* const& arr, int len){
 
 R* R::array_copy(R* const& arr, int len, int shift){
     R* newarr = new R[len+shift];
+    for(int i=0;i<len;i++){
+        newarr[i+shift]=arr[i];
+    }
+    return newarr;
+}
+
+
+/**
+ * Destructor, copy constructor, etc.
+*/
+
+RF::RF(const R& copy_from) : R{copy_from}{
+    //calls super copy constructor
+}
+
+RF::RF(const RF& copy_from) : R{copy_from}{
+    //calls super copy constructor
+}
+
+RF::RF(RF&& move_from) : R{}{
+    //calls default super constructor first, so we need to delete impl, as it is assigned to be zero.
+    delete impl;
+    impl=move_from.impl;
+    move_from.impl=nullptr;
+}
+
+RF::RF(const Ring* r) : R{r}{
+
+}
+
+RF::RF() : R{} {
+
+}
+
+RF& RF::operator=(const R& copy_from){
+    if(this==&copy_from){
+        return *this;
+    }
+    delete impl;
+    impl=copy_from.impl->copy();
+    return *this;
+}
+
+RF& RF::operator=(R&& move_from){
+    delete impl;
+    impl=move_from.impl;
+    move_from.impl=nullptr;
+    return *this;
+}
+
+RF& RF::operator=(const RF& copy_from){
+    if(this==&copy_from){
+        return *this;
+    }
+    delete impl;
+    impl=copy_from.impl->copy();
+    return *this;
+}
+
+RF& RF::operator=(RF&& move_from){
+    delete impl;
+    impl=move_from.impl;
+    move_from.impl=nullptr;
+    return *this;
+}
+
+
+/**
+ * Fast R operators, do not perform type checking/promotion
+*/
+
+R RF::operator+(const R& other) const{
+    return R{impl->addImpl(other.impl)};
+}
+
+R RF::operator-(const R& other) const{
+    return R{impl->minusImpl(other.impl)};
+}
+
+R RF::operator-() const{
+    return R::operator-();
+}
+
+R RF::operator*(const R& other) const{
+    return R{impl->multImpl(other.impl)};
+}
+
+R RF::operator/(const R& other) const{
+    return R{impl->divImpl(other.impl)};
+}
+
+R RF::operator%(const R& other) const{
+    return R{impl->remainderImpl(other.impl)};
+}
+
+void RF::quotAndRemainder(const R& div, R& quot, R& rem) const{
+    const Ring *q, *r;
+    impl->quotAndRemainder(div.impl, q, r);
+
+    quot=R{q};
+    rem=R{r};
+}
+
+bool RF::operator<=(const R& other) const{
+    int compare=impl->euclideanFuncCompare(other.impl);
+    
+    return compare<=0;
+}
+
+bool RF::operator<(const R& other) const{
+    int compare=impl->euclideanFuncCompare(other.impl);
+
+    return compare<0;
+}
+
+bool RF::operator>(const R& other) const{
+    int compare=impl->euclideanFuncCompare(other.impl);
+
+    return compare>0;
+}
+
+bool RF::operator>=(const R& other) const{
+    int compare=impl->euclideanFuncCompare(other.impl);
+
+    return compare>=0;
+}
+
+bool RF::operator==(const R& other) const{
+    int compare=impl->euclideanFuncCompare(other.impl);
+
+    return compare==0;
+}
+
+bool RF::exactly_equals(const R& other) const{
+    return impl->equalsImpl(other.impl);
+}
+
+int RF::euclidean_func_compare(const R& other) const{
+    return impl->euclideanFuncCompare(other.impl);
+}
+
+RF* RF::array_copy(const RF* const& arr, int len, int shift){
+    RF* newarr = new RF[len+shift];
     for(int i=0;i<len;i++){
         newarr[i+shift]=arr[i];
     }

@@ -19,6 +19,25 @@ R gcd(R a,R b){
     return b;
 }
 
+RF gcd_fast(RF a,RF b){
+    if(b>a){
+        RF temp=a;
+        a=b;
+        b=temp;
+    }
+    if(b.is_zero()){
+        return a;
+    }
+    //The euclidean function of a is larger than or equal to b here.
+    RF remainder = a % b;
+    while(!remainder.is_zero()){
+        a=b;
+        b=remainder;
+        remainder=a % b;
+    }
+    return b;
+}
+
 long long gcd(long long a,long long b){
     a=abs(a);
     b=abs(b);
