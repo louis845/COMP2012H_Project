@@ -96,7 +96,6 @@ class Ring{
 private:
     int* RING_DEBUG_NUM_CREATE; //Keeps track of the number of R (wrapper) this ring resides in.
 #endif
-    int USELESS_MEMORY[1048576];
 public:
     virtual ~Ring();
     /**
