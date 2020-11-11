@@ -53,13 +53,13 @@ private:
 
     QByteArray Img2Base64(QString img_path) const;
     QNetworkRequest InitRequest() const;
-    QJsonObject InitJson(QByteArray img_base64, bool using_latex) const;
-    QString ParseJson(QByteArray response) const;
-    void Post(const string& img_path, const bool& using_latex);
+    QJsonObject InitJson(QByteArray img_base64) const;
+    pair<string, string> ParseJson(QByteArray response) const;
+    void Post(const string& img_path);
 
     string app_key{""};
     string app_id{""};
-    string result{""};
+    pair<string, string> result{"", ""};
     // int status_code = 200;
     // QNetworkAccessManager network_mgr;
 };
