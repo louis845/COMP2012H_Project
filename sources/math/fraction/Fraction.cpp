@@ -55,6 +55,11 @@ Fraction::~Fraction(){
 
 const Ring* Fraction::addImpl(const Ring* r) const{
     const Fraction* f=dynamic_cast<const Fraction*>(r);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     R &this_over=*over, &this_under=*under, &f_over=*(f->over), &f_under=*(f->under);
 
@@ -65,6 +70,11 @@ const Ring* Fraction::addImpl(const Ring* r) const{
 
 const Ring* Fraction::multImpl(const Ring* r) const{
     const Fraction* f=dynamic_cast<const Fraction*>(r);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     R &this_over=*over, &this_under=*under, &f_over=*(f->over), &f_under=*(f->under);
 
@@ -75,6 +85,11 @@ const Ring* Fraction::multImpl(const Ring* r) const{
 
 const Ring* Fraction::minusImpl(const Ring* r) const{
     const Fraction* f=dynamic_cast<const Fraction*>(r);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     R &this_over=*over, &this_under=*under, &f_over=*(f->over), &f_under=*(f->under);
 
@@ -85,6 +100,11 @@ const Ring* Fraction::minusImpl(const Ring* r) const{
 
 const Field* Fraction::divImpl(const Ring* r) const{
     const Fraction* f=dynamic_cast<const Fraction*>(r);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     R &this_over=*over, &this_under=*under, &f_over=*(f->over), &f_under=*(f->under);
 
@@ -119,6 +139,11 @@ const Fraction* Fraction::copy() const{
 
 bool Fraction::equalsImpl(const Ring* other) const{
     const Fraction* f=dynamic_cast<const Fraction*>(other);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     R &this_over=*over, &this_under=*under, &f_over=*(f->over), &f_under=*(f->under);
 
@@ -220,6 +245,11 @@ const Ring* Fraction::promote(const Ring* const& r) const{
 
     //the type of r is still a fraction, with both this and r having the same numerator and denominator type
     const Fraction* f=dynamic_cast<const Fraction*>(r);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     const R nover=el.promote(*f->over);
     const R nunder=el.promote(*f->under);

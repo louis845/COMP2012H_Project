@@ -9,14 +9,10 @@
 /**
  * Wrapper class for Rings. Use this class for computation (operators + - * / % etc).
 */
-class R final{
+class R{
 private:
     const Ring* impl;
 public:
-    /**
-     * This function is used internally by implementations of fields/rings etc.. 
-    */
-    const Ring* get_impl() const;
     /**
      * ONE and ZERO. They are not necessarily unique, some other functions may create other ZeroElmt hence R with R.impl=ZeroElmt.
      * Notice the pointer is INTENDED to not be deallocated throughout the whole program execution. DO NOT use impl0 to create a new R,
@@ -54,64 +50,69 @@ public:
     /**
      * Destructor and copy/move constr/assignment, which handles the pointer accordingly.
     */
-    ~R();
+    virtual ~R();
 
     R(const R&);
 
-    R& operator= (const R&);
+    virtual R& operator= (const R&);
 
     R(R&&);
     
-    R& operator= (R&&);
+    virtual R& operator= (R&&);
 
     //Usual binary operations. Implemented by impl->addImpl etc.
-    R operator+ (const R&) const;
+    virtual R operator+ (const R&) const;
 
-    R operator- (const R&) const;
+    virtual R operator- (const R&) const;
 
-    R operator* (const R&) const;
+    virtual R operator* (const R&) const;
 
-    R operator/ (const R&) const;
+    virtual R operator/ (const R&) const;
 
-    R operator% (const R&) const;
+    virtual R operator% (const R&) const;
+
+    /**
+     * Finds both the quotient and remainder of this/div.
+    */
+    void quotAndRemainder(const R& div, R& quot,R& rem) const;
 
     /**
      * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
      * For integers this compares the absolute value, and for polynomials this compares the degree, etc
     */
-    bool operator> (const R&) const;
+    virtual bool operator> (const R&) const;
 
     /**
      * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
      * For integers this compares the absolute value, and for polynomials this compares the degree, etc
     */
-    bool operator< (const R&) const;
+    virtual bool operator< (const R&) const;
 
     /**
      * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
      * For integers this compares the absolute value, and for polynomials this compares the degree, etc
     */
-    bool operator>= (const R&) const;
+    virtual bool operator>= (const R&) const;
 
     /**
      * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
      * For integers this compares the absolute value, and for polynomials this compares the degree, etc
     */
-    bool operator<= (const R&) const;
+    virtual bool operator<= (const R&) const;
 
     /**
      * Comparsion operator for the Euclidean functions of the values. This DOES NOT function like the usual comparison operator for integer types!
      * For integers this compares the absolute value, and for polynomials this compares the degree, etc. Notice that -1 == 1 since their absolute
      * value are same. Use exactly_equals for an exact comparison (see exactly_equals).
     */
-    bool operator== (const R&) const;
+    virtual bool operator== (const R&) const;
 
     /**
      * Tests if the values are exactly equal. Note that in Double some tolerance may be needed.
     */
-    bool exactly_equals(const R&) const;
+    virtual bool exactly_equals(const R&) const;
 
-    int euclidean_func_compare(const R&) const;
+    virtual int euclidean_func_compare(const R&) const;
 
     bool is_zero() const;
 
@@ -169,11 +170,6 @@ public:
      * Splits the element into a product this*unit=morph, where unit is invertible.
     */
     void split(R& morph, R& unit) const;
-
-    /**
-     * Finds both the quotient and remainder of this/div.
-    */
-    void quotAndRemainder(const R& div, R& quot,R& rem) const;
 };
 
 /**

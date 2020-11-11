@@ -2,29 +2,56 @@
 #include <string>
 #include <cmath>
 
-Long::Long(long long val) : Ring(RingType::LONG), val(val){}
+Long::Long(PRIMITIVE_LONG_TYPE val) : Ring(RingType::LONG), val(val){}
 
 const Ring* Long::addImpl(const Ring* r) const{
-    return new Long{val+(dynamic_cast<const Long*>(r)->val)};
+    const Long* l=dynamic_cast<const Long*>(r);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Long{val+(l->val)};
 }
 
 const Ring* Long::multImpl(const Ring* r) const{
-    return new Long{val*(dynamic_cast<const Long*>(r)->val)};
+    const Long* l=dynamic_cast<const Long*>(r);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Long{val*(l->val)};
 }
 
 const Ring* Long::minusImpl(const Ring* r) const{
-    return new Long{val-(dynamic_cast<const Long*>(r)->val)};
+    const Long* l=dynamic_cast<const Long*>(r);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Long{val-(l->val)};
 }
 
 const Ring* Long::divImpl(const Ring* r) const{
     const Long* l=dynamic_cast<const Long*>(r);
-    cout<<val<<" "<<l->val<<"\n";
-    return new Long{val/l->val};
-    //return new Long{val/(dynamic_cast<const Long*>(r)->val)};
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Long{val/(l->val)};
 }
 
 const Ring* Long::remainderImpl(const Ring* r) const {
-    return new Long{val%(dynamic_cast<const Long*>(r)->val)};
+    const Long* l=dynamic_cast<const Long*>(r);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Long{val%(l->val)};
 }
 
 const Ring* Long::invert() const{
@@ -40,38 +67,48 @@ const Long* Long::copy() const{
 }
 
 int Long::euclideanFuncCompare(const Ring* other) const{
-    long long otherval=std::abs( dynamic_cast<const Long*>(other)->val );
+    const Long* l=dynamic_cast<const Long*>(other);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    PRIMITIVE_LONG_TYPE otherval=abs( l->val );
 
-    long long thisval=std::abs(val);
+    PRIMITIVE_LONG_TYPE thisval=abs(val);
     return thisval==otherval? 0 : ( thisval<otherval? -1 : 1 );
 }
 
 bool Long::equalsImpl(const Ring* other) const{
-    // short circuit for the second condition, or else the cast would be invalid.
-    return (other->type_shallow==RingType::SPECIAL_ZERO && val==0) ||
-     (other->type_shallow!=RingType::SPECIAL_ZERO && val==(dynamic_cast<const Long*>(other))->val);
+    const Long* l=dynamic_cast<const Long*>(other);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return val==l->val;
 }
 
 string Long::to_string() const{
-    return std::to_string(val);
+    return CONVERT_TO_STRING(val);
 }
 
 string Long::to_signed_string() const{
     if(val>=0){
-        return "+"+std::to_string(val);
+        return "+"+CONVERT_TO_STRING(val);
     }
-    return std::to_string(val);
+    return CONVERT_TO_STRING(val);
 }
 
 string Long::to_latex() const{
-    return std::to_string(val);
+    return CONVERT_TO_STRING(val);
 }
 
 string Long::to_signed_latex() const{
     if(val>=0){
-        return "+"+std::to_string(val);
+        return "+"+CONVERT_TO_STRING(val);
     }
-    return std::to_string(val);
+    return CONVERT_TO_STRING(val);
 }
 
 /**
@@ -81,7 +118,13 @@ const Long* Long::promote(const Ring* const& r) const{
     if(r->type_shallow==RingType::SPECIAL_ZERO){
         return new Long{0};
     }
-    return dynamic_cast<const Long*>(r)->copy();
+    const Long* l=dynamic_cast<const Long*>(r);
+#if DEBUG_MODE
+    if(l==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return l->copy();
 }
 
 const Long* Long::promote_one() const{

@@ -1,7 +1,8 @@
 CC = g++ -std=c++11
 
-HEADER_ROOT_DIRECTORY = -iquote ${CURDIR}
+HEADER_ROOT_DIRECTORY = -iquote ${CURDIR} -I ../libraries/gmp-6.2.0
 OUTPUT_DIRECTORY = ${CURDIR}/../compile/
+LIBRARIES = -L ${CURDIR}/../libraries/
 
 SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp 
 
@@ -10,7 +11,7 @@ DEBUG = -g
 
 
 link: main.o Ring.o R.o Field.o Double.o Long.o Fraction.o LongComplex.o Polynomial.o tools.o
-	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(OUTPUT_DIRECTORY)*.o
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(LIBRARIES) $(OUTPUT_DIRECTORY)*.o -lgmpxx -lgmp
 
 main.o: main.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)main.o $(HEADER_ROOT_DIRECTORY) -c main.cpp

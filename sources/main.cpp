@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <gmpxx.h>
 #include "math/long/Long.h"
 #include "math/long/LongComplex.h"
 #include "math/fraction/Fraction.h"
@@ -17,48 +18,29 @@ using namespace std;
 
 class test{
 public:
-    int* val;
+    mpz_class val;
 
     test(){
-        val=new int{2};
+        val="5874395794287504836703472847695376053";
+    }
+
+    test(const test& t){
+        cout<<"test copy\n";
+    }
+
+    test(test&& t){
+        cout<<"test move\n";
     }
 
     ~test(){
-        delete val;
+        
     }
+
+    virtual test copy();
 };
 
-void test2(const test* const& t){
-
-}
-
 int main(){
-    R c1[]={
-        R{new Fraction{new Long{-7},new Long{9}}},
-        R{new Fraction{new Long{7},new Long{8}}},
-        R{new Fraction{new Long{35},new Long{3}}}
-    };
-    R c2[]={
-        R{new Fraction{new Long{14},new Long{1}}},
-        R{new Fraction{new Long{14},new Long{5}}},
-        R{new Fraction{new Long{1},new Long{1}}}
-    };
-    R c3[]={
-        R{new Fraction{new Long{-7},new Long{3}}},
-        R{new Fraction{new Long{56},new Long{3}}},
-    };
-    R c4[]={
-        R{new Fraction{new Long{14},new Long{1}}},
-        R{new Fraction{new Long{14},new Long{5}}},
-        R{new Fraction{new Long{1},new Long{1}}}
-    };
-    R f1=new Fraction{new Polynomial{c1,3},new Polynomial{c2,3}};
-    R f2=new Fraction{new Polynomial{c3,2},new Polynomial{c4,3}};
-    cout<<f1<<"\n";
-    cout<<f2<<"\n";
-
-    cout<<f1*f2<<"\n";
-
+    
     run_test();
     return 0;
 }
