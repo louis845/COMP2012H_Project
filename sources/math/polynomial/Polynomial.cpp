@@ -37,7 +37,7 @@ Polynomial::Polynomial(const R* const &coefficient, int length) : Ring(RingType:
         //All coefficients given are zero.
         coeff=new R[1]{R{largest_type.promote(R::ZERO)}}; //Promote the ZERO element to match the given type.
         this->length=1;
-        type->set_sub_type_no_copy(new NestedRingType{RingType::SPECIAL_ZERO});
+        type->set_sub_type(& (largest_type.get_type()) );
         display_terms=1;
     }else{
         coeff=new R[degree+1];
@@ -56,6 +56,11 @@ Polynomial::~Polynomial(){
 
 const Ring* Polynomial::addImpl(const Ring* r) const{
     const Polynomial *other=dynamic_cast<const Polynomial*>(r);
+#if DEBUG_MODE
+    if(other==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     const R *add1, *add2; //Just redirect the coefficients of this and other to these two pointers, no need to del
     int len1, len2;
@@ -89,6 +94,11 @@ const Ring* Polynomial::addImpl(const Ring* r) const{
 
 const Ring* Polynomial::multImpl(const Ring* r) const{
     const Polynomial *other=dynamic_cast<const Polynomial*>(r);
+#if DEBUG_MODE
+    if(other==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     const R* const &c1=coeff;
     const R* const &c2=other->coeff; //Just redirect the coefficients of this and other to these two pointers, no need to del
@@ -111,6 +121,11 @@ const Ring* Polynomial::multImpl(const Ring* r) const{
 
 const Ring* Polynomial::minusImpl(const Ring* r) const{
     const Polynomial *other=dynamic_cast<const Polynomial*>(r);
+#if DEBUG_MODE
+    if(other==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     const R *add1, *add2; //Just redirect the coefficients of this and other to these two pointers, no need to del
     int len1, len2;
@@ -176,6 +191,11 @@ const Polynomial* Polynomial::multiply_const(const R& mult, int degree) const{
 */
 void Polynomial::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*& rem) const{
     const Polynomial* div=dynamic_cast<const Polynomial*>(r);
+#if DEBUG_MODE
+    if(div==nullptr){
+        throw "invalid cast!";
+    }
+#endif
     if(div->is_zero()){
         throw "Divide by zero!";
     }
@@ -199,6 +219,11 @@ void Polynomial::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*&
         const Polynomial* multiply=div->multiply_const(mult,remainder->get_degree_no0check()-div->get_degree_no0check());
 
         const Polynomial* temp = dynamic_cast<const Polynomial*>(remainder->minusImpl(multiply)); //temp = remainder - [ mult*t^(degree difference) ]*div
+        #if DEBUG_MODE
+            if(temp==nullptr){
+                throw "invalid cast!";
+            }
+        #endif
 
         delete remainder; //avoid mem leak
         delete multiply;
@@ -248,6 +273,11 @@ const Polynomial* Polynomial::copy() const{
 
 int Polynomial::euclideanFuncCompare(const Ring* other) const{
     const Polynomial *py=dynamic_cast<const Polynomial*>(other);
+#if DEBUG_MODE
+    if(py==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     int otherval=py->get_degree();
     int thisval=get_degree();
@@ -256,6 +286,11 @@ int Polynomial::euclideanFuncCompare(const Ring* other) const{
 
 bool Polynomial::equalsImpl(const Ring* other) const{
     const Polynomial *py=dynamic_cast<const Polynomial*>(other);
+#if DEBUG_MODE
+    if(py==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
     if(get_degree()!=py->get_degree()){
         return false;
@@ -404,6 +439,11 @@ const Ring* Polynomial::promote(const Ring* const& r) const{
 
     //the type of r is still a polynomial, with both this and r having the same coefficient type
     const Polynomial* py=dynamic_cast<const Polynomial*>(r);
+#if DEBUG_MODE
+    if(py==nullptr){
+        throw "invalid cast!";
+    }
+#endif
     R* ncoeff=new R[py->length];
     
     for(int i=0;i<py->length;++i){

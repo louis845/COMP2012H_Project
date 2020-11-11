@@ -4,28 +4,44 @@
 #include <string>
 #include <cmath>
 
-LongComplex::LongComplex(const long long& re, const long long& im) : Ring(RingType::COMPLEXIFY), re(re), im(im){
+LongComplex::LongComplex(const PRIMITIVE_LONG_TYPE &re, const PRIMITIVE_LONG_TYPE &im) : Ring(RingType::COMPLEXIFY), re(re), im(im){
     type->set_sub_type_no_copy(new NestedRingType{RingType::LONG});
 }
 
 const Ring* LongComplex::addImpl(const Ring* r) const{
     const LongComplex* cpx=dynamic_cast<const LongComplex*>(r);
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
     return new LongComplex{re+cpx->re, im+cpx->im};
 }
 
 const Ring* LongComplex::multImpl(const Ring* r) const{
     const LongComplex* cpx=dynamic_cast<const LongComplex*>(r);
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
-    const long long &a=re, &b=im, &c=(cpx->re), &d=(cpx->im); //just for convenience.
+    const PRIMITIVE_LONG_TYPE &a=re, &b=im, &c=(cpx->re), &d=(cpx->im); //just for convenience.
 
-    long long re_new=a*c-b*d;
-    long long im_new=a*d+b*c;
+    PRIMITIVE_LONG_TYPE re_new=a*c-b*d;
+    PRIMITIVE_LONG_TYPE im_new=a*d+b*c;
 
     return new LongComplex{re_new,im_new};
 }
 
 const Ring* LongComplex::minusImpl(const Ring* r) const{
     const LongComplex* cpx=dynamic_cast<const LongComplex*>(r);
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+
     return new LongComplex{re-cpx->re, im-cpx->im};
 }
 
@@ -46,37 +62,42 @@ const Ring* LongComplex::remainderImpl(const Ring* r) const {
 /**
  * Multiplies the complex number (a+bi) by (mulRE+mulIM*i). 
 */
-void helper_multiply(long long& a, long long& b, long long const& mulRE, long long const& mulIM){
-    long long resRE=a*mulRE-b*mulIM;
-    long long resIM=a*mulIM+b*mulRE;
+void helper_multiply(PRIMITIVE_LONG_TYPE& a, PRIMITIVE_LONG_TYPE& b, PRIMITIVE_LONG_TYPE const& mulRE, PRIMITIVE_LONG_TYPE const& mulIM){
+    PRIMITIVE_LONG_TYPE resRE=a*mulRE-b*mulIM;
+    PRIMITIVE_LONG_TYPE resIM=a*mulIM+b*mulRE;
     a=resRE;
     b=resIM;
 }
 
 void LongComplex::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*& remainder) const{
     const LongComplex* cpx=dynamic_cast<const LongComplex*>(r);
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
-    long long a=re, b=im, c=(cpx->re), d=(cpx->im); //just for convenience, (a+bi)/(c+di)
+    PRIMITIVE_LONG_TYPE a=re, b=im, c=(cpx->re), d=(cpx->im); //just for convenience, (a+bi)/(c+di)
 
     if(c==0 && d==0){
         throw "Divide by zero!";
     }
 
-    long long c_factor=gcd(gcd(gcd(a,b),c),d); //Taking common factor of all
+    PRIMITIVE_LONG_TYPE c_factor=gcd(gcd(gcd(a,b),c),d); //Taking common factor of all
 
     a/=c_factor;
     b/=c_factor;
     c/=c_factor;
     d/=c_factor;    //Rescaling, so that it is harder to overflow
 
-    long long mulRE=c;
-    long long mulIM=-d; //Conjugate
+    PRIMITIVE_LONG_TYPE mulRE=c;
+    PRIMITIVE_LONG_TYPE mulIM=-d; //Conjugate
 
     helper_multiply(a,b,mulRE,mulIM);
     helper_multiply(c,d,mulRE,mulIM);
 
-    long long reQuot=a/c, reRem=a%c;
-    long long imQuot=b/c, imRem=b%c;
+    PRIMITIVE_LONG_TYPE reQuot=a/c, reRem=a%c;
+    PRIMITIVE_LONG_TYPE imQuot=b/c, imRem=b%c;
 
     if(reRem>(c/2)){
         ++reQuot;
@@ -103,20 +124,20 @@ void LongComplex::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*
 
 const Ring* LongComplex::invert() const{
 
-    long long a=1, b=0, c=re, d=im; //just for convenience, (a+bi)/(c+di)
+    PRIMITIVE_LONG_TYPE a=1, b=0, c=re, d=im; //just for convenience, (a+bi)/(c+di)
 
     if(c==0 && d==0){
         throw "Divide by zero!";
     }
 
-    long long mulRE=c;
-    long long mulIM=-d; //Conjugate
+    PRIMITIVE_LONG_TYPE mulRE=c;
+    PRIMITIVE_LONG_TYPE mulIM=-d; //Conjugate
 
     helper_multiply(a,b,mulRE,mulIM);
     helper_multiply(c,d,mulRE,mulIM);
 
-    long long reQuot=a/c, reRem=a%c;
-    long long imQuot=b/c, imRem=b%c;
+    PRIMITIVE_LONG_TYPE reQuot=a/c, reRem=a%c;
+    PRIMITIVE_LONG_TYPE imQuot=b/c, imRem=b%c;
 
     if(reRem>(c/2)){
         ++reQuot;
@@ -143,26 +164,37 @@ const LongComplex* LongComplex::copy() const{
 
 int LongComplex::euclideanFuncCompare(const Ring* other) const{
     const LongComplex* cpx=dynamic_cast<const LongComplex*>(other);
-    const long long &a=re, &b=im, &c=(cpx->re), &d=(cpx->im); //just for convenience.
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
 
-    long long otherval=c*c+d*d;
+    const PRIMITIVE_LONG_TYPE &a=re, &b=im, &c=(cpx->re), &d=(cpx->im); //just for convenience.
 
-    long long thisval=a*a+b*b;
+    PRIMITIVE_LONG_TYPE otherval=c*c+d*d;
+
+    PRIMITIVE_LONG_TYPE thisval=a*a+b*b;
     return thisval==otherval? 0 : ( thisval<otherval? -1 : 1 );
 }
 
 bool LongComplex::equalsImpl(const Ring* other) const{
     const LongComplex* cpx=dynamic_cast<const LongComplex*>(other);
-    const long long &a=re, &b=im, &c=(cpx->re), &d=(cpx->im); //just for convenience.
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    const PRIMITIVE_LONG_TYPE &a=re, &b=im, &c=(cpx->re), &d=(cpx->im); //just for convenience.
 
     return a==c && b==d;
 }
 
-string to_string_signed(const long long& val){
+string to_string_signed(const PRIMITIVE_LONG_TYPE& val){
     if(val>=0){
-        return "+"+std::to_string(val);
+        return "+"+CONVERT_TO_STRING(val);
     }
-    return std::to_string(val);
+    return CONVERT_TO_STRING(val);
 }
 
 string LongComplex::to_string() const{
@@ -172,15 +204,15 @@ string LongComplex::to_string() const{
     if(re!=0 && im!=0){
         //Non-zero real and imaginary
         if(im==1){
-            return std::to_string(re)+"+i";
+            return CONVERT_TO_STRING(re)+"+i";
         }else if(im==-1){
-            return std::to_string(re)+"-i";
+            return CONVERT_TO_STRING(re)+"-i";
         }
-        return std::to_string(re)+to_string_signed(im)+"i";
+        return CONVERT_TO_STRING(re)+to_string_signed(im)+"i";
     }
     if(re!=0){
         //Non-zero real, zero imaginary
-        return std::to_string(re);
+        return CONVERT_TO_STRING(re);
     }
 
     if(im==1){
@@ -189,7 +221,7 @@ string LongComplex::to_string() const{
         return "-i";
     }
 
-    return std::to_string(im)+"i";
+    return CONVERT_TO_STRING(im)+"i";
 }
 
 string LongComplex::to_signed_string() const{
@@ -244,9 +276,20 @@ const LongComplex* LongComplex::promote(const Ring* const& r) const{
     }
     if(r->type_shallow==RingType::LONG){
         const Long* lo=dynamic_cast<const Long*>(r);
+#if DEBUG_MODE
+        if(lo==nullptr){
+            throw "invalid cast!";
+        }
+#endif
         return new LongComplex{lo->val,0};
     }
-    return dynamic_cast<const LongComplex*>(r)->copy();
+    const LongComplex* cpx=dynamic_cast<const LongComplex*>(r);
+#if DEBUG_MODE
+    if(cpx==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return cpx->copy();
 }
 
 const LongComplex* LongComplex::promote_one() const{

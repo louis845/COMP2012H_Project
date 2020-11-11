@@ -43,7 +43,7 @@ void non_zero_value(int &a,int &b){
 void test_complex_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1000;++i){
+    for(int i=0;i<500;++i){
         R a=new LongComplex{values(rng),values(rng)};
         R b=new LongComplex{values(rng),values(rng)};
 
@@ -86,7 +86,7 @@ void test_complex_ops(){
 void test_fraction_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1000;++i){
+    for(int i=0;i<500;++i){
         R a=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
         R b=new Fraction{new Long{values(rng)},new Long{non_zero_value()}};
 
@@ -129,7 +129,7 @@ void test_fraction_ops(){
 void test_polynomial_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<100;++i){
+    for(int i=0;i<500;++i){
 
         int alen=length(rng);
         int blen=length(rng);
@@ -189,7 +189,7 @@ void test_polynomial_ops(){
 void test_complex_fraction_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1000;++i){
+    for(int i=0;i<500;++i){
         R a=new Fraction{new LongComplex{values(rng),values(rng)},new Long{non_zero_value()}};
         int val1,val2;
         non_zero_value(val1,val2);
@@ -234,8 +234,8 @@ void test_complex_fraction_ops(){
 void test_complex_polynomial_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<1;++i){
-
+    for(int i=0;i<500;++i){
+        
         int alen=length(rng);
         int blen=length(rng);
         R* acoeff=new R[alen];
@@ -259,6 +259,7 @@ void test_complex_polynomial_ops(){
 
         R c=a+b;
         R d=a*b;
+        
         if(!c.exactly_equals(a+b)){
             report_error(a,b);
         }
@@ -269,8 +270,6 @@ void test_complex_polynomial_ops(){
 
         if(!b.is_zero()){
             divnum++;
-            cout<<a<<"\n";
-            cout<<b<<"\n";
             R e=a/b;
             R f=a%b;
 
@@ -282,7 +281,7 @@ void test_complex_polynomial_ops(){
                 report_error(a,b);
             }
             R expr=(a/b)*b + a%b;
-            cout<<"eeee"<<"\n";
+
             if(!a.exactly_equals(expr)){
                 report_error(a,b);
             }
@@ -323,7 +322,7 @@ void gen_poly(R& a, R& b){
 void test_fraction_polynomial_ops(){
     int divnum=0;
     int strictdivnum=0;
-    for(int i=0;i<4;++i){
+    for(int i=0;i<500;++i){
 
         R py1,py2;
 
@@ -336,10 +335,6 @@ void test_fraction_polynomial_ops(){
         R b=new Fraction{py1,py2};
 
         R c=a+b;
-        if(i==3){
-                cout<<a<<"\n";
-                cout<<b<<"\n";
-            }
         R d=a*b;
         if(!c.exactly_equals(a+b)){
             report_error(a,b);
