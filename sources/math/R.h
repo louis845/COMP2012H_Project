@@ -36,7 +36,7 @@ public:
     /**
      * Creates a ring wrapper to point to zero.
     */
-    R();
+    explicit R();
 
     /**
      * Creates an ring wrapper, given a preallocated pointer to a ring implementation class. DO NOT
@@ -45,7 +45,7 @@ public:
      * new dynamically allocated value, and it will directly be used internally in R. So there is no need to
      * delete the given pointer.
     */
-    R(const Ring*);
+    explicit R(const Ring*);
 
     /**
      * Destructor and copy/move constr/assignment, which handles the pointer accordingly.
@@ -188,8 +188,8 @@ public:
      * DANGER - the default constructor sets the value to zero, with type SPECIAL_ZERO. Set the value to other types before 
      * doing operations with other RFs. The default constructor is here for the initializing arrays (e.g. new RF[]).
     */
-    RF();
-    RF(const Ring* r);
+    explicit RF();
+    explicit RF(const Ring* r);
     RF(const R&);
     RF(const RF&);
     RF(RF&&);

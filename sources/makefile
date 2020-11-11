@@ -10,11 +10,14 @@ SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp
 DEBUG = -g
 
 
-link: main.o Ring.o R.o Field.o Double.o Long.o Fraction.o LongComplex.o Polynomial.o tools.o
-	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(LIBRARIES) $(OUTPUT_DIRECTORY)*.o -lgmpxx -lgmp
+link: main.o console.o Ring.o R.o Field.o Double.o Long.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Steps.o History.o tools.o
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(LIBRARIES) $(OUTPUT_DIRECTORY)/*.o -lgmpxx -lgmp
 
 main.o: main.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)main.o $(HEADER_ROOT_DIRECTORY) -c main.cpp
+
+console.o: console.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)console.o $(HEADER_ROOT_DIRECTORY) -c console.cpp
 
 Ring.o: math/Ring.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Ring.o $(HEADER_ROOT_DIRECTORY) -c math/Ring.cpp
@@ -39,6 +42,18 @@ Fraction.o: math/fraction/Fraction.cpp
 
 Polynomial.o: math/polynomial/Polynomial.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Polynomial.o $(HEADER_ROOT_DIRECTORY) -c math/polynomial/Polynomial.cpp
+
+Linear.o: math/linear/LinearOperations.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Linear.o $(HEADER_ROOT_DIRECTORY) -c math/linear/LinearOperations.cpp
+
+Linear2.o: math/linear/LinOpsSteps.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Linear2.o $(HEADER_ROOT_DIRECTORY) -c math/linear/LinOpsSteps.cpp
+
+Steps.o: steps/Step.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Steps.o $(HEADER_ROOT_DIRECTORY) -c steps/Step.cpp
+
+History.o: steps/StepsHistory.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)History.o $(HEADER_ROOT_DIRECTORY) -c steps/StepsHistory.cpp
 
 tools.o: math/tools.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)tools.o $(HEADER_ROOT_DIRECTORY) -c math/tools.cpp
