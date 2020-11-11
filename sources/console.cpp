@@ -61,7 +61,7 @@ void console_linear_operations(){
 
         StepsHistory steps;
         LinOpsRecorder rc{&steps, mat, rows, cols};
-        LinearOperations o{mat, rows, cols, true, &rc};
+        LinearOperations o{mat, rows, cols, false, &rc};
 
         o.toRREF();
 
