@@ -1,5 +1,7 @@
 #include "tools.h"
 
+using namespace std;
+
 R gcd(R a,R b){
     if(b>a){
         R temp=a;
@@ -57,4 +59,15 @@ long long gcd(long long a,long long b){
         remainder=a % b;
     }
     return b;
+}
+
+MathFormulaTree::MathFormulaTree(string formula,char oper){
+    this->formula=formula;
+    left=right=nullptr;
+    this->oper=oper;
+}
+
+MathFormulaTree::~MathFormulaTree(){
+    delete left;
+    delete right;
 }
