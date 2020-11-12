@@ -484,6 +484,23 @@ R R::complexify() const{
     return R{impl->complexify()};
 }
 
+bool R::complexify_if_needed(R& a, R& b){
+    if(a.is_type_compatible(b)){
+        return true;
+    }
+    R cpx=a.complexify();
+    if(cpx.is_type_compatible(b)){
+        a=cpx;
+        return true;
+    }
+    cpx=b.complexify();
+    if(cpx.is_type_compatible(a)){
+        b=cpx;
+        return true;
+    }
+    return false;
+}
+
 
 /**
  * Destructor, copy constructor, etc.

@@ -409,7 +409,7 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
     }
 }
 
-void parse(const string& input,string& err, R& val, int& success){
+void parse_expression(const string& input,string& err, R& val, int& success){
     success=-1;
     char poly_char=-1;
     ensure_basic_char(input, poly_char, err, success);
