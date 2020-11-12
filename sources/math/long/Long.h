@@ -51,6 +51,8 @@ protected:
 
     const Long* promote_one() const override;
 
+    const Ring* complexify() const override;
+
     bool is_one() const override;
 
     bool is_unit() const override;

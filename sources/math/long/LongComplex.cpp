@@ -296,6 +296,10 @@ const LongComplex* LongComplex::promote_one() const{
     return new LongComplex{1,0};
 }
 
+const Ring* LongComplex::complexify() const{
+    return copy();
+}
+
 bool LongComplex::is_one() const{
     return re==1 && im==0;
 }

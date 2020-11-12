@@ -1,4 +1,5 @@
 #include "math/double/Double.h"
+#include "math/double/DoubleComplex.h"
 #include <sstream>
 #include <iomanip>
 
@@ -116,6 +117,10 @@ const Double* Double::promote(const Ring* const& r) const{
 
 const Double* Double::promote_one() const{
     return new Double{1.0};
+}
+
+const Ring* Double::complexify() const{
+    return new DoubleComplex{val,0.0};
 }
 
 bool Double::is_one() const{

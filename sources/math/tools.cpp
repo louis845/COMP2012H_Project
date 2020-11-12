@@ -2,6 +2,7 @@
 #include "math/polynomial/Polynomial.h"
 #include "math/fraction/Fraction.h"
 #include "math/long/LongComplex.h"
+#include "math/double/DoubleComplex.h"
 #include "math/double/Double.h"
 
 using namespace std;
@@ -165,7 +166,7 @@ void simple_parse_cpx(const string& input, string& err, R& val, int& success, co
             return;
         }
         if(complex){
-            val=R{ new Double{d}}; //TODO, double complex not yet impl!
+            val=R{ new DoubleComplex{0.0,d}}; //TODO, double complex not yet impl!
         }else{
             val=R{ new Double{d}};
         }
@@ -291,9 +292,27 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
         }
 
         if(!front.is_type_compatible(back)){
-            success=cutoff;
-            err="Cannot do operation on non compatible types!";
-            return;
+            if(front.get_type().complex() && !back.get_type().complex()){
+                R cpx=back.complexify();
+                if(!front.is_type_compatible(cpx)){
+                    success=cutoff;
+                    err="Cannot do operation on non compatible types!";
+                    return;
+                }
+                back=cpx;
+            }else if(!front.get_type().complex() && back.get_type().complex()){
+                R cpx=front.complexify();
+                if(!cpx.is_type_compatible(back)){
+                    success=cutoff;
+                    err="Cannot do operation on non compatible types!";
+                    return;
+                }
+                front=cpx;
+            }else{
+                success=cutoff;
+                err="Cannot do operation on non compatible types!";
+                return;
+            }
         }
 
         switch(op){
@@ -309,6 +328,11 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
                 val=front*back;
                 break;
             case '/':
+                if(back.is_zero()){
+                    success=cutoff;
+                    err="Cannot divide zero expressions";
+                    return;
+                }
                 if(!back.is_field()){
                     R one=back.promote_one();
                     back=R{new Fraction{back,one}};

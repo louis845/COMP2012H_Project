@@ -82,6 +82,8 @@ public:
     const RingType& get_current_type() const;
 
     std::string to_string() const;
+
+    bool complex() const;
 };
 
 //Outputs a nested ring type.
@@ -283,6 +285,11 @@ protected:
     virtual const Ring* promote_one() const = 0;
 
     /**
+     * Dynamically allocates and returns a complex ring element.
+    */
+    virtual const Ring* complexify() const = 0;
+
+    /**
      * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
     */
     virtual void split_canonical(const Ring*& morph, const Ring*& unit) const=0;
@@ -360,6 +367,8 @@ private:
     const Ring* promote(const Ring* const& r) const override;
 
     const Ring* promote_one() const override;
+
+    const Ring* complexify() const override;
 
     bool is_unit() const override;
 

@@ -138,6 +138,9 @@ const Field* Fraction::divImpl(const Ring* r) const{
         throw "invalid cast!";
     }
 #endif
+    if(f->is_zero()){
+        throw "Divide by zero!";
+    }
 
     const RF &this_over=over, &this_under=under, &f_over=(f->over), &f_under=(f->under);
 
@@ -289,4 +292,13 @@ const Ring* Fraction::promote_one() const{
     const Ring* promotion2=fraction_no_gcd(subring_one, subring_one);
     
     return promotion2;
+}
+
+const Ring* Fraction::complexify() const{
+    if(is_complex()){
+        return copy();
+    }
+    RF ov=over.complexify();
+    RF ud=under.complexify();
+    return fraction_no_check(ov,ud);
 }

@@ -45,7 +45,7 @@ public:
      * new dynamically allocated value, and it will directly be used internally in R. So there is no need to
      * delete the given pointer.
     */
-    explicit R(const Ring*);
+    R(const Ring*);
 
     /**
      * Destructor and copy/move constr/assignment, which handles the pointer accordingly.
@@ -148,6 +148,8 @@ public:
     bool is_type_compatible(const R&) const;
 
     bool is_field() const;
+
+    R complexify() const;
 
     /**
      * Promotes other to match the type of this.
