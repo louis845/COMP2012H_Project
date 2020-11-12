@@ -136,6 +136,17 @@ NestedRingType* NestedRingType::deep_copy() const{
     return n;
 }
 
+bool NestedRingType::is_complex() const{
+    if(current_type==COMPLEXIFY){
+        return true;
+    }
+    NestedRingType::is_complex();
+    if(sub_type!=nullptr){
+        return sub_type->is_complex();
+    }
+    return false;
+}
+
 bool Ring::is_type_compatible_shallow(const RingType& r1,const RingType& r2){
     return r1==r2 || r1==RingType::SPECIAL_ZERO || r2==RingType::SPECIAL_ZERO;
 }
@@ -225,6 +236,10 @@ std::ostream& operator<< (std::ostream& out, const NestedRingType& type){
 /**
  * RING FUNCTIONS
 */
+
+bool Ring::is_field() const{
+    return false;
+}
 
 Ring::Ring(RingType t): type_shallow(t){
     type=new NestedRingType{t};

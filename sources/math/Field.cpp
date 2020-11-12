@@ -32,3 +32,7 @@ int Field::euclideanFuncCompare(const Ring* r) const{
 const Ring* Field::remainderImpl(const Ring* r) const{
     return new ZeroElmt{};
 }
+
+bool Field::is_field() const{
+    return true;
+}
