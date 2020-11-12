@@ -16,6 +16,8 @@ protected:
     int euclideanFuncCompare(const Ring* r) const override final;
 
     const Ring* remainderImpl(const Ring* r) const final override;
+
+    bool is_field() const override;
 };
 
 #endif

@@ -369,6 +369,10 @@ bool R::is_zero() const{
     return impl->is_zero();
 }
 
+bool R::is_field() const{
+    return impl->is_field();
+}
+
 int R::euclidean_func_compare(const R& other) const{
     return impl->euclideanFuncCompare(other.impl);
 }

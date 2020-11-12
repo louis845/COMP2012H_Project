@@ -154,6 +154,10 @@ public:
     */
     virtual const Ring* copy() const=0;
     NestedRingType* type;
+
+    virtual bool is_field() const;
+
+    bool is_complex() const;
 protected:
 
     Ring(RingType);

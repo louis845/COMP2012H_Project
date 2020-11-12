@@ -147,6 +147,8 @@ public:
 
     bool is_type_compatible(const R&) const;
 
+    bool is_field() const;
+
     /**
      * Promotes other to match the type of this.
     */
