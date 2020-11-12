@@ -34,6 +34,12 @@ public:
     static R* array_copy(R* const& arr, int length, int shift);
 
     /**
+     * Tries to make a,b compatible by complexifying one of a,b. Returns true if it can be done and a,b will be replaced
+     * by the appropriate complexified versions. Returns false if it is not possible.
+    */
+    static bool complexify_if_needed(R& a, R& b);
+
+    /**
      * Creates a ring wrapper to point to zero.
     */
     explicit R();

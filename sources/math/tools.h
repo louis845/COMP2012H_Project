@@ -29,10 +29,4 @@ private:
 /**
  * Parser for an expression of R. Success = -1 if success. If there is an error, success = the position of the character where there is an error.
 */
-void parse(const std::string& input,std::string& err, R& val, int& success);
-
-/**
- * Basic parser for a single R value. The formula should be at most of the form:
- * FRACTION POLYNOMIAL FRACTION COMPLEXIFY LONG or FRACTION POLYNOMIAL COMPLEXIFY DOUBLE
-*/
-void parse_basic(std::string input, std::string& err_msg, R& val, bool& success);
+void parse_expression(const std::string& input,std::string& err, R& val, int& success);
