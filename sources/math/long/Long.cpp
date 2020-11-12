@@ -1,4 +1,5 @@
-#include "math/Long/Long.h"
+#include "math/long/Long.h"
+#include "math/long/LongComplex.h"
 #include <string>
 #include <cmath>
 
@@ -41,6 +42,9 @@ const Ring* Long::divImpl(const Ring* r) const{
         throw "invalid cast!";
     }
 #endif
+    if(l->val==0){
+        throw "Divide by zero!";
+    }
     return new Long{val/(l->val)};
 }
 
@@ -51,6 +55,9 @@ const Ring* Long::remainderImpl(const Ring* r) const {
         throw "invalid cast!";
     }
 #endif
+    if(l->val==0){
+        throw "Divide by zero!";
+    }
     return new Long{val%(l->val)};
 }
 
@@ -64,6 +71,10 @@ const Long* Long::negate() const{
 
 const Long* Long::copy() const{
     return new Long{val};
+}
+
+const Ring* Long::complexify() const{
+    return new LongComplex{val,0};
 }
 
 int Long::euclideanFuncCompare(const Ring* other) const{

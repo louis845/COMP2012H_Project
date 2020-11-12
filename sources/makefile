@@ -10,7 +10,7 @@ SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp
 DEBUG = -g
 
 
-link: main.o console.o Ring.o R.o Field.o Double.o Long.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Steps.o History.o tools.o
+link: main.o console.o Ring.o R.o Field.o Double.o DoubleComplex.o Long.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Steps.o History.o tools.o
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(LIBRARIES) $(OUTPUT_DIRECTORY)/*.o -lgmpxx -lgmp
 
 main.o: main.cpp
@@ -33,6 +33,9 @@ Double.o: math/double/Double.cpp
 
 Long.o: math/long/Long.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Long.o $(HEADER_ROOT_DIRECTORY) -c math/long/Long.cpp
+
+DoubleComplex.o: math/double/DoubleComplex.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)DoubleComplex.o $(HEADER_ROOT_DIRECTORY) -c math/double/DoubleComplex.cpp
 
 LongComplex.o: math/long/LongComplex.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)LongComplex.o $(HEADER_ROOT_DIRECTORY) -c math/long/LongComplex.cpp

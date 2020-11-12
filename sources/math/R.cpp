@@ -477,6 +477,13 @@ R* R::array_copy(R* const& arr, int len, int shift){
     return newarr;
 }
 
+R R::complexify() const{
+    if(get_type().complex()){
+        return *this;
+    }
+    return R{impl->complexify()};
+}
+
 
 /**
  * Destructor, copy constructor, etc.
