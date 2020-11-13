@@ -4,11 +4,11 @@ This list is not exhaustive, we can talk about it if there are new ideas or alte
 
 ## TODO-Everyone
 * The whole process of GUI selection with parser into mathematical objects.
-<a>
+<pre>
 /**
  * Parser for an expression of R. Success = -1 if success. If there is an error, success = the position of the character where there is an error.
 */
-</a>
+</pre>
 void parse_expression(const std::string& input,std::string& err, R& val, int& success); (inside math/tools.h)
 
 String parser. How to translate from selection to image, and then from image to Mathpix string, and then string to math object?
