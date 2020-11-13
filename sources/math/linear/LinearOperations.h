@@ -1,6 +1,7 @@
 #ifndef LINEAR_LINEAROPS
 #define LINEAR_LINEAROPS
 
+#include "debug.h"
 #include "math/R.h"
 #include "steps/StepsHistory.h"
 #include "math/linear/LinOpsSteps.h"
@@ -38,6 +39,11 @@ public:
      * Does row operations on the matrix, recording the steps to recorder. Reduces the matrix to reduced row echelon form.
     */
     void toRREF();
+
+    /**
+     * Checks whether the matrix now is diagonal, with entries equal to one.
+    */
+    bool is_diagonally_one() const;
 private:
     /**
      * Reduce to row echelon form

@@ -268,7 +268,17 @@ public:
 
     virtual R operator- () const override;
 
+    /**
+     * Copies the original array into a new array, shifting and adding zeros as needed (the zero will be SPECIAL_ZERO type). For example
+     * 1 2 3 4 5 copies into 0 0 0 1 2 3 4 5, with
+     * len=2, shift=3
+    */
     static RF* array_copy(const RF* const& arr, int len, int shift);
+
+    /***
+     *  Copies and returns the subarray, between min(inclusive) and max(exclusive).
+    */
+    static RF* subarray_copy(const RF* const& arr, int min, int max);
 };
 
 /**

@@ -1,5 +1,5 @@
 #include "math/linear/LinearOperations.h"
-
+#include <string>
 using namespace std;
 
 LinearOperations::LinearOperations(RF** mat, const int& rows, const int& cols, bool transpose, LinOpsRecorder* recorder){
@@ -216,4 +216,21 @@ void LinearOperations::commit_recording_and_continue(){
 
 RF& LinearOperations::A(const int& row, const int& col) const{
     return *(matrix[row][col]);
+}
+
+bool LinearOperations::is_diagonally_one() const{
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            if(i==j){
+                if(!A(i,j).is_one()){
+                    return false;
+                }
+            }else{
+                if(!A(i,j).is_zero()){
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
 }

@@ -33,9 +33,11 @@ R input_expression(bool& aborted){
     int success;
 
     while(true){
-        cout<<"Please input a mathematical expression. Accepted types are polynomials, complex numbers, fractions, rational polynomials.\n";
+        cout<<"\n";
+        cout<<"Please input a mathematical expression. Only input polynomials, complex numbers, fractions, rational polynomials.\n";
         cout<<"To use double precision, type for example 2.0. Do not mix values like '1' (integer) with '1.0' (double) together.\n";
         cout<<"Type quit instead to abort the ENTIRE process of keying in mathematical values.\n";
+        cout<<"\n";
         getline(cin, input);
         if(input=="quit"){
             aborted=true;
@@ -43,7 +45,7 @@ R input_expression(bool& aborted){
         }
         parse_expression(input, error, value, success);
         if(success==-1){ //successful
-            cout<<value<<"\n";
+            cout<<"Interpreted as: "<<value<<"\n";
 
             cout<<"type: "<<value.get_type()<<"\n";
 
@@ -133,6 +135,7 @@ R** input_matrix(const int& rows,const int& cols,bool& aborted,const string& dis
                     cout<<"Type of new element must be compatible with previous elements!\n";
                     cout<<"Current matrix ( Editing row="+to_string(i+1)+", col="+to_string(j+1)+" ):\n";
                     cout<<"type: "<<largest.get_type()<<"\n";
+                    mat[i][j]=R::ZERO;
                     print_matrix(mat, rows, cols);
                 }
             }
@@ -210,6 +213,8 @@ void console_linear_operations(bool transpose){
 
     StepsHistory steps;
     LinOpsRecorder rc{&steps, mat, rows, cols};
+    rc.capture_initial();
+    
     LinearOperations o{mat, rows, cols, transpose, &rc};
 
     o.toRREF();
@@ -272,6 +277,8 @@ void console_linear_solve(){
 
     StepsHistory steps;
     LinOpsRecorder rc{&steps, mat, rows, cols+1};
+    rc.capture_initial();
+
     CoupledOperations o{mat, rows, cols, false, &rc, last_col, 1};
 
     o.toRREF();
@@ -285,6 +292,140 @@ void console_linear_solve(){
     display_steps(steps);
 }
 
+void console_invert(){
+    cout<<"Input matrix row:  ";
+    int rows=input_integer();
+    while(rows<2 || rows>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        rows=input_integer();
+    }
+    cout<<"Input matrix columns:  ";
+    int cols=input_integer();
+    while(cols<2 || cols>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        cols=input_integer();
+    }
+    cout<<"Input matrix:\n";
+    // use integer for now
+    bool aborted=false;
+    R** mat_slow=input_matrix(rows,cols,aborted);
+    if(aborted){
+        for(int i=0;i<rows;i++){
+            delete[] mat_slow[i];
+        }
+        delete[] mat_slow;
+        return;
+    }
+    RF** mat;
+    RF** cpl; //Coupled matrix, submatrix of mat. Saves a pointer to the pointers of mat.
+    int mrows;
+    int mcols;
+
+    if(rows>=cols){
+        mrows=rows;
+        mcols=rows+cols;
+
+        mat=new RF*[rows];
+        cpl=new RF*[rows];
+        for(int i=0;i<rows;i++){
+            mat[i]=new RF[mcols];
+            for(int j=0;j<cols;j++){
+                if(!mat_slow[i][j].is_field()){
+                    R one=mat_slow[i][j].promote_one();
+                    mat[i][j]=RF{new Fraction{mat_slow[i][j],one}};
+                }else{
+                    mat[i][j]=mat_slow[i][j];
+                }
+            }
+            for(int j=cols;j<mcols;j++){
+                if(i==j-cols){
+                    //j-cols is the columns in the right submatrix. We want it to be diagonally one.
+                    mat[i][j]=mat[0][0].promote_one(); //mat[0][0] is already initialized.
+                }else{
+                    mat[i][j]=mat[0][0].promote(R::ZERO);
+                }
+            }
+            delete[] mat_slow[i];
+
+            cpl[i]=(mat[i]+cols); //copy the pointer position, starting from cols.
+        }
+        delete[]mat_slow;
+    }else{
+        mrows=rows+cols;
+        mcols=cols;
+
+        mat=new RF*[mrows];
+        cpl=new RF*[cols];
+        for(int i=0;i<mrows;i++){
+            mat[i]=new RF[cols];
+            for(int j=0;j<cols;j++){
+                if(i<rows){
+                    if(!mat_slow[i][j].is_field()){
+                        R one=mat_slow[i][j].promote_one();
+                        mat[i][j]=RF{new Fraction{mat_slow[i][j],one}};
+                    }else{
+                        mat[i][j]=mat_slow[i][j];
+                    }
+                }else{
+                    if(i-rows==j){
+                        //i-rows is the row in the bottom submatrix.
+                        mat[i][j]=mat[0][0].promote_one();
+                    }else{
+                        mat[i][j]=mat[0][0].promote(R::ZERO);
+                    }
+                }
+            }
+            if(i<rows)
+                delete[] mat_slow[i];
+        }
+        delete[]mat_slow;
+
+        for(int i=0;i<cols;i++){
+            cpl[i]=mat[rows+i]; //copy the pointer position, starting from rows.
+        }
+    }
+
+    StepsHistory steps;
+    LinOpsRecorder rc{&steps, mat, mrows, mcols}; //we record the whole matrix
+    rc.capture_initial();
+    
+    if(rows>=cols){
+        CoupledOperations o{mat, rows, cols, false, &rc, cpl, rows};
+
+        o.toRREF();
+        if(o.is_diagonally_one()){
+            if(rows==cols){
+                steps.add_step(new MatrixSpaceStep{cpl, rows, rows, -1, true, "The inverse of the matrix is:"});
+            }else{
+                cout<<"bf_add_step\n";
+                string text="General left inverse is A+XB, for arbitrary matrix X (with size "+to_string(cols)+"x"+to_string(rows-cols)+" ).\n This is such that (A+XB)*input=I";
+                steps.add_step(new MatrixSpaceStep{cpl, rows, rows, cols, true, text});
+                cout<<"af_add_step\n";
+            }
+        }else{
+            steps.add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
+        }
+    }else{
+        CoupledOperations o{mat, rows, cols, true, &rc, cpl, cols};
+
+        o.toRREF();
+        if(o.is_diagonally_one()){
+            string text="General right inverse is A+BX, for arbitrary matrix X (with size "+to_string(cols-rows)+"x"+to_string(rows)+" ).\n This is such that input*(A+BX)=I";
+            steps.add_step(new MatrixSpaceStep{cpl, cols, cols, rows, false, text});
+        }else{
+            steps.add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
+        }
+    }
+
+    for(int i=0;i<mrows;i++){
+        delete[]mat[i];
+    }
+    delete[]mat;
+    delete[]cpl; //no need to delete the subarrays, it is deleted in mat since cpl is a pointer copy.
+    
+    display_steps(steps);
+}
+
 void to_lower_case(string& str){
     transform(str.begin(), str.end(), str.begin(), [](unsigned char ch){ return tolower(ch);});
 }
@@ -293,7 +434,7 @@ void console_main_loop(){
     while(true){
         string s;
         cout<<"Enter desired computation. Available types are:\n";
-        cout<<"SOLVE, REDUCE, INVERT, DETERMINANT, CHAR_POLY\n";
+        cout<<"COMPUTE, SOLVE, REDUCE, INVERT, DETERMINANT, CHAR_POLY\n";
         getline(cin, s);
         to_lower_case(s);
         
@@ -315,6 +456,15 @@ void console_main_loop(){
                     cout<<"Unknown argument. Usage: REDUCE <row/col>\n";
                 }
             }
+        }else if(s.rfind("invert",0)==0){
+            console_invert();
+        }else if(s.rfind("compute",0)==0){
+            bool b=false;
+            cout<<"\n";
+            cout<<"Compute expressions. In this mode, YES and QUIT does the same thing, no values would be saved.\n";
+            cout<<"Type NO in the prompt to continue computing expressions.\n";
+            cout<<"\n";
+            input_expression(b);
         }
     }
 }
