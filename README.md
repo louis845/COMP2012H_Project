@@ -51,7 +51,7 @@ Notice that the 'variable' used for the polynomial does not matter.
 * Finish expression OCR first (above)
 * Possible to get spatial position? Sort by spatial position
 1. Determine num rows, cols, make sure it is square
-2. Parse expression, and lift types so it is compatible (R type), I have not yet created documentation
+2. Parse expression, and lift types so it is compatible (R type), sources/math/DOCUMENTATION.md
 3. Pass arguments into dynamically allocated 2D array (RF**, fast class).
 
 # Louis
