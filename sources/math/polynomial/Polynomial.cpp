@@ -365,7 +365,7 @@ string Polynomial::to_string() const{
         if(deg==0){
             if(head){
                 str<<elem.to_string();
-            }else{
+            }else if(!elem.is_zero()){
                 str<<elem.to_signed_string();
             }
         }else if(!elem.is_zero()){
@@ -392,14 +392,18 @@ string Polynomial::to_signed_string() const{
         return "+0";
     }
     ostringstream str;
+    bool head=true;
 
     for(int i=length-1;i>=0;--i){
         const R& elem=coeff[i];
         const int &deg=i;
 
         if(deg==0){
-            str<<elem.to_signed_string();
+            if(head || !elem.is_zero()){
+                str<<elem.to_signed_string();
+            }
         }else if(!elem.is_zero()){
+            head=false;
             str<<elem.to_coeff();
             if(deg==1){
                 str<<PY_CHAR;
@@ -427,7 +431,7 @@ string Polynomial::to_latex() const{
         if(deg==0){
             if(head){
                 str<<elem.to_latex();
-            }else{
+            }else if(!elem.is_zero()){
                 str<<elem.to_signed_latex();
             }
         }else if(!elem.is_zero()){
@@ -454,14 +458,16 @@ string Polynomial::to_signed_latex() const{
         return "0";
     }
     ostringstream str;
-
+    bool head=true;
     for(int i=length-1;i>=0;--i){
         const R& elem=coeff[i];
         const int &deg=i;
 
         if(deg==0){
-            str<<elem.to_signed_latex();
+            if(head || !elem.is_zero())
+                str<<elem.to_signed_latex();
         }else if(!elem.is_zero()){
+            head=false;
             str<<elem.to_latex_coeff();
             if(deg==1){
                 str<<PY_CHAR;

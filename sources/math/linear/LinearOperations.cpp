@@ -1,4 +1,4 @@
-#include "LinearOperations.h"
+#include "math/linear/LinearOperations.h"
 
 using namespace std;
 
@@ -214,6 +214,6 @@ void LinearOperations::commit_recording_and_continue(){
     recorded_latex_ops_in_pause=nullptr; //no need to delete, the strings gets passed onto recorder.
 }
 
-RF& LinearOperations::A(int row, int col) const{
+RF& LinearOperations::A(const int& row, const int& col) const{
     return *(matrix[row][col]);
 }

@@ -1,32 +1,33 @@
 #ifndef LINEAR_COUPLEDOPS
 #define LINEAR_COUPLEDOPS
 
-#include "linear/LinearOperations.h"
+#include "math/linear/LinearOperations.h"
 #include "steps/StepsHistory.h"
 
 class CoupledOperations : public LinearOperations{
 private:
-    RF** matrix;
-    int rows;
-    int cols;
+    RF*** couple;
+    int couple_rows;
+    int couple_cols;
 
-    void row_add(int from, int to, RF mult) override;
-    void row_swap(int i, int j) override;
-    void row_multiply(int i, int j) override;
+    RF& A(const int&, const int&) const;
+protected:
+    virtual void row_add(int from, int to, const RF& mult) override;
+    virtual void row_swap(int i, int j) override;
+    virtual void row_multiply(int row, const RF& mult) override;
 public:
     /**
-     * Creates a LinearOperations class to work on the given matrix. DOES NOT create a copy of RF. Also assumes that the type of RF is exactly the same!
-     * See R::get_type().deep_equals
+     *  When no transpose the matrices are placed in order (matrix, couple). When transpose it is placed
+     * (matrix
+     * couple)
+     * This is to enable the operations to act on both. It is assumed the row or col of couple matches matrix. Only need to give couple_dim.
+     * The RF** couple will not be deallocated. For the other arguments see LinearOperations
     */
-    CoupledOperations(RF** matrix, const int& rows, const int& cols, RF** );
+    CoupledOperations(RF** matrix, const int& rows, const int& cols, bool transpose, LinOpsRecorder* recorder, RF** couple, int couple_dim);
+    ~CoupledOperations();
     
     const int& get_rows() const;
     const int& get_cols() const;
     const RF& get_element(int row, int col) const;
-
-    /**
-     * Does row operations on the matrix, recording the steps to recorder
-    */
-    void toRREF(StepsHistory& recorder);
 };
 #endif

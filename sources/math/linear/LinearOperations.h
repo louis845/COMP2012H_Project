@@ -21,7 +21,7 @@ public:
     /**
      * This just deletes the pointer to the matrix, does not deallocate any memory in the arguments passed in the constructor.
     */
-    ~LinearOperations();
+    virtual ~LinearOperations();
 
     LinearOperations(const LinearOperations&) = delete;
 
@@ -58,7 +58,7 @@ private:
     */
     void commit_recording_and_continue();
 
-    RF& A(int row, int col) const;
+    RF& A(const int& row,const int& col) const;
 
     LinOpsRecorder* recorder;
     bool recording;
