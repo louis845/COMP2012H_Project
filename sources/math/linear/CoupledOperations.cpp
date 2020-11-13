@@ -9,7 +9,7 @@ CoupledOperations::CoupledOperations(RF** mat, const int& rows, const int& cols,
         couple_cols=couple_dim;
         for(int i=0;i<cols;i++){
             couple[i]=new RF*[couple_dim];
-            for(int j=0;j<rows;j++){
+            for(int j=0;j<couple_dim;j++){
                 couple[i][j]=&cpl[j][i];
             }
         }
@@ -24,6 +24,14 @@ CoupledOperations::CoupledOperations(RF** mat, const int& rows, const int& cols,
             }
         }
     }
+
+#ifdef DEBUG_MODE
+    for(int i=0;i<couple_rows;i++){
+        for(int j=0;j<couple_cols;j++){
+            couple[i][j]->get_type();
+        }
+    }
+#endif
 }
 
 CoupledOperations::~CoupledOperations(){

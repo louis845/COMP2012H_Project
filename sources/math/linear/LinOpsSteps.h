@@ -25,9 +25,14 @@ public:
 
     LinOpsRecorder& operator=(LinOpsRecorder&&) = delete;
     /**
-     * directly passes to the newly created LinOpsSteps
+     * Directly passes to the newly created LinOpsSteps
     */
     void capture_instance(std::string* console, std::string* latex, int length);
+
+    /**
+     * Captures initially the state of the matrix with no operations text.
+    */
+    void capture_initial();
 };
 
 class LinOpsSteps : public Step{
@@ -44,6 +49,26 @@ private:
     virtual void print_to_console() const override;
 
     friend class LinOpsRecorder;
+};
+
+class MatrixSpaceStep : public Step{
+private:
+    RF** matrix;
+    RF** space_matrix;
+    int rows,rows_space;
+    int cols,cols_space;
+    std::string text;
+public:
+
+    /**
+     * Deep copies the given matrix. cutoff and row_or_col indicates how to divide into submatrix. The cutoff is exclusive for the first matrix
+     * i.e. the matrix does not contain the row/col cutoff. row_or_col=true indicates it is row. Pass cutoff=-1 for no cutoff. Here row_or_col will
+     * be ignored.
+    */
+    MatrixSpaceStep(RF** matrix,int rows,int cols,int cutoff,bool row_or_col,const std::string& text);
+    ~MatrixSpaceStep();
+
+    virtual void print_to_console() const override;
 };
 
 #endif

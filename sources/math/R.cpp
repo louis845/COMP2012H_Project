@@ -643,3 +643,11 @@ RF* RF::array_copy(const RF* const& arr, int len, int shift){
     }
     return newarr;
 }
+
+RF* RF::subarray_copy(const RF* const& arr, int start, int end){
+    RF* newarr = new RF[end-start];
+    for(int i=start;i<end;i++){
+        newarr[i-start]=arr[i];
+    }
+    return newarr;
+}
