@@ -8,8 +8,8 @@ This list is not exhaustive, we can talk about it if there are new ideas or alte
 /**
  * Parser for an expression of R. Success = -1 if success. If there is an error, success = the position of the character where there is an error.
 */
+void parse_expression(const std::string& input,std::string& err, R& val, int& success); // inside math/tools.h
 </pre>
-void parse_expression(const std::string& input,std::string& err, R& val, int& success); (inside math/tools.h)
 
 String parser. How to translate from selection to image, and then from image to Mathpix string, and then string to math object?
 
