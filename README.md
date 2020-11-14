@@ -51,8 +51,8 @@ Notice that the 'variable' used for the polynomial does not matter.
 * Finish expression OCR first (above)
 * Possible to get spatial position? Sort by spatial position
 1. Determine num rows, cols, make sure it is square
-2. Parse expression, and lift types so it is compatible (R type), sources/math/DOCUMENTATION.md
-3. Pass arguments into dynamically allocated 2D array (RF**, fast class).
+2. Parse expression (using void parse_expression in tools.h), and store into RF** (two dimensional array)
+3. Use bool RF::ensure_types_equal(RF* const* const matrix, int rows, int cols) on the array to make their types equal.
 
 # Louis
 * Math algorithms and base classes
