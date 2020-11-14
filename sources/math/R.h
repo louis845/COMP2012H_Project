@@ -279,6 +279,11 @@ public:
      *  Copies and returns the subarray, between min(inclusive) and max(exclusive).
     */
     static RF* subarray_copy(const RF* const& arr, int min, int max);
+
+    /**
+     * Promotes all types of the matrix to have exactly the same type. Returns true if possible, false if not.
+    */
+    static bool ensure_types_equal(RF* const* const matrix, int rows, int cols);
 };
 
 /**

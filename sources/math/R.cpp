@@ -651,3 +651,32 @@ RF* RF::subarray_copy(const RF* const& arr, int start, int end){
     }
     return newarr;
 }
+
+bool RF::ensure_types_equal(RF* const* const arr, int rows, int cols){
+    R largest=R::ZERO;
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            if(i==0 && j==0){
+                largest=arr[i][j];
+                continue;
+            }
+            if(R::complexify_if_needed(largest, arr[i][j])){
+                const NestedRingType& mattype=arr[i][j].get_type();
+                const NestedRingType& largetype=largest.get_type();
+                if(Ring::is_type_subset(mattype,largetype)){
+                    largest=arr[i][j];
+                }
+            }else{
+                return false;
+            }
+        }
+    }
+
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            arr[i][j]=largest.promote(arr[i][j]);
+        }
+    }
+
+    return true;
+}
