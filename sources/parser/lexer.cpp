@@ -48,7 +48,11 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
         if (temp == nullptr)    temp = parseId();
         if (temp == nullptr)
         {
-            if (ignore_invalid_token)   input.erase(0, 1);
+            if (ignore_invalid_token)   
+            {
+                input.erase(0, 1);
+                continue;
+            }
             else
             {
                 Token* err = new TokErr(TokName::INVALID_TOKEN, input);
@@ -130,6 +134,7 @@ Token* Lexer::parseId()
     regex_search(input, result, ID_RE);
     if (result.empty()) return nullptr;
 
+    Token* temp = new TokId(result[1]);
     input = std::move(result.suffix().str());
-    return new TokId(result[1]);   
+    return temp;   
 }

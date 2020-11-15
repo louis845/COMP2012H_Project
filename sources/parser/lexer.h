@@ -18,6 +18,8 @@ class Lexer
 public:
     explicit Lexer(std::string input): input(std::move(input)) {}
 
+    void reset_input(std::string input) { this->input = std::move(input); }
+
     Token* getNextToken(bool ignore_invalid_token=false);
 
 private:

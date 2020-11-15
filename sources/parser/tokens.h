@@ -30,6 +30,7 @@ public:
     static std::unordered_map<std::string, int> tok_map;
 
     explicit Token(TokType prime_type): type(prime_type) {}
+    virtual ~Token() = default;
 
     const TokType& get_type() const { return type; }
     virtual const TokName& get_name() const = 0;
