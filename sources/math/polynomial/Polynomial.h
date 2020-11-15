@@ -3,12 +3,18 @@
 
 #include "math/Ring.h"
 
-using namespace std;
-
 /**
  * Implementation of polynomials.
 */
 class Polynomial final : public Ring {
+private:
+    int get_degree_no0check() const;
+    static Polynomial* polynomial_no_check(const RF* const&, int length); //Creates a polynomial without checking for types. Used internally
+    static Polynomial* polynomial_no_zero_check(const RF* const&, int length, int non_zero_count); //Creates a polynomial without checking for types, or checking for zero elements. Used internally.
+
+    Polynomial(); //Creates a polynomial without initializing length, display_terms, ceoff
+
+    const RF& get_leading_coefficient() const;
 public:
     /**
      * Creates a polynomial with given coefficients and degree. This constructor copies the contents of the array, hence the coefficient array NEEDS to be
@@ -22,23 +28,15 @@ public:
 
     int get_degree() const;
 
-    int get_degree_no0check() const;
-
-    const R& get_leading_coefficient() const;
-
     static char PY_CHAR;
 protected:
-    /**
-     * Uninitialized polynomial. Used internally for operations.
-    */
-    Polynomial();
 
     int length;
     //Used for output such as to_string
     int display_terms;
-    R* coeff;
+    RF* coeff;
 
-    const Polynomial* multiply_const(const R& mult, int degree) const;
+    const Polynomial* multiply_const(const RF& mult, int degree) const;
 
     const Ring* addImpl (const Ring* r) const override;
     
@@ -62,13 +60,13 @@ protected:
 
     bool equalsImpl(const Ring* other) const override;
 
-    string to_string() const override;
+    std::string to_string() const override;
 
-    string to_signed_string() const override;
+    std::string to_signed_string() const override;
 
-    string to_latex() const override;
+    std::string to_latex() const override;
 
-    string to_signed_latex() const override;
+    std::string to_signed_latex() const override;
 
     virtual bool needs_bracket() const override;
 
@@ -77,6 +75,8 @@ protected:
     const Ring* promote(const Ring* const &r) const override;
 
     const Ring* promote_one() const override;
+
+    const Ring* complexify() const override;
 
     bool is_one() const override;
 

@@ -82,6 +82,8 @@ public:
     const RingType& get_current_type() const;
 
     std::string to_string() const;
+
+    bool complex() const;
 };
 
 //Outputs a nested ring type.
@@ -96,7 +98,6 @@ class Ring{
 private:
     int* RING_DEBUG_NUM_CREATE; //Keeps track of the number of R (wrapper) this ring resides in.
 #endif
-
 public:
     virtual ~Ring();
     /**
@@ -155,6 +156,10 @@ public:
     */
     virtual const Ring* copy() const=0;
     NestedRingType* type;
+
+    virtual bool is_field() const;
+
+    bool is_complex() const;
 protected:
 
     Ring(RingType);
@@ -216,9 +221,9 @@ protected:
     /**
      * BINARY OPERATIONS AND COMPARISON OF RING IMPLEMENTATIONS. For functions that return a Ring* pointer, it is expected a new Ring (or subclasses) should be dynamically allocated.
      * In the implementation in subclasses, it is ensured in the wrapper class R that the ring of the argument is always directly compatiable with the ring of this, given by this->get_type().deep_equals( r->get_type()) )
-     * Therefore the pointer can be dynamic_cast ed to the appropriate type.
+     * Therefore the pointer can be dynamic_cast ed to the appropriate type, and along with its subtypes
      * 
-     * SPECIAL_ZERO checks. For the SPECIAL_ZERO, there is no need to check for SPECIAL_ZERO in all the cases/
+     * Make sure the type returned is exactly the same (in the sense of deep equals) as this and r.
     */
 
     /**
@@ -280,6 +285,11 @@ protected:
     virtual const Ring* promote_one() const = 0;
 
     /**
+     * Dynamically allocates and returns a complex ring element.
+    */
+    virtual const Ring* complexify() const = 0;
+
+    /**
      * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
     */
     virtual void split_canonical(const Ring*& morph, const Ring*& unit) const=0;
@@ -306,9 +316,9 @@ protected:
 
     friend class R;
 
-    friend class ZeroElmt;
+    friend class RF;
 
-    friend class OneElmt;
+    friend class ZeroElmt;
 };
 
 /**
@@ -357,6 +367,8 @@ private:
     const Ring* promote(const Ring* const& r) const override;
 
     const Ring* promote_one() const override;
+
+    const Ring* complexify() const override;
 
     bool is_unit() const override;
 

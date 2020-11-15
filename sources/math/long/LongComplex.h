@@ -2,19 +2,21 @@
 #define MATH_LONG_LONGCPX_H
 
 #include "math/Ring.h"
+#include "math/long/Long.h"
+#include "math/long/LongType.h"
 
 using namespace std;
 
 /**
- * Implementation of complex long, actually this just uses two primitive types long long.
+ * Implementation of complex long, actually this just uses two primitive types PRIMITIVE_LONG_TYPE.
  * See Gaussian Integers on wiki.
 */
 class LongComplex final : public Ring {
 public:
-    LongComplex(const long long&, const long long&);
+    LongComplex(const PRIMITIVE_LONG_TYPE &, const PRIMITIVE_LONG_TYPE &);
     
 protected:
-    const long long re, im;
+    const PRIMITIVE_LONG_TYPE re, im;
 
     const Ring* addImpl (const Ring* r) const override;
     
@@ -53,6 +55,8 @@ protected:
     const LongComplex* promote(const Ring* const &r) const override;
 
     const LongComplex* promote_one() const override;
+
+    const Ring* complexify() const override;
 
     bool is_one() const override;
 

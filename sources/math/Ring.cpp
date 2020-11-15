@@ -136,6 +136,10 @@ NestedRingType* NestedRingType::deep_copy() const{
     return n;
 }
 
+bool NestedRingType::complex() const{
+    return is_complex;
+}
+
 bool Ring::is_type_compatible_shallow(const RingType& r1,const RingType& r2){
     return r1==r2 || r1==RingType::SPECIAL_ZERO || r2==RingType::SPECIAL_ZERO;
 }
@@ -225,6 +229,10 @@ std::ostream& operator<< (std::ostream& out, const NestedRingType& type){
 /**
  * RING FUNCTIONS
 */
+
+bool Ring::is_field() const{
+    return false;
+}
 
 Ring::Ring(RingType t): type_shallow(t){
     type=new NestedRingType{t};
@@ -323,6 +331,10 @@ bool Ring::needs_bracket_latex() const{
     return false;
 }
 
+bool Ring::is_complex() const{
+    return get_type().complex();
+}
+
 /**
  * Implementation of ZeroElmt. The return values are straightforward (operations by 0 and 1). Notice that a copy (new allocation) has to be returned for the functions,
  * since the functions are used internally by the R class, and a new R object (no matter statically or dynamically allocated) is created with
@@ -415,6 +427,10 @@ const Ring* ZeroElmt::promote(const Ring* const& r) const{
 
 const Ring* ZeroElmt::promote_one() const{
     throw "It should not be needed to promote the unit element to match the type of ZeroElmt!";
+}
+
+const Ring* ZeroElmt::complexify() const{
+    throw "It should not be needed to complexify the ZeroElmt!";
 }
 
 bool ZeroElmt::is_unit() const{

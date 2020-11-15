@@ -11,11 +11,13 @@ protected:
     virtual const Field* divImpl (const Ring* r) const override;
 
     /*
-     * It is not necessary to consider euclidean functions and remainder of fields. Returns -1 (int) and R::ZERO respectively.
+     * It is not necessary to consider euclidean functions and remainder of fields. Returns -1 (int) and RF::ZERO respectively.
     */
     int euclideanFuncCompare(const Ring* r) const override final;
 
     const Ring* remainderImpl(const Ring* r) const final override;
+
+    bool is_field() const override;
 };
 
 #endif

@@ -1,24 +1,34 @@
+#ifndef MATH_FRACTION_FRACTION_H
+#define MATH_FRACTION_FRACTION_H
 #include "math/Field.h"
 
 using namespace std;
 
 class Fraction : public Field {
+private:
+    /**
+     * Creates a Fraction without GCD reduction and without type checking / promotion. Allocates and returns.
+    */
+    static Fraction* fraction_no_gcd(const RF&, const RF&); 
+    /*
+     * Creates a Fraction without type checking / promotion. Allocates and returns.
+    */
+    static Fraction* fraction_no_check(const RF&, const RF&); 
+
+    /**
+     * Creates a fraction with uninitialized over and under. Used internally to skip the GCD operation. Use fraction_no_check and fraction_no_gcd
+    */
+    Fraction();
 public:
     /**
      * Fraction(over, under). This represents a fraction over/under. 
     */
     Fraction(const R&,const R&);
-
-    ~Fraction() override;
 protected:
-    /**
-     * Creates a fraction with uninitialized over and under. Used internally to skip the GCD operation. Make sure to set the appropriate type.
-    */
-    Fraction();
 
-    R* over;
+    RF over;
 
-    R* under;
+    RF under;
 
     const Ring* addImpl (const Ring* r) const override;
     
@@ -52,6 +62,8 @@ protected:
 
     const Ring* promote_one() const override;
 
+    const Ring* complexify() const override;
+
     bool is_unit() const override;
 
     bool is_one() const override;
@@ -60,3 +72,5 @@ protected:
 
     void split_canonical(const Ring*&, const Ring*&) const override;
 };
+
+#endif
