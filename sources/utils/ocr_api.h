@@ -14,19 +14,19 @@ using std::cin;
 
 
 // Singleton class for OCR
-// Use Ocr::GetInstance() to retrieve the unique instance
+// Use Ocr::getInstance() to retrieve the unique instance
 class Ocr final : public QObject
 {
     Q_OBJECT
 
 public:
-    static Ocr& GetInstance()
+    static Ocr& getInstance()
     {
         static Ocr instance;
         return instance;
     }
 
-    pair<string, string> Request(const string& img_path, const bool& using_latex=true);
+    pair<string, string> request(const string& img_path, const bool& using_latex=true);
 
     inline void set_app_key(const string &app_key)
     {
@@ -38,10 +38,10 @@ public:
         this->app_id = app_id;
     }
 
-    void TestSslSettings() const;
+    void testSslSettings() const;
 
 private slots:
-    void OnFinish(QNetworkReply *reply);
+    void onFinish(QNetworkReply *reply);
 
 private:
     const string API_URL = "https://api.mathpix.com/v3/text";
@@ -51,11 +51,11 @@ private:
     Ocr(const Ocr&) { }
     Ocr& operator=(const Ocr&);
 
-    QByteArray Img2Base64(QString img_path) const;
-    QNetworkRequest InitRequest() const;
-    QJsonObject InitJson(QByteArray img_base64) const;
-    pair<string, string> ParseJson(QByteArray response) const;
-    void Post(const string& img_path);
+    QByteArray img2Base64(QString img_path) const;
+    QNetworkRequest initRequest() const;
+    QJsonObject initJson(QByteArray img_base64) const;
+    pair<string, string> parseJson(QByteArray response) const;
+    void post(const string& img_path);
 
     string app_key{""};
     string app_id{""};

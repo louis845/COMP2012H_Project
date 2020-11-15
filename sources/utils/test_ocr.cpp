@@ -12,9 +12,9 @@ int main(int argc, char* argv[])
     cin >> filename;
     string app_id = "";     // left blank
     string app_key = "";    // left blank
-    Ocr::GetInstance().set_app_id(app_id);
-    Ocr::GetInstance().set_app_key(app_key);
-    auto res = Ocr::GetInstance().Request(filename);
+    Ocr::getInstance().set_app_id(app_id);
+    Ocr::getInstance().set_app_key(app_key);
+    auto res = Ocr::getInstance().request(filename);
     cout << res.first << endl << res.second << endl;
     cin.get(); cin.get();
     return app.exec();
