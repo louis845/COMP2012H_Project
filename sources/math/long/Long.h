@@ -2,17 +2,21 @@
 #define MATH_LONG_LONG_H
 
 #include "math/Ring.h"
+#include "math/long/LongType.h"
+
+#include <gmpxx.h> // GNU GMP, we only use the big integer class mpz_class in place of long.
 
 using namespace std;
 
 /**
  * Implementation of long, actually this just uses the primitive type long long.
 */
+
 class Long final : public Ring {
 public:
-    Long(long long);
+    Long(PRIMITIVE_LONG_TYPE);
 
-    const long long val;
+    const PRIMITIVE_LONG_TYPE val;
 protected:
 
     const Ring* addImpl (const Ring* r) const override;
@@ -46,6 +50,8 @@ protected:
     const Long* promote(const Ring* const &r) const override;
 
     const Long* promote_one() const override;
+
+    const Ring* complexify() const override;
 
     bool is_one() const override;
 

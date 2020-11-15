@@ -7,6 +7,11 @@ Field::Field(RingType t) : Ring(t){}
 */
 const Field* Field::divImpl(const Ring* r) const{
     const Field* f=dynamic_cast<const Field*>(r);
+#if DEBUG_MODE
+    if(f==nullptr){
+        throw "invalid cast!";
+    }
+#endif
     return dynamic_cast<const Field*>(multImpl(f->invert()));
 }
 
@@ -25,5 +30,9 @@ int Field::euclideanFuncCompare(const Ring* r) const{
 }
 
 const Ring* Field::remainderImpl(const Ring* r) const{
-    return new ZeroElmt{};
+    return promote(R::impl0);
+}
+
+bool Field::is_field() const{
+    return true;
 }

@@ -1,4 +1,5 @@
 #include "math/double/Double.h"
+#include "math/double/DoubleComplex.h"
 #include <sstream>
 #include <iomanip>
 
@@ -7,19 +8,43 @@ int Double::PRECISION=3; //3dp precision
 Double::Double(double val) : Field(RingType::DOUBLE), val(val){}
 
 const Ring* Double::addImpl(const Ring* r) const{
-    return new Double{val+(dynamic_cast<const Double*>(r)->val)};
+    const Double* d=dynamic_cast<const Double*>(r);
+#if DEBUG_MODE
+    if(d==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Double{val+(d->val)};
 }
 
 const Ring* Double::multImpl(const Ring* r) const{
-    return new Double{val*(dynamic_cast<const Double*>(r)->val)};
+    const Double* d=dynamic_cast<const Double*>(r);
+#if DEBUG_MODE
+    if(d==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Double{val*(d->val)};
 }
 
 const Ring* Double::minusImpl(const Ring* r) const{
-    return new Double{val-(dynamic_cast<const Double*>(r)->val)};
+    const Double* d=dynamic_cast<const Double*>(r);
+#if DEBUG_MODE
+    if(d==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Double{val-d->val};
 }
 
 const Field* Double::divImpl(const Ring* r) const{
-    return new Double{val/(dynamic_cast<const Double*>(r)->val)};
+    const Double* d=dynamic_cast<const Double*>(r);
+#if DEBUG_MODE
+    if(d==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return new Double{val/(d->val)};
 }
 
 const Field* Double::invert() const{
@@ -81,11 +106,21 @@ const Double* Double::promote(const Ring* const& r) const{
     if(r->type_shallow==RingType::SPECIAL_ZERO){
         return new Double{0};
     }
-    return dynamic_cast<const Double*>(r)->copy();
+    const Double* d=dynamic_cast<const Double*>(r);
+#if DEBUG_MODE
+    if(d==nullptr){
+        throw "invalid cast!";
+    }
+#endif
+    return d->copy();
 }
 
 const Double* Double::promote_one() const{
     return new Double{1.0};
+}
+
+const Ring* Double::complexify() const{
+    return new DoubleComplex{val,0.0};
 }
 
 bool Double::is_one() const{
