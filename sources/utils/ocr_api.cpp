@@ -14,7 +14,7 @@ Ocr::~Ocr()
 
 
 // Convert the image at given path to base64 encoding string
-QByteArray Ocr::Img2Base64(QString img_path) const
+QByteArray Ocr::img2Base64(QString img_path) const
 {
     QFile img_file(img_path);
     if (!img_file.exists() || !img_file.open(QIODevice::ReadOnly))
@@ -34,7 +34,7 @@ QByteArray Ocr::Img2Base64(QString img_path) const
 
 
 // Initialize the header of the request
-QNetworkRequest Ocr::InitRequest() const
+QNetworkRequest Ocr::initRequest() const
 {
     QNetworkRequest request;
     request.setUrl(QUrl(QString::fromStdString(API_URL)));
@@ -46,7 +46,7 @@ QNetworkRequest Ocr::InitRequest() const
 
 
 // Initialize the JSON field
-QJsonObject Ocr::InitJson(QByteArray img_base64) const
+QJsonObject Ocr::initJson(QByteArray img_base64) const
 {
     QJsonObject json;
     // json.insert("src", "https://mathpix.com/examples/limit.jpg");
@@ -69,7 +69,7 @@ QJsonObject Ocr::InitJson(QByteArray img_base64) const
 
 // parse the JSON field in the HTTP response
 // refer to https://docs.mathpix.com/#result-object for the response structure
-pair<string, string>Ocr::ParseJson(QByteArray response) const
+pair<string, string>Ocr::parseJson(QByteArray response) const
 {
     QJsonParseError err;
     QJsonDocument json = QJsonDocument::fromJson(response, &err);
@@ -95,24 +95,24 @@ pair<string, string>Ocr::ParseJson(QByteArray response) const
 }
 
 
-void Ocr::Post(const string& img_path)
+void Ocr::post(const string& img_path)
 {
-    QByteArray img_base64 = Img2Base64(QString::fromStdString(img_path));
-    QNetworkRequest request = InitRequest();
-    QJsonObject json = InitJson(img_base64);
+    QByteArray img_base64 = img2Base64(QString::fromStdString(img_path));
+    QNetworkRequest request = initRequest();
+    QJsonObject json = initJson(img_base64);
 
     // network_mgr.post(request, QJsonDocument(json).toJson());
 }
 
 
-void Ocr::OnFinish(QNetworkReply* reply)
+void Ocr::onFinish(QNetworkReply* reply)
 {
     std::cout << "enter OnFinish\n";
 
     if (reply->error() == QNetworkReply::NoError)
     {
         QByteArray response = reply->readAll();
-        result = ParseJson(response);
+        result = parseJson(response);
     }
 
     // status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
@@ -123,13 +123,13 @@ void Ocr::OnFinish(QNetworkReply* reply)
 
 // When using_latex = true (default), the output will be in LaTeX format
 // Otherwise the output will be in asciiMath 
-pair<string, string> Ocr::Request(const string& img_path, const bool& using_latex)
+pair<string, string> Ocr::request(const string& img_path, const bool& using_latex)
 {
     try
     {
-        QByteArray img_base64 = Img2Base64(QString::fromStdString(img_path));
-        QNetworkRequest request = InitRequest();
-        QJsonObject json = InitJson(img_base64);
+        QByteArray img_base64 = img2Base64(QString::fromStdString(img_path));
+        QNetworkRequest request = initRequest();
+        QJsonObject json = initJson(img_base64);
 
         QNetworkAccessManager mgr;
         QNetworkReply* reply = mgr.post(request, QJsonDocument(json).toJson());
@@ -141,7 +141,7 @@ pair<string, string> Ocr::Request(const string& img_path, const bool& using_late
         if (reply->error() == QNetworkReply::NoError)
         {
             QByteArray response = reply->readAll();
-            result = ParseJson(response);
+            result = parseJson(response);
             reply->deleteLater();
             return result;
         }
@@ -172,7 +172,7 @@ pair<string, string> Ocr::Request(const string& img_path, const bool& using_late
 
 
 // Test the OpenSSL library
-void Ocr::TestSslSettings() const
+void Ocr::testSslSettings() const
 {
     std::cout << QSslSocket::sslLibraryBuildVersionString().toStdString() << std::endl;
     std::cout << QSslSocket::supportsSsl() << std::endl;

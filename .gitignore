@@ -1,0 +1,7 @@
+*.exe
+/.idea
+/.vscode/c_cpp_properties.json
+/build
+/cmake-build-debug
+/sources/utils/test_ocr.cpp
+CMakeLists.txt
