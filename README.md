@@ -54,18 +54,24 @@ Notice that the 'variable' used for the polynomial does not matter.
 2. Parse expression (using void parse_expression in tools.h), and store into RF** (two dimensional array)
 3. Use bool RF::ensure_types_equal(RF* const* const matrix, int rows, int cols) on the array to make their types equal.
 
-# Louis
+## Louis
 * Math algorithms and base classes
 * Console IO
 * String parser for mathematical objects
 * Use LATEX to create images for output
 * Combine string parser with OCR
 
-# Benson
-* OCR recognition
-* Combine string parser with OCR
-* API key input in GUI
+## Benson
 
-# Cora
+1. OCR recognition
+    * Core interface of Mathpix Snip OCR API - [ocr_api.h](sources\utils\ocr_api.h)     :heavy_check_mark:
+    * GUI interface     :warning:
+2. Parser for AsciiMath
+    * Lexer - [lexer.h](sources\parser\lexer.h) [tokens.h](sources\parser\tokens.h)     :heavy_check_mark:
+    * Parser    :warning:
+    * Related interfaces, evaluation, traversal and other functions :warning:
+3. Extending supported operations and features
+
+## Cora
 * GUI code and design
 * Load and display images of mathematical functions 

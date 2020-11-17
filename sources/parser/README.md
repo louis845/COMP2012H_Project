@@ -9,16 +9,17 @@ literal     regex           token name          token type
 -----------------------------------------------------------------
 ,           [,]             COMMA               DELIM
 
+^           [\^]            SUP                 OPERATOR
+_           [_]             SUB                 OPERATOR
+xx          [xx]            CROSS               OPERATOR
 **          [\*\*]          AST                 OPERATOR
 *           [\*]            CDOT                OPERATOR
-xx          [xx]            CROSS               OPERATOR
 //          [\/\/]          DIV                 OPERATOR
 /           [\/]            FRAC                OPERATOR
 %           [%]             PERCENT             OPERATOR
 +           [\+]            PLUS                OPERATOR
 -           [-]             MINUS               OPERATOR
-^           [\^]            SUP                 OPERATOR
-_           [_]             SUB                 OPERATOR
+
 |           [\|]            TEXTBAR             OPERATOR
 (           [\(]            LP                  OPERATOR
 )           [\)]            RP                  OPERATOR
@@ -79,14 +80,45 @@ pi          [pi]            PI                  NUM
 Reference to [asciimath renderer](https://github.com/asciimath/asciimathml/blob/master/ASCIIMathML.js).
 
 ```text
-Parsing ASCII math expressions with the following grammar
-v ::= [A-Za-z] | greek letters | numbers | other constant symbols
-u ::= sqrt | text | bb | other unary symbols for font commands
-b ::= frac | root | stackrel         binary symbols
-l ::= ( | [ | { | (: | {:            left brackets
-r ::= ) | ] | } | :) | :}            right brackets
-S ::= v | lEr | uS | bSS             Simple expression
-I ::= S_S | S^S | S_S^S | S          Intermediate expression
-E ::= IE | I/I                       Expression
-Each terminal symbol is translated into a corresponding mathml node.
+number      ::= [(\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?] | constants
+variable    ::= [A-Za-z] | greek letters
+function    ::= functions
+binop       ::= + | - | * | ** | xx | // | / | ^ | %
+
+numberexpr      ::= number
+
+parenexpr       ::= '(' expression ')'
+                ::= '|' expression '|'
+
+bracketexpr     ::= '[' expression (',' expression)* ']'
+
+identifierexpr  ::= variable
+                ::= function ( number | variable )
+                ::= function '(' expression (',' expression)* ')'
+
+matrixexpr      ::= '[' bracketexpr (',' bracketexpr)* ']'
+
+primaryexpr ::= numberexpr
+            ::= parenexpr
+            ::= matrixexpr
+            ::= identifierexpr
+
+binoprhs    ::= ( binop primaryexpr )*
+
+expression  ::= primaryexpr binoprhs
+
+
+/*  Original parser grammar from AsciiMath renderer
+
+    Parsing ASCII math expressions with the following grammar
+    v ::= [A-Za-z] | greek letters | numbers | other constant symbols
+    u ::= sqrt | text | bb | other unary symbols for font commands
+    b ::= frac | root | stackrel         binary symbols
+    l ::= ( | [ | { | (: | {:            left brackets
+    r ::= ) | ] | } | :) | :}            right brackets
+    S ::= v | lEr | uS | bSS             Simple expression
+    I ::= S_S | S^S | S_S^S | S          Intermediate expression
+    E ::= IE | I/I                       Expression
+    Each terminal symbol is translated into a corresponding mathml node.
+*/
 ```
