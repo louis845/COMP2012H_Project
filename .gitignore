@@ -5,3 +5,4 @@
 /cmake-build-debug
 /sources/utils/test_ocr.cpp
 CMakeLists.txt
+workspace.code-workspace
