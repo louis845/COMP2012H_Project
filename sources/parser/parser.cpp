@@ -1,7 +1,11 @@
 #include "parser.h"
+using std::cout;
+using std::endl;
 
 typedef Token::TokName TokName;
 typedef Token::TokType TokType;
+
+// TODO: add custom exception classes and refine exception handling
 
 /*  
  *  number      ::= [(\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?] | constants
@@ -20,13 +24,48 @@ std::unordered_map<TokName, int> Parser::bin_op_precedence =
 };
 
 
+Parser::Parser(const std::string& input): input(input), tokenizer(input) { getNextToken(); }
+
+
+Parser::~Parser() { delete root; delete cur_tok; }
+
+
+void Parser::reset_input(const std::string& input)
+{
+    delete root;
+    delete cur_tok;
+    root = nullptr;
+    cur_tok = nullptr;
+    this->input = input;
+    tokenizer.reset_input(input);
+    getNextToken();
+}
+
+
 // only return precedence of binary operators
-// any non-binary operator will have precedence -1
+// any other tokens which are not in {')', ']', '}', '|', ','} will have precedence -1
+// ')', ']', '}', ',' have precedence -2
+// '|' has precedence -3
 int Parser::getTokPrecedence()
 {
-    if (cur_tok == nullptr || cur_tok->get_type() != TokType::OP)    return -1;
+    if (cur_tok == nullptr)    return -1;
+    switch (cur_tok->get_name())
+    {
+        case TokName::COMMA: case TokName::RP: case TokName::RSB: case TokName::RCB:
+            return -2;
+        case TokName::TEXTBAR: 
+            return -3;
+    }
+
     TokName name = cur_tok->get_name();
     return bin_op_precedence.count(name) == 0 ? -1 : bin_op_precedence[name];
+}
+
+
+void Parser::getNextToken()
+{
+    delete cur_tok;
+    cur_tok = tokenizer.getNextToken();        // caller will check whether cur_tok is a nullptr
 }
 
 
@@ -39,21 +78,25 @@ NumberExprAst* Parser::parseNum()
     switch (cur_tok->get_name()) 
     {
         case TokName::NUMERICAL:
-            num = new NumberExprAst(TokName::NUMERICAL, cur_tok->get_num_value());
+            num = new NumberExprAst(TokName::NUMERICAL, cur_tok->get_raw_value(), cur_tok->get_num_value());
             break;
         case TokName::E:
-            num = new NumberExprAst(TokName::E);
+            num = new NumberExprAst(TokName::E, cur_tok->get_raw_value());
             break;
         case TokName::I:
-            num = new NumberExprAst(TokName::I);
+            num = new NumberExprAst(TokName::I, cur_tok->get_raw_value());
+            break;
+        case TokName::PI:
+            num = new NumberExprAst(TokName::PI, cur_tok->get_raw_value());
             break;
         case TokName::IDENTITY_MATRIX:
-            num = new NumberExprAst(TokName::IDENTITY_MATRIX);
+            num = new NumberExprAst(TokName::IDENTITY_MATRIX, cur_tok->get_raw_value());
             break;
         default:
             num = nullptr;
             break;
     }
+    getNextToken();
     return num;
 }
 
@@ -67,19 +110,19 @@ MatrixExprAst* Parser::parseMatrix()
 
     MatrixExprAst* matrix = new MatrixExprAst;
     MatrixExprAst* row = parseBracket();
-    if (parseBracket == nullptr)
+    if (row == nullptr)
     {
         delete matrix;
         throw std::domain_error("Invalid use of brackets for a non-matrix expression.");
     }
     auto col_size = row->entries.size();
     matrix->entries.push_back(row);
-    getNextToken();
 
     while (cur_tok != nullptr && cur_tok->get_name() == TokName::COMMA)
     {
+        getNextToken();
         row = parseBracket();
-        if (parseBracket == nullptr)
+        if (row == nullptr)
         {
             delete matrix;
             throw std::domain_error("Invalid entries for a matrix.");
@@ -90,7 +133,7 @@ MatrixExprAst* Parser::parseMatrix()
             throw std::domain_error("Column size mismatch.");
         }
         matrix->entries.push_back(row);
-        getNextToken();
+        // getNextToken();
     }
 
     if (cur_tok->get_name() != TokName::RSB)
@@ -115,7 +158,6 @@ MatrixExprAst* Parser::parseBracket()
     {
         ExprAst* entry = parseExpr();
         row->entries.push_back(entry);
-        getNextToken();
 
         while (cur_tok != nullptr && cur_tok->get_name() == TokName::COMMA)
         {
@@ -129,6 +171,7 @@ MatrixExprAst* Parser::parseBracket()
             delete row;
             return nullptr;
         }
+        getNextToken();
         return row;
     }
     catch (...)     // catch all exceptions but do not rethrow
@@ -164,22 +207,25 @@ ExprAst* Parser::parseParen()
         if (cur_tok->get_name() == TokName::TEXTBAR)
         {
             getNextToken();
-            ExprAst* temp = parseExpr();
+            ExprAst* temp = parseExpr(true);
             if (cur_tok->get_name() != TokName::TEXTBAR)
             {
                 delete temp;
                 throw std::domain_error("Missing closing textbar.");
             }
 
-            FunctionExprAst* abs = new FunctionExprAst(TokName::ABS, std::vector<ExprAst*>{temp});
+            FunctionExprAst* abs = new FunctionExprAst(TokName::ABS, cur_tok->get_raw_value());
+            abs->args.push_back(temp);
             getNextToken();
             return abs;
         }
     }
-    catch(...)
+    catch (...)
     {
         throw;      // rethrow, leave the exceptions to parsePrimary()
     }
+    
+    return nullptr;
 }
 
 
@@ -199,7 +245,7 @@ ExprAst* Parser::parseId()
     if (cur_tok->get_type() != TokType::OP || getTokPrecedence() != -1)     
         return nullptr;     // binops are not functions
 
-    FunctionExprAst* func = new FunctionExprAst(cur_tok->get_name());
+    FunctionExprAst* func = new FunctionExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
     getNextToken();
 
     if (cur_tok->get_type() == TokType::NUM)
@@ -237,9 +283,9 @@ ExprAst* Parser::parseId()
             getNextToken();
             return func;
         }
-        catch(...)
+        catch (...)
         {
-            throw;      // rethrow, parsePrimary() will handle
+            throw;      // rethrow, main driver function will handle
         }
     }
 
@@ -247,7 +293,243 @@ ExprAst* Parser::parseId()
 }
 
 
-ExprAst* Parser::parsePrimary()
+// primaryexpr 
+//          ::= numberexpr
+//          ::= parenexpr
+//          ::= matrixexpr
+//          ::= identifierexpr
+ExprAst* Parser::parsePrimary(bool inside_textbar)
 {
-    // TODO
+    if (cur_tok == nullptr)     return nullptr;
+    if (cur_tok->get_type() == TokType::NUM)
+    {
+        ExprAst* numexpr = parseNum();
+        return numexpr;
+    }
+
+    if (cur_tok->get_name() == TokName::LP || cur_tok->get_name() == TokName::TEXTBAR)
+    {
+        try
+        {
+            ExprAst* parenexpr = parseParen();
+            return parenexpr;
+        }
+        catch (...)
+        {
+            throw;      // rethrow for now, need further refinement
+        }
+    }
+
+    if (cur_tok->get_name() == TokName::LSB)
+    {
+        try
+        {
+            ExprAst* matrixexpr = parseMatrix();
+            return matrixexpr;
+        }
+        catch (...)
+        {
+            throw;      // rethrow
+        }
+    }
+
+    try
+    {
+        ExprAst* expr = parseId();
+        if (!expr)  throw std::domain_error("Unknown expression.");
+        return expr;
+    }
+    catch (...)
+    {
+        throw;          // rethrow
+    }
+
+    return nullptr;     // unreachable normally
+}
+
+
+// binoprhs    
+//      ::= ( binop primaryexpr | primaryexpr )*
+ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_textbar)
+{
+    // loop will terminate when 
+    // 1) hitting right closing brackets i.e. ) ] } 
+    // 2) hitting a pairing textbar when parsing a primaryexpr
+    // 3) hitting EOF or tokenizer encountered an error   
+    while (true)
+    {
+        if (!cur_tok)   return lhs;
+        int cur_precedence = getTokPrecedence();
+        TokName cur_op{TokName::CDOT};              // if not a binary op, presume to be multiplication
+        std::string cur_raw_str{"*"};
+
+        switch (cur_precedence)
+        {
+            case -1:
+                cur_precedence = bin_op_precedence[TokName::CDOT];
+                if (cur_precedence < min_precedence)    return lhs;
+                break;
+
+            case -2:
+                return lhs;
+
+            case -3:
+                if (inside_textbar)     return lhs;
+                break;
+
+            default:
+                if (cur_precedence < min_precedence)    return lhs;
+                cur_op = cur_tok->get_name();
+                cur_raw_str = cur_tok->get_raw_value();
+                getNextToken();
+                break;
+        }
+        
+        ExprAst* rhs = nullptr;
+        try
+        {
+            rhs = parsePrimary(inside_textbar);
+            if (!rhs)   throw std::domain_error("Incomplete expression, missing right hand side operand.");
+        }
+        catch (...)
+        {
+            delete rhs;
+            throw;      // rethrow
+        }
+        
+        int next_precedence = getTokPrecedence();
+        if (next_precedence > cur_precedence)        // the next binary group binds more tightly           
+        {
+            // all operators with precedence greater than cur_precedence should be merged as the rhs
+            try
+            {
+                rhs = parseBinOpRhs(cur_precedence + 1, rhs, inside_textbar);
+                if (!rhs)   throw std::domain_error("Incomplete expression, missing right hand side operand.");
+            }
+            catch (...)
+            {
+                delete rhs;
+                throw;      // rethrow
+            }
+        }
+
+        lhs = new BinaryExprAst(cur_op, cur_raw_str, lhs, rhs);      // merging
+    }
+}
+
+
+// expression  
+//      ::= primaryexpr binoprhs
+ExprAst* Parser::parseExpr(bool inside_textbar)
+{
+    try
+    {
+        ExprAst* expr = parsePrimary(inside_textbar);
+        if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");   // should not occur during normal exception handling
+        return parseBinOpRhs(0, expr, inside_textbar);
+    }
+    catch (const std::domain_error& err)
+    {
+        throw;
+    }
+    catch (const std::runtime_error& err)
+    {
+        throw;
+    }
+    catch (...)
+    {
+        throw std::runtime_error("Fatal error, unexpected exception occurs.");
+    }
+}
+
+
+// main driver function, handles all exceptions
+bool Parser::parse()
+{
+    try
+    {
+        root = parseExpr();
+        return true;
+    }
+    catch (const std::domain_error& err)
+    {
+        std::cerr << err.what() << std::endl
+                  << "Parsing unfinished." << std::endl;
+        delete root;
+    }
+    catch (const std::runtime_error& err)
+    {
+        std::cerr << err.what() << std::endl
+                  << "Parsing aborted." << std::endl;
+        delete root;
+    }
+    catch (...)
+    {
+        std::cerr << "Unexpected exception raised, parsing aborted." << std::endl;
+        delete root; 
+    }
+
+    return false;
+}
+
+
+// do pre-order traversal on the AST and print the Polish notation of the expression
+// partially done for now
+void Parser::printAst(ExprAst* root) const
+{
+    // TODO: need to implement evaluator
+    if (!root)  return;
+    if (typeid(*root) == typeid(BinaryExprAst))
+    {
+        BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(root);
+        cout << "(" << temp->raw << ", ";
+
+        printAst(temp->lhs);
+        cout << ", ";
+
+        printAst(temp->rhs);
+        cout << ")";
+    }
+    else if (typeid(*root) == typeid(NumberExprAst))
+    {
+        NumberExprAst* temp = dynamic_cast<NumberExprAst*>(root);
+        if (temp->name == TokName::NUMERICAL)
+            cout << temp->value;
+        else
+            cout << temp->raw;
+    }
+    else if (typeid(*root) == typeid(VariableExprAst))
+    {
+        VariableExprAst* temp = dynamic_cast<VariableExprAst*>(root);
+        cout << temp->name;
+    }
+    else if (typeid(*root) == typeid(MatrixExprAst))
+    {
+        MatrixExprAst* temp = dynamic_cast<MatrixExprAst*>(root);
+        cout << "[";
+        for (auto entry : temp->entries)
+        {
+            printAst(entry);
+            cout << ", ";
+        }
+        cout << "]";
+    }
+    else if (typeid(*root) == typeid(FunctionExprAst))
+    {
+        FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(root);
+        cout << temp->raw << "(";
+        for (auto arg : temp->args)
+        {
+            printAst(arg);
+            cout << ", ";
+        }
+        cout << ")";
+    }
+    else throw std::runtime_error("Fail to print AST, exiting.");
+}
+
+
+void Parser::print() const
+{
+    printAst(root);
 }

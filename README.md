@@ -64,10 +64,10 @@ Notice that the 'variable' used for the polynomial does not matter.
 ## Benson
 
 1. OCR recognition
-    * Core interface of Mathpix Snip OCR API - [ocr_api.h](sources\utils\ocr_api.h)     :heavy_check_mark:
+    * Core interface of Mathpix Snip OCR API - [ocr_api.h](./sources/utils/ocr_api.h)     :heavy_check_mark:
     * GUI interface     :warning:
 2. Parser for AsciiMath
-    * Lexer - [lexer.h](sources\parser\lexer.h) [tokens.h](sources\parser\tokens.h)     :heavy_check_mark:
+    * Lexer - [lexer.h](./sources/parser/lexer.h) [tokens.h](./sources/parser/tokens.h)     :heavy_check_mark:
     * Parser    :warning:
     * Related interfaces, evaluation, traversal and other functions :warning:
 3. Extending supported operations and features

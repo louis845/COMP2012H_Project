@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-int main() 
+void test_lexer() 
 {
     string input;
     // getline(cin, input);
@@ -51,7 +51,6 @@ int main()
         }
         delete cur;
     }
-
 
     cin.get(); cin.get();
 }

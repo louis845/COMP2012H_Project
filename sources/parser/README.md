@@ -90,20 +90,20 @@ numberexpr      ::= number
 parenexpr       ::= '(' expression ')'
                 ::= '|' expression '|'
 
-bracketexpr     ::= '[' expression (',' expression)* ']'
+bracketexpr     ::= '[' expression ( ',' expression )* ']'
 
 identifierexpr  ::= variable
                 ::= function ( number | variable )
-                ::= function '(' expression (',' expression)* ')'
+                ::= function '(' expression ( ',' expression )* ')'
 
-matrixexpr      ::= '[' bracketexpr (',' bracketexpr)* ']'
+matrixexpr      ::= '[' bracketexpr ( ',' bracketexpr )* ']'
 
 primaryexpr ::= numberexpr
             ::= parenexpr
             ::= matrixexpr
             ::= identifierexpr
 
-binoprhs    ::= ( binop primaryexpr )*
+binoprhs    ::= ( binop primaryexpr | primaryexpr )*
 
 expression  ::= primaryexpr binoprhs
 
