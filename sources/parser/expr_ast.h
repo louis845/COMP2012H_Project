@@ -19,13 +19,14 @@ class NumberExprAst : public ExprAst
     friend class Parser;
 
 public:
-    NumberExprAst(Token::TokName name=Token::TokName::NUMERICAL, const long double& value=0.0L):
-         name(name), value(value) {}
+    NumberExprAst(Token::TokName name, const std::string& raw, const long double& value=0.0L):
+         name(name), raw(raw), value(value) {}
          
     long double eval() const { return value; }
 
 private:
     Token::TokName name{Token::TokName::NUMERICAL};
+    std::string raw{""};
     long double value{0.0L};
 };
 
@@ -64,15 +65,17 @@ class BinaryExprAst : public ExprAst
     friend class Parser;
 
 public:
-    BinaryExprAst(Token::TokName op, ExprAst* left, ExprAst* right):
-        op(op), left(left), right(right) {}
-    ExprAst* eval() const;
+    BinaryExprAst(Token::TokName op, const std::string& raw, ExprAst* lhs, ExprAst* rhs):
+        op(op), raw(raw), lhs(lhs), rhs(rhs) {}
 
-    ~BinaryExprAst() { delete left; delete right; }
+    ~BinaryExprAst() { delete lhs; delete rhs; }
+
+    ExprAst* eval() const;
 
 private:
     Token::TokName op;
-    ExprAst* left, *right;
+    std::string raw{""};
+    ExprAst* lhs, *rhs;
 };
 
 
@@ -81,15 +84,15 @@ class FunctionExprAst : public ExprAst
     friend class Parser;
 
 public:
-    FunctionExprAst(Token::TokName op): op(op) {}
-    FunctionExprAst(Token::TokName op, const std::vector<ExprAst*>& args):
-        op(op), args(args) {}
+    FunctionExprAst(Token::TokName op, const std::string& raw): op(op), raw(raw) {}
+    
     ~FunctionExprAst() { for (auto arg : args)  delete arg; }
 
     ExprAst* eval() const;
 
 private:
     Token::TokName op;
+    std::string raw{""};
     std::vector<ExprAst*> args;
 };
 
