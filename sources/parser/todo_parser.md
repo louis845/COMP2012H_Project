@@ -82,3 +82,25 @@ if(back.is_zero()){
     }
 }
 </pre>
+
+## Create matrix
+Create a two-dimensional dynamically allocated array. Use the RF class (assumes same types, faster computation).
+### Direct conversion operator from R to RF
+<pre>
+R value;
+RF value2=value; //Direct conversion with same underlying type, and same value
+</pre>
+### Matrix creation
+<pre>
+RF **matrix; //Two dimensional array
+int rows, cols;
+/**
+* Your code to assign values to the matrix, and rows cols
+*/
+
+if(RF::ensure_types_equal(matrix, rows, cols)){ //This function directly changes the values of the entries of the matrix, so no need to delete
+    // OK
+}else{
+    // Matrix has incompatible types, tell user
+}
+</pre>
