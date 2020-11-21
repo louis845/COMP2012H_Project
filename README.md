@@ -54,6 +54,16 @@ Notice that the 'variable' used for the polynomial does not matter.
 2. Parse expression (using void parse_expression in tools.h), and store into RF** (two dimensional array)
 3. Use bool RF::ensure_types_equal(RF* const* const matrix, int rows, int cols) on the array to make their types equal.
 
+### Possible GUI component
+* A section showing the original image input from the user.
+* (optional) A parallel section showing the interpreted input.
+* Text boxes containing the OCR result i.e. LaTeX and AsciiMath interpretation
+  *  either a dropdown menu for users to select between the two or two parallel text boxes are fine
+  *  user may copy the plain text, and can modify the content of AsciiMath if they are unsatisfied about the OCR result
+  *  in case no OCR is available, user can manually input their expression using that text box for AsciiMath
+* Another section for the computation results and possibly offering steps.
+
+
 ## Louis
 * Math algorithms and base classes
 * Console IO
