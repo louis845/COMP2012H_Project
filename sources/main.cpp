@@ -12,7 +12,7 @@
 #include "math/long/LongComplex.h"
 #include "math/fraction/Fraction.h"
 #include "math/polynomial/Polynomial.h"
-
+#include <gmpxx.h>
 
 using namespace std;
 int main(){
@@ -23,6 +23,10 @@ int main(){
     getline(cin,s);
     cout<<s<<"\n";
     cin>>i;*/
+    mpz_class a,b;
+    a="68249687035694207605346";
+    b="42365475386784396783059750349";
+    cout<<(b*a)<<"\n";
     console_main_loop();
     return 0;
 }

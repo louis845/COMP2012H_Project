@@ -182,7 +182,7 @@ void simple_parse_cpx(const string& input, string& err, R& val, int& success, co
         }
         mpz_class l;
         try{
-            l=stod(plong);
+            l=plong;
         }catch(...){
             err="Long detected, but invalid long: "+plong;
             success=start_index;

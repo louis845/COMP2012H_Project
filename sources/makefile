@@ -1,12 +1,12 @@
 CC = g++ -std=c++11
 
-HEADER_ROOT_DIRECTORY = -iquote ${CURDIR} -I ../libraries/gmp-6.2.0
+HEADER_ROOT_DIRECTORY = -iquote ${CURDIR} -I ../libraries/gmp-6.2.1
 OUTPUT_DIRECTORY = ${CURDIR}/../compile/
 LIBRARIES = -L ${CURDIR}/../libraries/
 
 INCLUDE_DIRS = -I. -Imath -Imath/double -Imath/fraction -Imath/linear -Imath/long \
 	-Imath/polynomial -Iparser -Iutils -I../libraries/Armadillo/include \
-	-I../libraries/gmp-6.2.0
+	-I../libraries/gmp-6.2.1
 
 CFLAGS = -g -O3 -Wall -o $(OUTPUT_DIRECTORY)$@ $(INCLUDE_DIRS) -c $<
 
