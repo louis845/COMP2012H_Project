@@ -4,6 +4,14 @@ HEADER_ROOT_DIRECTORY = -iquote ${CURDIR} -I ../libraries/gmp-6.2.0
 OUTPUT_DIRECTORY = ${CURDIR}/../compile/
 LIBRARIES = -L ${CURDIR}/../libraries/
 
+INCLUDE_DIRS = -I. -Imath -Imath/double -Imath/fraction -Imath/linear -Imath/long \
+	-Imath/polynomial -Iparser -Iutils -I../libraries/Armadillo/include \
+	-I../libraries/gmp-6.2.0
+
+CFLAGS = -g -O3 -Wall -o $(OUTPUT_DIRECTORY)$@ $(INCLUDE_DIRS) -c $<
+
+OBJS = $(wildcard $(CURDIR)/../compile/*.o)
+
 SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp 
 
 #use -g option whenever debug
@@ -63,3 +71,24 @@ History.o: steps/StepsHistory.cpp
 
 tools.o: math/tools.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)tools.o $(HEADER_ROOT_DIRECTORY) -c math/tools.cpp
+
+# --------------------------------------------------------------------------------------
+# O3 optimization is enabled, compilation could be slow
+test_parser: parser/test_parser.cpp expr_ast.o lexer.o parser.o math_wrapper.o
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)$@ $(OBJS) $(LIBRARIES) -lgmpxx -lgmp
+
+expr_ast.o: parser/expr_ast.cpp parser/expr_ast.h
+	$(CC) $(CFLAGS)
+
+lexer.o: parser/lexer.cpp parser/lexer.h
+	$(CC) $(CFLAGS)
+
+parser.o: parser/parser.cpp parser/parser.h
+	$(CC) $(CFLAGS)
+
+math_wrapper.o: utils/math_wrapper.cpp utils/math_wrapper.h
+	$(CC) $(CFLAGS)
+
+.PHONY: clean 
+clean: 
+	-rm $(OBJS)

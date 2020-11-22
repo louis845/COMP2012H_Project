@@ -4,7 +4,7 @@
 #include "tokens.h"
 using namespace std;
 
-int main()
+void test_parser()
 {
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
     string test_2{"4xy + e^x + sqrt(x) // 3y - 3.44 % 10e23"};  // note that sqrt(x) // 3y should be parse as sqrt(x) / 3 * y
@@ -37,14 +37,30 @@ int main()
     cout << endl;
 
     parser.reset_input(matrix);
-    cout << "matrix : " << parser.parse() << endl;
+    cout << "matrix: " << parser.parse() << endl;
     parser.print();
     cout << endl;
 
     parser.reset_input(func);
-    cout << "func : " << parser.parse() << endl;
+    cout << "func: " << parser.parse() << endl;
     parser.print();
     cout << endl;
+
+    // ------------------------- test evaluator below ------------------------
+
+    string eval_test_1{"x^2 + x / (x - 1) * 4x"};
+
+    string eval_test_2{"3 * 3i - 4 / 5 + 6 ^ 3"};
+
+    parser.reset_input(eval_test_1);
+    cout << "eval_test_1: " << parser.parse() << endl;
+    parser.print(); cout << endl;
+    parser.eval();  cout << endl;
+
+    parser.reset_input(eval_test_2);
+    cout << "eval_test_2: " << parser.parse() << endl;
+    parser.print(); cout << endl;
+    parser.eval();  cout << endl;
 
     cin.get(); cin.get();
 }

@@ -4,6 +4,7 @@
 #include "expr_ast.h"
 #include "lexer.h"
 #include "tokens.h"
+#include "math_wrapper.h"
 #include <string>
 #include <unordered_map>
 
@@ -20,6 +21,7 @@ public:
     bool parse();
     ExprAst* get_root();
     void print() const;
+    ROperand eval();
     void reset_input(const std::string& input);
     
 private:
@@ -29,7 +31,7 @@ private:
     NumberExprAst* parseNum();
     ExprAst* parseParen();
     ExprAst* parseId();
-    MatrixExprAst* parseBracket();
+    std::vector<ExprAst*> parseBracket();
     MatrixExprAst* parseMatrix();
     ExprAst* parsePrimary(bool inside_textbar);
     ExprAst* parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_textbar);

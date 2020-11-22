@@ -1,6 +1,5 @@
 #include "lexer.h"
 using std::iostream;
-using std::pair;
 using std::string;
 using std::regex;
 using std::smatch;
@@ -121,7 +120,7 @@ Token* Lexer::parseNum()
     catch (const std::out_of_range& e)
     {
         std::cerr << "Invalid numerical value: " << result[1] 
-                  << " is out of range of long double type." << std::endl;
+                  << " is out of range of built-in types." << std::endl;
         Token* temp = new TokErr(TokName::NUMERICAL_ERROR, result[1]);
         return temp;
     }
