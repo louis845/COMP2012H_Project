@@ -74,28 +74,7 @@ void Parser::getNextToken()
 NumberExprAst* Parser::parseNum()
 {
     if (cur_tok == nullptr || cur_tok->get_type() != TokType::NUM) return nullptr;
-    NumberExprAst* num;
-    switch (cur_tok->get_name()) 
-    {
-        case TokName::NUMERICAL:
-            num = new NumberExprAst(TokName::NUMERICAL, cur_tok->get_raw_value(), cur_tok->get_num_value());
-            break;
-        case TokName::E:
-            num = new NumberExprAst(TokName::E, cur_tok->get_raw_value());
-            break;
-        case TokName::I:
-            num = new NumberExprAst(TokName::I, cur_tok->get_raw_value());
-            break;
-        case TokName::PI:
-            num = new NumberExprAst(TokName::PI, cur_tok->get_raw_value());
-            break;
-        case TokName::IDENTITY_MATRIX:
-            num = new NumberExprAst(TokName::IDENTITY_MATRIX, cur_tok->get_raw_value());
-            break;
-        default:
-            num = nullptr;
-            break;
-    }
+    NumberExprAst* num = new NumberExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
     getNextToken();
     return num;
 }
@@ -109,28 +88,45 @@ MatrixExprAst* Parser::parseMatrix()
     getNextToken();
 
     MatrixExprAst* matrix = new MatrixExprAst;
-    MatrixExprAst* row = parseBracket();
-    if (row == nullptr)
+    std::vector<ExprAst*> row;
+    try
+    {
+        row = parseBracket();
+    }
+    catch(const std::invalid_argument& e)
+    {
+        std::cerr << "Invalid matrix: " << e.what() << '\n';
+        delete matrix;
+        throw std::invalid_argument("Invalid matrix.");
+    }
+    
+    if (row.empty())
     {
         delete matrix;
-        throw std::domain_error("Invalid use of brackets for a non-matrix expression.");
+        throw std::invalid_argument("Empty entries in matrix.");
     }
-    auto col_size = row->entries.size();
+    
     matrix->entries.push_back(row);
+    size_t col_size = row.size();
 
     while (cur_tok != nullptr && cur_tok->get_name() == TokName::COMMA)
     {
         getNextToken();
-        row = parseBracket();
-        if (row == nullptr)
+        try
         {
-            delete matrix;
-            throw std::domain_error("Invalid entries for a matrix.");
+            row = parseBracket();
         }
-        if (row->entries.size() != col_size)
+        catch(const std::invalid_argument& e)
+        {
+            std::cerr << "Invalid matrix: " << e.what() << '\n';
+            delete matrix;
+            throw std::invalid_argument("Invalid matrix.");
+        }
+        
+        if (row.size() != col_size)
         {
             delete matrix;
-            throw std::domain_error("Column size mismatch.");
+            throw std::invalid_argument("Column sizes mismatch.");
         }
         matrix->entries.push_back(row);
         // getNextToken();
@@ -139,7 +135,7 @@ MatrixExprAst* Parser::parseMatrix()
     if (cur_tok->get_name() != TokName::RSB)
     {
         delete matrix;
-        throw std::domain_error("Missing right square bracket.");
+        throw std::invalid_argument("Missing right square bracket for the matrix.");
     }
     getNextToken();
     return matrix;
@@ -148,36 +144,33 @@ MatrixExprAst* Parser::parseMatrix()
 
 // bracketexpr     
 //          ::= '[' expression (',' expression)* ']'
-MatrixExprAst* Parser::parseBracket()
+std::vector<ExprAst*> Parser::parseBracket()
 {
-    if (cur_tok == nullptr || cur_tok->get_name() != TokName::LSB)  return nullptr;
-    MatrixExprAst* row = new MatrixExprAst;
+    std::vector<ExprAst*> row;
+    if (cur_tok == nullptr || cur_tok->get_name() != TokName::LSB)  return row;
     getNextToken();
 
     try 
     {
         ExprAst* entry = parseExpr();
-        row->entries.push_back(entry);
+        row.push_back(entry);
 
         while (cur_tok != nullptr && cur_tok->get_name() == TokName::COMMA)
         {
             getNextToken();
             entry = parseExpr();
-            row->entries.push_back(entry);
+            row.push_back(entry);
         }
 
         if (cur_tok == nullptr || cur_tok->get_name() != TokName::RSB)
-        {
-            delete row;
-            return nullptr;
-        }
+            throw std::invalid_argument("Incomplete matrix, expecting ']'.");
+
         getNextToken();
         return row;
     }
     catch (...)     // catch all exceptions but do not rethrow
     {
-        delete row;
-        return nullptr;     // only let top-level parseMatrix() handle exceptions
+        throw std::invalid_argument("Invalid entries in the matrix.");     // only let top-level parseMatrix() handle exceptions
     } 
 }
 
@@ -493,10 +486,11 @@ void Parser::printAst(ExprAst* root) const
     else if (typeid(*root) == typeid(NumberExprAst))
     {
         NumberExprAst* temp = dynamic_cast<NumberExprAst*>(root);
-        if (temp->name == TokName::NUMERICAL)
-            cout << temp->value;
-        else
-            cout << temp->raw;
+        if (temp->name == TokName::INTEGRAL)
+            cout << temp->int_value;
+        else if (temp->name == TokName::FLOAT)
+            cout << temp->float_value;
+        else cout << temp->raw;
     }
     else if (typeid(*root) == typeid(VariableExprAst))
     {
@@ -507,10 +501,15 @@ void Parser::printAst(ExprAst* root) const
     {
         MatrixExprAst* temp = dynamic_cast<MatrixExprAst*>(root);
         cout << "[";
-        for (auto entry : temp->entries)
+        for (auto row : temp->entries)
         {
-            printAst(entry);
-            cout << ", ";
+            cout << "[";
+            for (auto col : row)
+            {
+                printAst(col);
+                cout << ", ";
+            }
+            cout << "], ";
         }
         cout << "]";
     }
@@ -532,4 +531,25 @@ void Parser::printAst(ExprAst* root) const
 void Parser::print() const
 {
     printAst(root);
+}
+
+
+ROperand Parser::eval()             // only for testing so far
+{
+    ROperand result = root->evalR();
+    if (result.type == ROperand::Type::NOR) cout << result.value;
+    else
+    {
+        cout << "[";
+        for (auto row : result.mat)
+        {
+            cout << "[";
+            for (auto col : row)
+                cout << col << ", ";
+            cout << "]"; 
+        }
+        cout << "]";
+    }
+    
+    return result;
 }

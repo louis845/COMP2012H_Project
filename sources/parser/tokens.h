@@ -1,10 +1,8 @@
 #ifndef TOKEN_H_
 #define TOKEN_H_
 
-#include <iostream>
 #include <string>
 #include <unordered_map>
-#include <utility>
 
 // Check the README for more information about tokens
 
@@ -22,7 +20,7 @@ public:
         SIN, COS, TAN, SEC, CSC, COT, ARCSIN, ARCCOS, ARCTAN, EXP, LOG, LN,
         DET, DIM, RAN, COL, KER, MOD, GCD, LCM, MIN, MAX, TR,
         RREF, NORM, ABS, SQRT, ROOT, // OPERATOR
-        E = 300, PI, I, IDENTITY_MATRIX, NUMERICAL, // NUM
+        E = 300, PI, I, IDENTITY_MATRIX, INTEGRAL, FLOAT, // NUM
         ALPHA = 400, BETA, THETA, LAMBDA, MU, PHI, VARPHI, OMEGA, VARIABLE, // IDENTIFIER
         INVALID_TOKEN = 500, NUMERICAL_ERROR // ERR
     };
@@ -91,24 +89,30 @@ public:
     {
         if (tok_map.count(value) == 0)
         {
-            num_value = stold(value);   // stold may throw an exception, catch it in Lexer::parseNum()
-            name = TokName::NUMERICAL;
+            if (value.find('.') == std::string::npos)
+            {
+                // int_value = stoll(value);   // stoll may throw an exception, catch it in Lexer::parseNum()
+                name = TokName::INTEGRAL;
+            }
+            else
+            {
+                // float_value = stold(value);   // stold may throw an exception, catch it in Lexer::parseNum()
+                name = TokName::FLOAT;
+            }
         }
-        else
-        {
-            name = static_cast<TokName>(tok_map[value]);
-            num_value = 0.0L;
-        }
+        else    name = static_cast<TokName>(tok_map[value]);
     }
 
     const TokName& get_name() const override { return name; }
     const std::string& get_raw_value() const override { return raw_value; }
-    long double get_num_value() const override { return num_value; }
+    // long double get_float() const { return float_value; }
+    // long long get_int() const { return int_value; }
 
 private:
     TokName name;
     std::string raw_value;
-    long double num_value;
+    // long long int_value{0L};
+    // long double float_value{0.0L};
 };
 
 
