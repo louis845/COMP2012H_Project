@@ -95,6 +95,7 @@ bracketexpr     ::= '[' expression ( ',' expression )* ']'
 identifierexpr  ::= variable
                 ::= function ( number | variable )
                 ::= function '(' expression ( ',' expression )* ')'
+                ::= function matrixexpr
 
 matrixexpr      ::= '[' bracketexpr ( ',' bracketexpr )* ']'
 
@@ -103,9 +104,9 @@ primaryexpr ::= numberexpr
             ::= matrixexpr
             ::= identifierexpr
 
-binoprhs    ::= ( binop primaryexpr | primaryexpr )*
+binoprhs    ::= ( binop ( '+' | '-' )? primaryexpr | ( '+' | '-' )? primaryexpr )*
 
-expression  ::= primaryexpr binoprhs
+expression  ::= ( '+' | '-' )? primaryexpr binoprhs
 
 
 /*  Original parser grammar from AsciiMath renderer

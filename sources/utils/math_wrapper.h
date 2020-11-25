@@ -9,6 +9,8 @@
 #include "Double.h"
 #include "DoubleComplex.h"
 #include <vector>
+#include <complex>
+#include <armadillo>
 
 // a generic wrapper for self-implemented math library
 // encapsulate some operations and add a class ROperand
@@ -25,14 +27,16 @@ class ROperand
     friend class Parser;
 
 public:
-    enum class Type { NOR, MAT }; 
+    enum class Type { NOR, MAT, IMAT };             // IMAT : identity matrix 
 
-    explicit ROperand(R value): value(value) { type = Type::NOR; }
-    explicit ROperand(size_t row_num): mat(row_num) { type = Type::MAT; } 
+    ROperand(): type(Type::IMAT) {}
+    explicit ROperand(R value): type(Type::NOR), value(value) {}
+    explicit ROperand(size_t row_num): type(Type::MAT), mat(row_num) {} 
     ~ROperand() = default;
 
-    ROperand operator+(ROperand rhs);
-    ROperand operator-(ROperand rhs);
+    ROperand operator-();
+    ROperand operator+(ROperand rhs);           // use PBV and non-const since the implementation 
+    ROperand operator-(ROperand rhs);           // may change the values of the operands i.e. complexify
     ROperand operator*(ROperand rhs);
     ROperand operator/(ROperand rhs);
     ROperand operator^(int rhs);
@@ -40,7 +44,42 @@ public:
 private:
     Type type;
     std::vector<std::vector<R>> mat;
-    R value;
+    R value;            // if type == NOR, value represents numerical value, otherwise the coefficient of IMAT
+};
+
+
+class ArmaOperand
+{
+    friend class BinaryExprAst;
+    friend class MatrixExprAst;
+    friend class FunctionExprAst;
+    friend class Parser;
+
+public:
+    enum class Type { NOR, MAT, IMAT };
+
+    ArmaOperand(): type(Type::IMAT) {}
+    explicit ArmaOperand(const std::complex<double>& value): type(Type::NOR), value(value) {}
+    explicit ArmaOperand(const arma::cx_mat& mat): type(Type::MAT), mat(mat) {}
+    explicit ArmaOperand(double real, double imag=0.0): type(Type::NOR), value(real, imag) {}
+    ArmaOperand(size_t row, size_t col): type(Type::MAT), mat(row, col, arma::fill::none) {}
+    ArmaOperand(Type type, const std::complex<double>& coeff): type(type), value(coeff) {}          // for IMAT
+
+    ArmaOperand operator+(const ArmaOperand& rhs) const;
+    ArmaOperand operator-(const ArmaOperand& rhs) const;
+    ArmaOperand operator*(const ArmaOperand& rhs) const;
+    ArmaOperand operator/(const ArmaOperand& rhs) const;
+    ArmaOperand operator^(const ArmaOperand& rhs) const;
+
+    bool almostReal() const
+    {
+        return fabs(value.imag()) <= std::numeric_limits<double>::epsilon();
+    }
+
+private:
+    Type type;
+    arma::cx_mat mat;              // entries by default are stored in double, cx = complex
+    std::complex<double> value{1.0, 0.0};
 };
 
 

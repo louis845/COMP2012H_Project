@@ -4,7 +4,7 @@
 #include <QCoreApplication>
 using namespace std;
 
-int main(int argc, char* argv[])
+int test_ocr(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
     string filename;

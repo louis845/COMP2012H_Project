@@ -1,6 +1,20 @@
 #include "math_wrapper.h"
 
 
+ROperand ROperand::operator-()
+{
+    if (type == Type::MAT)
+    {
+        ROperand result(*this);
+        for (auto row : result.mat)
+            for (auto entry : row)
+                entry = -entry;
+        return result;
+    }
+    return ROperand(-value);
+}
+
+
 ROperand ROperand::operator+(ROperand rhs)             // use PBV here since complexify_if_needed() may modify the value
 {
     if (type == Type::MAT && rhs.type == Type::MAT)     // matrix-matrix addition
@@ -107,7 +121,7 @@ ROperand ROperand::operator/(ROperand rhs)
 }
 
 
-ROperand ROperand::operator^(int rhs)
+ROperand ROperand::operator^(int rhs)           // fast exponentiation
 {
     if (rhs < 0)    throw std::invalid_argument("Negative exponential is not supported");
 
@@ -120,3 +134,123 @@ ROperand ROperand::operator^(int rhs)
     }
     return result;
 }
+
+
+ArmaOperand ArmaOperand::operator+(const ArmaOperand& rhs) const
+{
+    if (type == rhs.type)
+    {
+        if (type == Type::MAT)  return ArmaOperand(mat + rhs.mat);      // Armadillo will throw exceptions if dimensions mismatch
+        if (type == Type::NOR)  return ArmaOperand(value + rhs.value);
+        return ArmaOperand(Type::IMAT, value + rhs.value);           // two identity matrices
+    }
+
+    if (type == Type::IMAT && rhs.type == Type::NOR)
+        return ArmaOperand(Type::IMAT, value + rhs.value);
+
+    if (type == Type::NOR && rhs.type == Type::IMAT)
+        return ArmaOperand(Type::IMAT, value + rhs.value);
+
+    if (type == Type::IMAT && rhs.type == Type::MAT)
+    {   
+        if (!rhs.mat.is_square())   
+            throw std::runtime_error("Error: attempting to add a square matrix to a non-square matrix.");
+        return ArmaOperand(rhs.mat + arma::cx_mat(rhs.mat.n_rows, rhs.mat.n_cols, arma::fill::eye) * value);
+    }
+
+    if (type == Type::MAT && rhs.type == Type::IMAT)
+        return rhs + (*this);
+
+    if (type == Type::NOR && rhs.type == Type::MAT)
+        return ArmaOperand(rhs.mat + value);
+
+    return ArmaOperand(mat + rhs.value);
+}
+
+
+ArmaOperand ArmaOperand::operator-(const ArmaOperand& rhs) const
+{
+    if (type == rhs.type)
+    {
+        if (type == Type::MAT)  return ArmaOperand(mat - rhs.mat);     
+        if (type == Type::NOR)  return ArmaOperand(value - rhs.value);
+        return ArmaOperand(Type::IMAT, value - rhs.value);           
+    }
+
+    if (type == Type::IMAT && rhs.type == Type::NOR)
+        return ArmaOperand(Type::IMAT, value - rhs.value);
+
+    if (type == Type::NOR && rhs.type == Type::IMAT)
+        return ArmaOperand(Type::IMAT, value - rhs.value);
+
+    if (type == Type::IMAT && rhs.type == Type::MAT)
+    {   
+        if (!rhs.mat.is_square())   
+            throw std::runtime_error("Error: attempting to subtract a non-square matrix from a square matrix.");
+        return ArmaOperand(rhs.mat - arma::cx_mat(rhs.mat.n_rows, rhs.mat.n_cols, arma::fill::eye) * value);
+    }
+
+    if (type == Type::MAT && rhs.type == Type::IMAT)
+        return rhs - (*this);
+
+    if (type == Type::NOR && rhs.type == Type::MAT)
+        return ArmaOperand(rhs.mat - value);
+
+    return ArmaOperand(mat - rhs.value);
+}
+
+
+ArmaOperand ArmaOperand::operator*(const ArmaOperand& rhs) const
+{
+    if (type == rhs.type)
+    {
+        if (type == Type::MAT)  return ArmaOperand(mat * rhs.mat);     
+        if (type == Type::NOR)  return ArmaOperand(value * rhs.value);
+        return ArmaOperand(Type::IMAT, value * rhs.value);           
+    }
+
+    if (type == Type::IMAT && rhs.type == Type::NOR)
+        return ArmaOperand(Type::IMAT, value * rhs.value);
+
+    if (type == Type::NOR && rhs.type == Type::IMAT)
+        return ArmaOperand(Type::IMAT, value * rhs.value);
+
+    if (type == Type::IMAT && rhs.type == Type::MAT)
+        return ArmaOperand(rhs.mat * arma::cx_mat(rhs.mat.n_rows, rhs.mat.n_cols, arma::fill::eye) * value);
+
+    if (type == Type::MAT && rhs.type == Type::IMAT)
+        return rhs * (*this);
+
+    if (type == Type::NOR && rhs.type == Type::MAT)
+        return ArmaOperand(rhs.mat * value);
+
+    return ArmaOperand(mat * rhs.value);
+}
+
+
+ArmaOperand ArmaOperand::operator/(const ArmaOperand& rhs) const
+{
+    if (rhs.type != Type::NOR)
+        throw std::logic_error("Error: divided by a matrix.");
+    
+    if (type == Type::NOR)  return ArmaOperand(value / rhs.value);
+    if (type == Type::MAT)  return ArmaOperand(mat / rhs.value);
+    if (type == Type::IMAT) return ArmaOperand(Type::IMAT, value / rhs.value); 
+}
+
+
+ArmaOperand ArmaOperand::operator^(const ArmaOperand& rhs) const
+{
+    if (rhs.type != ArmaOperand::Type::NOR)
+        throw std::logic_error("Error: matrix is not a valid exponential.");
+    if (type == ArmaOperand::Type::NOR)
+        return ArmaOperand(std::pow(value, rhs.value));
+    
+    if (!rhs.almostReal())    
+        throw std::logic_error("matrix does not support complex exponential");
+    if (type == ArmaOperand::Type::MAT)
+        return ArmaOperand(arma::powmat(mat, rhs.value.real()));
+    if (type == ArmaOperand::Type::IMAT)
+        return ArmaOperand(ArmaOperand::Type::IMAT, pow(value, rhs.value.real()));
+}
+

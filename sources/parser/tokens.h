@@ -15,11 +15,11 @@ public:
     enum class TokName
     {
         COMMA = 100, // DELIM
-        AST = 200, CDOT, CROSS, DIV, FRAC, PERCENT, PLUS, MINUS, 
+        AST = 200, CDOT, CROSS, DIV, FRAC, PERCENT, PLUS, MINUS,
         SUP, SUB, TEXTBAR, LP, RP, LSB, RSB, LCB, RCB, EQUAL, 
         SIN, COS, TAN, SEC, CSC, COT, ARCSIN, ARCCOS, ARCTAN, EXP, LOG, LN,
         DET, DIM, RAN, COL, KER, MOD, GCD, LCM, MIN, MAX, TR,
-        RREF, NORM, ABS, SQRT, ROOT, // OPERATOR
+        RREF, NORM, ABS, SQRT, ROOT, NEG, // OPERATOR
         E = 300, PI, I, IDENTITY_MATRIX, INTEGRAL, FLOAT, // NUM
         ALPHA = 400, BETA, THETA, LAMBDA, MU, PHI, VARPHI, OMEGA, VARIABLE, // IDENTIFIER
         INVALID_TOKEN = 500, NUMERICAL_ERROR // ERR
@@ -67,9 +67,13 @@ class TokOp : public Token
 public:
     explicit TokOp(const std::string& value): Token(TokType::OP)
     {
-        if (tok_map.count(value) == 0)
+        std::string lower_case_value = value;
+        std::transform(value.begin(), value.end(), lower_case_value.begin(),
+                        [](unsigned char c){ return std::tolower(c); });
+
+        if (tok_map.count(lower_case_value) == 0)
             throw std::invalid_argument(value);
-        name = static_cast<TokName>(tok_map[value]);
+        name = static_cast<TokName>(tok_map[lower_case_value]);
         raw_value = value;
     }
 
@@ -82,6 +86,8 @@ private:
 };
 
 
+// the string to long/double conversion is handled by NumExprAst now
+// this class only determines the concrete type of the token
 class TokNum : public Token
 {
 public:
@@ -89,15 +95,17 @@ public:
     {
         if (tok_map.count(value) == 0)
         {
-            if (value.find('.') == std::string::npos)
-            {
-                // int_value = stoll(value);   // stoll may throw an exception, catch it in Lexer::parseNum()
-                name = TokName::INTEGRAL;
-            }
+            if (value.find('.') != std::string::npos)   name = TokName::FLOAT;
             else
             {
-                // float_value = stold(value);   // stold may throw an exception, catch it in Lexer::parseNum()
-                name = TokName::FLOAT;
+                auto pos = value.find('e');
+                if (pos != std::string::npos && value[pos + 1] == '-')  name = TokName::FLOAT;  // 1e-6 is a floating number
+                else
+                {
+                    pos = value.find('E');
+                    if (pos != std::string::npos && value[pos + 1] == '-') name = TokName::FLOAT;
+                    else name = TokName::INTEGRAL;
+                }
             }
         }
         else    name = static_cast<TokName>(tok_map[value]);
@@ -105,14 +113,10 @@ public:
 
     const TokName& get_name() const override { return name; }
     const std::string& get_raw_value() const override { return raw_value; }
-    // long double get_float() const { return float_value; }
-    // long long get_int() const { return int_value; }
 
 private:
     TokName name;
     std::string raw_value;
-    // long long int_value{0L};
-    // long double float_value{0.0L};
 };
 
 
