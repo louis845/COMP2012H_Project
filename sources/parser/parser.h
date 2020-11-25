@@ -7,6 +7,7 @@
 #include "math_wrapper.h"
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 
 class Parser
@@ -21,7 +22,8 @@ public:
     bool parse();
     ExprAst* get_root();
     void print() const;
-    ROperand eval();
+    ROperand evalR();
+    ArmaOperand eval() const;
     void reset_input(const std::string& input);
     
 private:
@@ -40,6 +42,7 @@ private:
     void printAst(ExprAst* root) const;
 
     static std::unordered_map<TokName, int> bin_op_precedence;
+    std::unordered_set<std::string> var_table;
     Lexer tokenizer;
     std::string input;
     Token* cur_tok{nullptr};

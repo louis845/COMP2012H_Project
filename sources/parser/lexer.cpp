@@ -22,7 +22,7 @@ std::unordered_map<std::string, int> Token::tok_map =
 std::regex Lexer::WHITESPACE_RE = std::regex((R"(\s+)"));
 std::regex Lexer::DELIM_RE = std::regex((R"(^\s*,)"));
 std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|dim|ran|Ran|col|Col|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref))"));
-std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|(\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?))"));
+std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|((\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?)))"));
 std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z]))"));
 
 
