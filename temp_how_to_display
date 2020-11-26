@@ -1,0 +1,22 @@
+ofstream s;
+s.open("test.tex");
+s<<"\\documentclass[preview]{standalone}";
+s<<"\\usepackage{amsmath}\\usepackage{amsfonts}\\usepackage{amssymb}\\usepackage{mathtools}";
+s<<"\\begin{document}";
+s<<"$\\displaystyle ";
+s<<"\\begin{pmatrix}1 & 2 & 3 \\\\ 2 & 3 & 4\\end{pmatrix}";
+s<<"$";
+s<<"\\end{document}";
+s.close();
+QProcess::execute("\"port/texmfs/install/miktex/bin/x64/latex\" test.tex -jobname= test");
+QProcess::execute("\"port/texmfs/install/miktex/bin/x64/dvipng\" test.dvi -o test.png -D 2000");
+QPixmap disp=QPixmap{"test.png"};
+
+int w=ui->imageLbl->width();
+int h=ui->imageLbl->height();
+
+ui->imageLbl->setPixmap(disp.scaled(w,h,Qt::KeepAspectRatio));
+
+QFile("test.tex").remove();
+QFile("test.dvi").remove();
+QFile("test.png").remove();
