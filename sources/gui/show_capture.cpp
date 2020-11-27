@@ -4,8 +4,8 @@
 #include <QPainter>
 #include <QMessageBox>
 
-show_capture::show_capture(QPixmap &capture_pic,QWidget *parent) :
-    capture(capture_pic),QWidget(parent),
+show_capture::show_capture(QPixmap &capture_pic,string user,string password,QWidget *parent) :
+    capture(capture_pic),user(user),password(password),QWidget(parent),
     ui(new Ui::show_capture)
 {
     ui->setupUi(this);
@@ -16,14 +16,6 @@ show_capture::show_capture(QPixmap &capture_pic,QWidget *parent) :
 
     connect(ui->ok,&QPushButton::clicked,[=](){
 
-        QString user_qstr = ui->user_text->text();
-        user = user_qstr.toStdString();
-        QString password_qstr = ui->password_text->text();
-        password = password_qstr.toStdString();
-        if (user.empty() || password.empty()){
-            QMessageBox::warning(this,"Warning","The input must not be empty");
-        }
-        else{
             bool valid_input = true;
             string latex = "latex";
             string ascii = "ascii";
@@ -36,11 +28,8 @@ show_capture::show_capture(QPixmap &capture_pic,QWidget *parent) :
             }
             if (valid_input){
                 this->close();
+                emit sig_checked(capture,latex,ascii);
             }
-
-            emit sig_checked(capture,latex,ascii);
-        }
-
 
     });
 

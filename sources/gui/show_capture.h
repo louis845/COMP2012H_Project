@@ -16,7 +16,7 @@ class show_capture : public QWidget
     Q_OBJECT
 
 public:
-    explicit show_capture(QPixmap &capture_pic,QWidget *parent = nullptr);
+    explicit show_capture(QPixmap &capture_pic,string user,string password,QWidget *parent = nullptr);
     ~show_capture();
 
     void paintEvent(QPaintEvent *event);

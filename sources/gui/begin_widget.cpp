@@ -1,12 +1,15 @@
 #include "begin_widget.h"
 #include "ui_begin_widget.h"
-//#include <QPushButton>
+#include <QPushButton>
 #include <QLabel>
 #include <QGridLayout>
 #include <QToolButton>
 #include <QPainter>
 #include "show_capture.h"
 #include "solution_widget.h"
+#include <QLineEdit>
+#include "input_key.h"
+#include <QDebug>
 
 begin_widget::begin_widget(QWidget *parent)
     : QWidget(parent)
@@ -39,39 +42,45 @@ begin_widget::begin_widget(QWidget *parent)
     //click on the button to enter screen_capture window
     connect(photo_btn,&QToolButton::clicked,[=](){
         this->hide();
-        window_capture * cap_window = new window_capture;
-        void(window_capture:: *complete_cap_sig)(QPixmap) = &window_capture::sig_capture_completed;
 
-        connect(cap_window,complete_cap_sig,[=](QPixmap cap_pic){
+        input_key * input_window = new input_key;
+        input_window->show();
 
-            show_capture * show_cap = new show_capture(cap_pic);
-            show_cap->show();
+        connect(input_window,&input_key::user_quit,[=](){this->show();});
 
-            void(show_capture:: *user_input)(QPixmap,string,string) = &show_capture::sig_checked;
-            connect(show_cap,user_input,[=](QPixmap capture,string get_latex,string get_ascii){
+        void(input_key:: *input_done)(string,string) = &input_key::user_input;
 
-                //parser func
+        connect(input_window,input_done,[=](string username_input,string password_input){
 
-                QString latex = QString::fromStdString(get_latex);
-                QString ascii = QString::fromStdString(get_ascii);
+            username = username_input;
+            password = password_input;
 
-                solution_widget * solution_window = new solution_widget(capture,latex,ascii);
-                solution_window->show();
+            CaptureAndSolve();
 
-
+            connect(this,&begin_widget::do_again,[=](){
+                this->show();
+                no_key_needed = true;
             });
-
 
         });
 
+        if (no_key_needed) {
+            input_window->close();
+            CaptureAndSolve();
+            connect(this,&begin_widget::do_again,[=](){
+                this->show();
+            });
+        }
 
 
     });
 
-    //set layout
+
+    //set total layout
     QGridLayout *layout = new QGridLayout;
     layout -> addWidget(logo,0,1,Qt::AlignHCenter);
     layout -> addWidget(photo_btn,1,1,Qt::AlignHCenter);
+    //layout -> addWidget(input_widget,1,1,1,2,Qt::AlignHCenter);
     QSpacerItem * spacer1 = new QSpacerItem(10,20);
     layout -> addItem(spacer1,2,1,Qt::AlignHCenter);
     layout -> setVerticalSpacing(0);
@@ -86,6 +95,44 @@ begin_widget::begin_widget(QWidget *parent)
 
 }
 
+void begin_widget::CaptureAndSolve(){
+
+    window_capture * cap_window = new window_capture;
+    void(window_capture:: *complete_cap_sig)(QPixmap) = &window_capture::sig_capture_completed;
+
+    connect(cap_window,complete_cap_sig,[=](QPixmap cap_pic){
+
+        show_capture * show_cap = new show_capture(cap_pic,username,password);
+        show_cap->show();
+
+        void(show_capture:: *user_input)(QPixmap,string,string) = &show_capture::sig_checked;
+        connect(show_cap,user_input,[=](QPixmap capture,string get_latex,string get_ascii){
+
+            //parser func
+
+            QString latex = QString::fromStdString(get_latex);
+            QString ascii = QString::fromStdString(get_ascii);
+
+            solution_widget * solution_window = new solution_widget(capture,latex,ascii);
+            solution_window->show();
+
+            connect(solution_window,&solution_widget::finish_sig,[=](){
+                solution_window->close();
+                this->close();
+            });
+
+            connect(solution_window,&solution_widget::next_problem_sig,[=](){
+                solution_window->close();
+                emit do_again();
+            });
+
+        });
+
+
+    });
+
+}
+
 void begin_widget::paintEvent(QPaintEvent *event)
 {
     //Q_UNUSED(event);
@@ -93,7 +140,6 @@ void begin_widget::paintEvent(QPaintEvent *event)
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::white);
     painter.drawRect(rect());
-
 
 }
 

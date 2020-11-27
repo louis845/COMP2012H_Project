@@ -2,6 +2,14 @@
 #include "ui_solution_widget.h"
 #include <QPainter>
 #include <QMessageBox>
+#include <QMenu>
+#include <fstream>
+#include <iostream>
+#include <QProcess>
+#include <QDebug>
+#include <QDir>
+#include <QApplication>
+
 
 solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,QWidget *parent) :
     input_image(input_pic),latex_text(latex),ascii_text(ascii),QWidget(parent),
@@ -9,6 +17,7 @@ solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,Q
 {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
+    this->setWindowTitle("CINF");
     init_window();
 }
 
@@ -41,17 +50,30 @@ void solution_widget::init_window(){
     });
 
 
-    connect(ui->method_1,&QPushButton::clicked,[=](){
+    QMenu * method_menu = new QMenu(this);
+    QAction * method1_act = new QAction("method1",this);
+    QAction * method2_act = new QAction("method2",this);
+    QAction * method3_act = new QAction("method3",this);
+    method_menu->addAction(method1_act);
+    method_menu->addAction(method2_act);
+    method_menu->addAction(method3_act);
+    ui->methods_btn->setMenu(method_menu);
+
+    connect(method1_act,&QAction::triggered,[=](){
         method_dealer(0);
     });
 
-    connect(ui->method_2,&QPushButton::clicked,[=](){
+    connect(method2_act,&QAction::triggered,[=](){
         method_dealer(1);
     });
 
-    connect(ui->method_3,&QPushButton::clicked,[=](){
+    connect(method3_act,&QAction::triggered,[=](){
         method_dealer(2);
     });
+
+    connect(ui->finish_btn,&QPushButton::clicked,[=](){emit finish_sig();});
+
+    connect(ui->next_btn,&QPushButton::clicked,[=](){emit next_problem_sig();});
 
 
 }
@@ -59,11 +81,15 @@ void solution_widget::init_window(){
 void solution_widget::method_dealer(int choice){
     bool valid_answer = false;
     QString answer;
+    QPixmap answer_png;
     switch (choice) {
         case 0:
             //call method1 func
             valid_answer = true;
-            answer = "1+1=2";
+            answer = "$\\frac{11}{12}$";
+            QPixmap* answer_png;
+            answer_png = this->display_answer(answer.toStdString());
+            qDebug()<<QDir::currentPath();
             break;
         case 1:
             //call method2 func
@@ -79,7 +105,9 @@ void solution_widget::method_dealer(int choice){
        QMessageBox::critical(this,"Error","Invalid Implementation: Please check your input!");
     }
     else{
-        QLabel* new_step = new QLabel(answer);
+        QLabel* new_step = new QLabel;
+        new_step->setPixmap(answer_png);
+        //qDebug()<<"hhhh";
         new_step->setAlignment(Qt::AlignLeft);
         scrollarea_layout->addWidget(new_step);
         update();
@@ -87,6 +115,21 @@ void solution_widget::method_dealer(int choice){
 
 }
 
+QPixmap* solution_widget::display_answer(string answer){
+    qDebug()<<"testtest\n";
+    ofstream outfile;
+    outfile.open("/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.tex");
+    outfile << "\\documentclass[preview]{standalone}";
+    outfile << "\\usepackage{amsmath}";
+    outfile << "\\begin{document}\n";
+    outfile << answer;
+    outfile << "\n\\end{document}";
+    outfile.close();
+    QProcess::execute("latex /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.tex");
+    QProcess::execute("dvipng /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.dvi -D -2000");
+    return new QPixmap{"/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.png"};
+
+}
 
 void solution_widget::paintEvent(QPaintEvent *event)
 {
