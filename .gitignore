@@ -1,8 +1,10 @@
 *.exe
 /.idea
 /.vscode/c_cpp_properties.json
+/compile
 /build
 /cmake-build-debug
+/cmake-build-debug-visual-studio
 /sources/utils/test_ocr.cpp
-CMakeLists.txt
+# CMakeLists.txt
 workspace.code-workspace

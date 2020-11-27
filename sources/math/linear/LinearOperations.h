@@ -14,8 +14,10 @@ protected:
     virtual void row_multiply(int row, const RF& mult);
 public:
     /**
-     * Creates a LinearOperations class to work on the given matrix. DOES NOT create a copy of RF. Also assumes that the type of RF is exactly the same!
-     * See R::get_type().deep_equals. Notice that this classs does not deallocate the pointers passed to it. The 
+     * Creates a LinearOperations class to work on the given matrix. DOES NOT create a copy of RF - it creates a 2D array, which points to
+     * the addresses of the original given RF matrix. Assumes that the type of RF is exactly the same.
+     * See R::get_type().deep_equals. Notice that this class does not deallocate the pointers passed to it, it only deallocates the
+     * 2D pointer matrix it has created.
     */
     LinearOperations(RF** matrix, const int& rows, const int& cols, bool transpose, LinOpsRecorder* recorder);
 
@@ -76,4 +78,28 @@ private:
     int rows;
     int cols;
 };
+
+namespace OperationsWithSteps{
+    /**
+     * Does not deallocate the given matrix. Allocates a new StepsHistory for browsing the steps.
+     * Returns nullptr for the steps if the type of matrix is not compatible.
+    */
+    void rowReduce(R **mat, int rows, int cols, StepsHistory* &steps);
+    /**
+     * Does not deallocate the given matrix. Allocates a new StepsHistory for browsing the steps.
+     * Returns nullptr for the steps if the type of matrix is not compatible.
+    */
+    void colReduce(R **mat, int rows, int cols, StepsHistory* &steps);
+    /**
+     * Does not deallocate the given matrix. Allocates a new StepsHistory for browsing the steps.
+     * Returns nullptr for the steps if the type of matrix is not compatible. Notice the cols should
+     * directly be the number of columns of the augmented matrix.
+    */
+    void solve(R **augment_matrix, int rows, int cols, StepsHistory* &steps);
+    /**
+     * Does not deallocate the given matrix. Allocates a new StepsHistory for browsing the steps.
+     * Returns nullptr for the steps if the type of matrix is not compatible.
+    */
+    void invert(R **matrix, int rows, int cols, StepsHistory* &steps);
+}
 #endif

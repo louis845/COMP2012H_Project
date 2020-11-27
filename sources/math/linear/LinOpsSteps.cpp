@@ -33,7 +33,7 @@ LinOpsSteps::LinOpsSteps(RF** matrix,int rows,int cols, std::string* console, st
 
 LinOpsSteps::~LinOpsSteps(){
     for(int i=0;i<rows;i++){
-        delete[]matrix;
+        delete[] matrix[i];
     }
     delete[]matrix;
 

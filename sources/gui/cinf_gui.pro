@@ -9,6 +9,7 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    input_key.cpp \
     main.cpp \
     begin_widget.cpp \
     show_capture.cpp \
@@ -17,12 +18,14 @@ SOURCES += \
 
 HEADERS += \
     begin_widget.h \
+    input_key.h \
     show_capture.h \
     solution_widget.h \
     window_capture.h
 
 FORMS += \
     begin_widget.ui \
+    input_key.ui \
     show_capture.ui \
     solution_widget.ui
 

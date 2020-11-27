@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <string>
+using namespace std;
 
 namespace Ui {
 class solution_widget;
@@ -19,6 +21,7 @@ public:
     void init_window();
     void paintEvent(QPaintEvent *event);
     void method_dealer(int choice);
+    QPixmap* display_answer(string answer);
 
 private:
     Ui::solution_widget *ui;
@@ -36,6 +39,9 @@ private:
     //QList<QLabel> steps;
 
 signals:
+    void finish_sig();
+    void next_problem_sig();
+
 
 public slots:
 
