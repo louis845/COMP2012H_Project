@@ -1,8 +1,18 @@
 #include "expr_ast.h"
 using std::vector;
+using std::string;
 
 typedef Token::TokName TokName;
 typedef Token::TokType TokType;
+
+
+// cannot simply use the bin_op_precedence in Parser class due to cross-referencing
+std::unordered_map<TokName, int> BinaryExprAst::precedence = 
+{
+    {TokName::PLUS, 100}, {TokName::MINUS, 100}, 
+    {TokName::AST, 200}, {TokName::CDOT, 200}, {TokName::DIV, 200}, {TokName::FRAC, 200}, {TokName::PERCENT, 200}, 
+    {TokName::CROSS, 300}, {TokName::SUP, 400}
+};
 
 
 ROperand NumberExprAst::evalR()
@@ -99,6 +109,24 @@ ArmaOperand MatrixExprAst::eval()
 }
 
 
+string MatrixExprAst::genAsciiMath() const
+{
+    string result = "[";
+    for (auto row_it = entries.begin(); row_it != entries.end(); ++row_it)
+    {
+        result += "[";
+        for (auto col_it = row_it->begin(); col_it != row_it->end(); ++col_it)
+        {
+            result += (*col_it)->genAsciiMath();
+            if (col_it != row_it->end() - 1)    result += ", ";
+        }
+        if (row_it != entries.end() - 1) result += "], ";
+        else result += "]]";
+    }
+    return result;
+}
+
+
 ROperand VariableExprAst::evalR()
 {   
     return ROperand(newTerm(1));
@@ -108,6 +136,7 @@ ROperand VariableExprAst::evalR()
 ArmaOperand VariableExprAst::eval()
 {
     // TODO
+    return ArmaOperand(1);
 }
 
 
@@ -169,6 +198,28 @@ ArmaOperand BinaryExprAst::eval()
         default:
             throw std::runtime_error("Error: unsupported binary operation.");
     }
+}
+
+
+string BinaryExprAst::genAsciiMath() const
+{
+    string lhs_str = lhs->genAsciiMath(), rhs_str = rhs->genAsciiMath();
+
+    // add back parentheses to suitable places
+    if (typeid(*lhs) == typeid(BinaryExprAst))
+    {
+        BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(lhs);
+        if (precedence[temp->op] < precedence[op])  
+            lhs_str = "(" + lhs_str + ")";          // left hand side binary expression has lower precedence but grouped together
+    }
+
+    if (typeid(*rhs) == typeid(BinaryExprAst))
+    {
+        BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(rhs);
+        if (precedence[temp->op] <= precedence[op]) rhs_str = "(" + rhs_str + ")";          // similar as above
+    }
+    
+    return lhs_str + raw + rhs_str;
 }
 
 
@@ -252,9 +303,9 @@ ArmaOperand FunctionExprAst::eval()
 
             case TokName::DET:  return ArmaOperand(arma::det(arg_vals[0].mat));
 
-            case TokName::DIM:  return ArmaOperand(arma::rank(arg_vals[0].mat));
+            case TokName::RANK: return ArmaOperand(arma::rank(arg_vals[0].mat));
 
-            case TokName::COL: case TokName::RAN:   return ArmaOperand(arma::orth(arg_vals[0].mat));
+            case TokName::ORTH: return ArmaOperand(arma::orth(arg_vals[0].mat));
 
             case TokName::KER:  return ArmaOperand(arma::null(arg_vals[0].mat));
 
@@ -304,4 +355,13 @@ ArmaOperand FunctionExprAst::eval()
 
         default: throw std::runtime_error("unsupported function " + raw);
     }
+}
+
+
+string FunctionExprAst::genAsciiMath() const
+{
+    string result = raw + "(";
+    for (auto it = args.begin(); it != args.end() - 1; ++it)
+        result += (*it)->genAsciiMath() + ", ";
+    return result + (*(args.end() - 1))->genAsciiMath() + ")";
 }
