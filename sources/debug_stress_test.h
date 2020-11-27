@@ -256,10 +256,10 @@ void test_complex_polynomial_ops(){
 
         delete[] acoeff;
         delete[] bcoeff;
-
-        R c=a+b;
-        R d=a*b;
         
+        R c=a+b;
+        
+        R d=a*b;
         if(!c.exactly_equals(a+b)){
             report_error(a,b);
         }
@@ -473,10 +473,9 @@ void run_test(){
         cout << "6 - test_fraction_polynomial_ops\n";
         cout << "7 - test_fraction_complex_polynomial_ops\n";
         cout << "Enter other values to exit:  ";
-        int i;
-        i=7;
         
-
+        int i;
+        cin>>i;
         switch(i){
         case 1:
             test_complex_ops();

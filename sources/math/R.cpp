@@ -1,4 +1,5 @@
 #include "math/R.h"
+#include "math/fraction/Fraction.h"
 
 using namespace std;
 
@@ -54,147 +55,112 @@ R& R::operator=(R&& move_from){
 }
 
 /**
- * Binary operations/comparison
+ * Binary operations/comparison. These operations compare/do operation on the underlying Ring classes stored in R.
+ * The operations ensure that the types passed to the Ring* class are exactly equal, before passing into the corresponding
+ * functions in the Ring class.
 */
 
-R R::operator+(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
+/**
+ * Helper function, promotes the type if possible, returns true if it can be done, returns false otherwise.
+ * The references would be changed accordingly, and the temp_value will be assigned to a pointer referring to
+ * the newly created temp object.
+*/
+bool R::create_temp_promotion_object(const Ring* &r1,const Ring* &r2,const Ring* &to_delete){
+    int i=Ring::compatibility(r1->get_type(), r2->get_type());
     if(i==-2){
-        throw "cannot use + on non-compatible types!";
+        return false;
     }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        return R{impl->copy()};
-    }
-
     if(i==0){
-        return R{impl->addImpl(other.impl)};
+        to_delete=nullptr; //No promotion needed, no temporary obj created.
     }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->addImpl(pro);
-        delete pro;
+        to_delete=r1->promote(r2); //Promote r2 to r1
+        r2=to_delete;
+    }else{
+        to_delete=r2->promote(r1); //Promote r1 to r2
+        r1=to_delete;
+    }
+    return true;
+}
+
+R R::operator+(const R& other) const{
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        const Ring* result=thisval->addImpl(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->addImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use + on non-compatible types!";
     }
 }
 
 R R::operator-(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use - on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        return R{impl->copy()};
-    }
-
-    if(i==0){
-        return R{impl->minusImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->minusImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        const Ring* result=thisval->minusImpl(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->minusImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use - on non-compatible types!";
     }
 }
 
 R R::operator*(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use * on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        return R{other.impl->copy()};
-    }
-    
-    if(i==0){
-        return R{impl->multImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->multImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        const Ring* result=thisval->multImpl(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->multImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use * on non-compatible types!";
     }
 }
 
 R R::operator/(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use / on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+    if(other.is_zero()){
         throw "Divide by zero!";
     }
-
-    if(i==0){
-        return R{impl->divImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->divImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        const Ring* result=thisval->divImpl(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->divImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use / on non-compatible types!";
     }
 }
 
 R R::operator%(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use % on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
+    if(other.is_zero()){
         throw "Divide by zero!";
     }
-
-    if(i==0){
-        return R{impl->remainderImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->remainderImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        const Ring* result=thisval->remainderImpl(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->remainderImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use % on non-compatible types!";
     }
 }
 
 void R::quotAndRemainder(const R& div, R& quot, R& rem) const{
+    if(div.is_zero()){
+        throw "Divide by zero!";
+    }
     int i=Ring::compatibility(impl->get_type(), div.impl->get_type());
 
     if(i==-2){
         throw "cannot use % on non-compatible types!";
-    }
-
-    if(div.get_type_shallow()==RingType::SPECIAL_ZERO){
-        throw "Divide by zero!";
     }
 
     const Ring *q, *r;
@@ -215,148 +181,86 @@ void R::quotAndRemainder(const R& div, R& quot, R& rem) const{
 }
 
 bool R::operator<=(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        int compare=thisval->euclideanFuncCompare(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
+        return compare<=0;
+    }else{
         throw "cannot use <= on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare<=0;
 }
 
 bool R::operator<(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        int compare=thisval->euclideanFuncCompare(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
+        return compare<0;
+    }else{
         throw "cannot use < on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare<0;
 }
 
 bool R::operator>(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        int compare=thisval->euclideanFuncCompare(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
+        return compare>0;
+    }else{
         throw "cannot use > on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare>0;
 }
 
 bool R::operator>=(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        int compare=thisval->euclideanFuncCompare(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
+        return compare>=0;
+    }else{
         throw "cannot use >= on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare>=0;
 }
 
 bool R::operator==(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        int compare=thisval->euclideanFuncCompare(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
+        return compare==0;
+    }else{
         throw "cannot use == on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare==0;
 }
 
 bool R::exactly_equals(const R& other) const{
-
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use exactly_equals on non-compatible types!";
-    }
-
-    if(i==0){
-        return impl->equalsImpl(other.impl);
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        bool result=impl->equalsImpl(pro);
-        delete pro;
-        return result;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(create_temp_promotion_object(thisval,otherval,to_delete)){
+        bool compare=thisval->equalsImpl(otherval);
+        delete to_delete; //Delete temporary allocated value, if it exists. If it doesn't we are deleting nullptr anyway.
+        return compare;
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        bool result=pro->equalsImpl(other.impl);
-        delete pro;
-        return result;
+        throw "cannot use exactly_equals on non-compatible types!";
     }
 }
 
+/**
+ * Unary operations/functions. Simpler implementation here since no type promotions are needed.
+*/
 R R::operator-() const{
     return R{impl->negate()};
 }
@@ -417,6 +321,9 @@ bool R::needs_bracket_latex() const{
     return impl->needs_bracket_latex();
 }
 
+/**
+ * Returns the type of the R element.
+*/
 const RingType& R::get_type_shallow() const{
     return impl->type_shallow;
 }
@@ -429,14 +336,23 @@ bool R::is_type_compatible(const R& o) const{
     return Ring::is_type_compatible(get_type(),o.get_type());
 }
 
+/**
+ * Promotes the other to match the type of this. Assumes that the type of this is directly a superset of other.
+*/
 R R::promote(const R& other) const{
     return R{impl->promote(other.impl)};
 }
 
+/**
+ * Promotes, with allocating a new Ring*. Used internally in Fraction/Polynomial classes
+*/
 const Ring* R::promote_exp(const Ring* const& r) const{
     return impl->promote(r);
 }
 
+/**
+ * Returns and R with the same value as one, with the same type.
+*/
 R R::promote_one() const{
     return R{impl->promote_one()};
 }
@@ -650,6 +566,43 @@ RF* RF::subarray_copy(const RF* const& arr, int start, int end){
         newarr[i-start]=arr[i];
     }
     return newarr;
+}
+
+RF** RF::matrix_copy_into_equal_types(const R* const* const matrix, int rows, int cols){
+    RF** mat=new RF*[rows];
+    for(int i=0;i<rows;i++){
+        mat[i]=new RF[cols];
+        for(int j=0;j<cols;j++){
+            mat[i][j]=matrix[i][j];
+        }
+    }
+
+    if(ensure_types_equal(mat,rows,cols)){
+        //possible
+        return mat;
+    }else{
+        //not possible, deallocate and return nullptr
+        dealloc_matrix(mat,rows);
+        return nullptr;
+    }
+}
+
+void RF::promote_all_elements_into_field(RF* const* const matrix, int rows, int cols){
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            if(!matrix[i][j].is_field()){
+                R one=matrix[i][j].promote_one();
+                matrix[i][j]=RF{new Fraction{matrix[i][j],one}};
+            }
+        }
+    }
+}
+
+void RF::dealloc_matrix(RF **matrix, int rows){
+    for(int i=0;i<rows;i++){
+        delete[] matrix[i];
+    }
+    delete[] matrix;
 }
 
 bool RF::ensure_types_equal(RF* const* const arr, int rows, int cols){

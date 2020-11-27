@@ -1,4 +1,6 @@
 #include "math/linear/LinearOperations.h"
+#include "math/linear/CoupledOperations.h"
+#include "math/fraction/Fraction.h"
 #include <string>
 using namespace std;
 
@@ -233,4 +235,179 @@ bool LinearOperations::is_diagonally_one() const{
         }
     }
     return true;
+}
+
+namespace OperationsWithSteps{
+    void rowReduce(R **mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF **mat=RF::matrix_copy_into_equal_types(mat_slow,rows,cols);
+        if(mat==nullptr){
+            return;
+        }
+        RF::promote_all_elements_into_field(mat,rows,cols);
+
+        steps=new StepsHistory{};
+
+        LinOpsRecorder rc{steps, mat, rows, cols};
+        rc.capture_initial();
+    
+        LinearOperations o{mat, rows, cols, false, &rc};
+
+        o.toRREF();
+
+        RF::dealloc_matrix(mat,rows);
+    }
+
+    void colReduce(R **mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF **mat=RF::matrix_copy_into_equal_types(mat_slow,rows,cols);
+        if(mat==nullptr){
+            return;
+        }
+        RF::promote_all_elements_into_field(mat,rows,cols);
+
+        steps=new StepsHistory{};
+
+        LinOpsRecorder rc{steps, mat, rows, cols};
+        rc.capture_initial();
+    
+        LinearOperations o{mat, rows, cols, true, &rc};
+
+        o.toRREF();
+
+        RF::dealloc_matrix(mat,rows);
+    }
+
+    void solve(R **mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF **mat=RF::matrix_copy_into_equal_types(mat_slow,rows,cols);
+        if(mat==nullptr){
+            return;
+        }
+        RF::promote_all_elements_into_field(mat, rows, cols);
+        RF** last_col=new RF*[rows];
+
+        for(int i=0;i<rows;i++){
+            last_col[i]=(mat[i]+cols-1); //The submatrix with column starting from col (the last column). No need to do value copy.
+        }
+
+        steps=new StepsHistory{};
+
+        LinOpsRecorder rc{steps, mat, rows, cols};
+        rc.capture_initial();
+
+        CoupledOperations o{mat, rows, cols-1, false, &rc, last_col, 1};
+
+        o.toRREF();
+
+        delete[]last_col; //No need to delete last_col since last_col is only stores the pointers that point to the same values as mat.
+        RF::dealloc_matrix(mat,rows);
+    }
+
+    void invert(R **mat_slow, int rows, int cols, StepsHistory* &steps){
+        RF** mat;
+        RF** cpl; //Coupled matrix, submatrix of mat. Saves a pointer to the pointers of mat.
+        int mrows;
+        int mcols;
+
+        /**
+         * Append an identity matrix with the original matrix.
+        */
+        if(rows>=cols){
+            mrows=rows;
+            mcols=rows+cols;
+
+            mat=new RF*[rows];
+            cpl=new RF*[rows];
+            for(int i=0;i<rows;i++){
+                mat[i]=new RF[mcols];
+                for(int j=0;j<cols;j++){
+                    if(!mat_slow[i][j].is_field()){
+                        R one=mat_slow[i][j].promote_one();
+                        mat[i][j]=RF{new Fraction{mat_slow[i][j],one}};
+                    }else{
+                        mat[i][j]=mat_slow[i][j];
+                    }
+                }
+                for(int j=cols;j<mcols;j++){
+                    if(i==j-cols){
+                        //j-cols is the columns in the right submatrix. We want it to be diagonally one.
+                        mat[i][j]=mat[0][0].promote_one(); //mat[0][0] is already initialized.
+                    }else{
+                        mat[i][j]=mat[0][0].promote(R::ZERO);
+                    }
+                }
+
+                cpl[i]=(mat[i]+cols); //copy the pointer position, starting from cols.
+            }
+        }else{
+            mrows=rows+cols;
+            mcols=cols;
+
+            mat=new RF*[mrows];
+            cpl=new RF*[cols];
+            for(int i=0;i<mrows;i++){
+                mat[i]=new RF[cols];
+                for(int j=0;j<cols;j++){
+                    if(i<rows){
+                        if(!mat_slow[i][j].is_field()){
+                            R one=mat_slow[i][j].promote_one();
+                            mat[i][j]=RF{new Fraction{mat_slow[i][j],one}};
+                        }else{
+                            mat[i][j]=mat_slow[i][j];
+                        }
+                    }else{
+                        if(i-rows==j){
+                            //i-rows is the row in the bottom submatrix.
+                            mat[i][j]=mat[0][0].promote_one();
+                        }else{
+                            mat[i][j]=mat[0][0].promote(R::ZERO);
+                        }
+                    }
+                }
+            }
+
+            for(int i=0;i<cols;i++){
+                cpl[i]=mat[rows+i]; //copy the pointer position, starting from rows.
+            }
+        }
+
+        steps=new StepsHistory{};
+        LinOpsRecorder rc{steps, mat, mrows, mcols}; //we record the whole matrix
+        rc.capture_initial();
+        
+        if(rows>=cols){
+            CoupledOperations o{mat, rows, cols, false, &rc, cpl, rows};
+
+            o.toRREF();
+            if(o.is_diagonally_one()){
+                if(rows==cols){
+                    steps->add_step(new MatrixSpaceStep{cpl, rows, rows, -1, true, "The inverse of the matrix is:"});
+                }else{
+                    cout<<"bf_add_step\n";
+                    string text="General left inverse is A+XB, for arbitrary matrix X (with size "+to_string(cols)+"x"+to_string(rows-cols)+" ).\n This is such that (A+XB)*input=I";
+                    steps->add_step(new MatrixSpaceStep{cpl, rows, rows, cols, true, text});
+                    cout<<"af_add_step\n";
+                }
+            }else{
+                steps->add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
+            }
+        }else{
+            CoupledOperations o{mat, rows, cols, true, &rc, cpl, cols};
+
+            o.toRREF();
+            if(o.is_diagonally_one()){
+                string text="General right inverse is A+BX, for arbitrary matrix X (with size "+to_string(cols-rows)+"x"+to_string(rows)+" ).\n This is such that input*(A+BX)=I";
+                steps->add_step(new MatrixSpaceStep{cpl, cols, cols, rows, false, text});
+            }else{
+                steps->add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
+            }
+        }
+
+        for(int i=0;i<mrows;i++){
+            delete[]mat[i];
+        }
+        delete[]mat;
+        delete[]cpl; //no need to delete the subarrays, it is deleted in mat since cpl is a pointer copy.
+    }
 }

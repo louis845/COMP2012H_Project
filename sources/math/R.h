@@ -10,6 +10,11 @@
  * Wrapper class for Rings. Use this class for computation (operators + - * / % etc).
 */
 class R{
+private:
+    /**
+     * Private helper functions.
+    */
+    static bool create_temp_promotion_object(const Ring* &r1,const Ring* &r2,const Ring* &to_delete);
 protected:
     const Ring* impl;
 public:
@@ -284,6 +289,23 @@ public:
      * Promotes all types of the matrix to have exactly the same type. Returns true if possible, false if not.
     */
     static bool ensure_types_equal(RF* const* const matrix, int rows, int cols);
+
+    /**
+     * Copies a matrix of R into a matrix of RF, ensuring the types are equal. Returns nullptr if this is not possible because of
+     * type incompatibility, and returns the newly allocated matrix if it is possible. 
+    */
+    static RF** matrix_copy_into_equal_types(const R* const* const matrix, int rows, int cols);
+
+    /**
+     * Promotes all types into a field. Assumes types are equal (see ensure_types_equal and matrix_copy_into_equal_types).
+     * Directly changes the given matrix.
+    */
+    static void promote_all_elements_into_field(RF* const* const matrix, int rows, int cols);
+
+    /**
+     * Deallocates the matrix, given the rows.
+    */
+    static void dealloc_matrix(RF **matrix, int rows);
 };
 
 /**
