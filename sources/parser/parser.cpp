@@ -376,7 +376,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
         if (!cur_tok)   return lhs;
         int cur_precedence = getTokPrecedence();
         TokName cur_op{TokName::CDOT};              // if not a binary op, presume to be multiplication
-        std::string cur_raw_str{"*"};
+        std::string cur_raw_str{""};
 
         switch (cur_precedence)
         {

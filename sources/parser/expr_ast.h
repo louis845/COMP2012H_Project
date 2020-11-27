@@ -17,6 +17,7 @@ public:
     virtual ~ExprAst() = default;
     virtual ROperand evalR() = 0;               // using our own implementation of linear algebra library
     virtual ArmaOperand eval() = 0;             // using Armadillo, for approximated solutions
+    virtual std::string genAsciiMath() const = 0;   // generate AsciiMath formated strings
 };
 
 
@@ -34,14 +35,16 @@ public:
     }
          
     ROperand evalR() override;
-    ArmaOperand eval() override; 
+    ArmaOperand eval() override;
+    std::string genAsciiMath() const override { return raw; }; 
 
 private:
     static constexpr long double PI = 3.141592653589793;        // obsoleted
-    static constexpr long double E = 2.718281828459045;         // use arma::datum::pi instead
+    static constexpr long double E = 2.718281828459045;         // replaced by arma::datum::pi
 
     Token::TokName name{Token::TokName::INTEGRAL};
     std::string raw{""};
+    std::string tex{""};
     double float_value{0.0L};
     long int_value{0L};
 };
@@ -62,9 +65,11 @@ public:
 
     ROperand evalR() override;
     ArmaOperand eval() override;
+    std::string genAsciiMath() const override;
 
 private:
     std::vector<std::vector<ExprAst*>> entries;
+    std::string tex{""};
 };
 
 
@@ -80,9 +85,11 @@ public:
 
     ROperand evalR() override;
     ArmaOperand eval() override;
+    std::string genAsciiMath() const override { return name; }
 
 private:
     std::string name;
+    std::string tex{""};
 };
 
 
@@ -98,10 +105,13 @@ public:
 
     ROperand evalR() override;
     ArmaOperand eval() override;
+    std::string genAsciiMath() const override;
 
 private:
+    static std::unordered_map<Token::TokName, int> precedence;  // cannot reuse code from Parser class due to cross-referencing
     Token::TokName op;
     std::string raw{""};
+    std::string tex{""};
     ExprAst* lhs, *rhs;
 };
 
@@ -117,10 +127,12 @@ public:
 
     ROperand evalR() override;
     ArmaOperand eval() override;
+    std::string genAsciiMath() const override;
 
 private:
     Token::TokName op;
     std::string raw{""};
+    std::string tex{""};
     std::vector<ExprAst*> args;
 };
 
