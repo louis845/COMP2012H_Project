@@ -1,5 +1,8 @@
-#include <gmp.h>
+#include "gmp.h"
 #include <string>
+
+#ifndef MATH_LONG_MPZ_WRAPPER_H
+#define MATH_LONG_MPZ_WRAPPER_H
 
 class mpz_wrapper{
     mpz_t value;
@@ -48,3 +51,5 @@ mpz_wrapper gcd(const mpz_wrapper& a, const mpz_wrapper& b);
 mpz_wrapper abs(const mpz_wrapper& val);
 
 mpz_wrapper operator/ (long l,const mpz_wrapper& o);
+
+#endif

@@ -9,6 +9,11 @@
 #include <QDebug>
 #include <QDir>
 #include <QApplication>
+#include <QWebEngineView>
+
+#include "math/polynomial/Polynomial.h"
+#include "math/long/Long.h"
+#include "math/R.h"
 
 
 solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,QWidget *parent) :
@@ -32,9 +37,6 @@ void solution_widget::init_window(){
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     //ui->scrollArea->setWidgetResizable(true);
     scrollarea_layout = new QVBoxLayout(this);
-    scrollarea_widget = new QWidget(this);
-    scrollarea_widget->setLayout(scrollarea_layout);
-    ui->scrollArea->setWidget(scrollarea_widget);
     //widget = new QWidget(this);
     //this->scrollarea_layout->setSizeConstraint(QVBoxLayout::SetMinAndMaxSize);
 
@@ -75,7 +77,14 @@ void solution_widget::init_window(){
 
     connect(ui->next_btn,&QPushButton::clicked,[=](){emit next_problem_sig();});
 
-
+    solution_view=new QWebEngineView{ui->scrollArea};
+    ui->scrollArea->setWidget(solution_view);
+    display_answer("<h1>This is just a test</h1>\n"
+                   "The solutions of the quadratic equation should be displayed if an internet connection is correctly established.<br>\n"
+                   "$$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$$");
+    R a=R{new Long{mpz_wrapper("104582958742895672409674389674380")}};
+    R b=R{new Long{mpz_wrapper("50439650486294754927689254342095842097638596739")}};
+    qDebug()<<QString::fromStdString((a*b).to_string())<<"\n";
 }
 
 void solution_widget::method_dealer(int choice){
@@ -86,10 +95,8 @@ void solution_widget::method_dealer(int choice){
         case 0:
             //call method1 func
             valid_answer = true;
-            answer = "$\\frac{11}{12}$";
-            QPixmap* answer_png;
-            answer_png = this->display_answer(answer.toStdString());
-            qDebug()<<QDir::currentPath();
+            answer = "$";
+            this->display_answer(answer.toStdString());
             break;
         case 1:
             //call method2 func
@@ -101,7 +108,7 @@ void solution_widget::method_dealer(int choice){
             break;
     }
 
-    if (!valid_answer){
+    /*if (!valid_answer){
        QMessageBox::critical(this,"Error","Invalid Implementation: Please check your input!");
     }
     else{
@@ -111,24 +118,15 @@ void solution_widget::method_dealer(int choice){
         new_step->setAlignment(Qt::AlignLeft);
         scrollarea_layout->addWidget(new_step);
         update();
-    }
+    }*/
 
 }
 
-QPixmap* solution_widget::display_answer(string answer){
-    qDebug()<<"testtest\n";
-    ofstream outfile;
-    outfile.open("/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.tex");
-    outfile << "\\documentclass[preview]{standalone}";
-    outfile << "\\usepackage{amsmath}";
-    outfile << "\\begin{document}\n";
-    outfile << answer;
-    outfile << "\n\\end{document}";
-    outfile.close();
-    QProcess::execute("latex /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.tex");
-    QProcess::execute("dvipng /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.dvi -D -2000");
-    return new QPixmap{"/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012h project/AFHUIRSHGUIR.png"};
-
+void solution_widget::display_answer(string answer){
+    QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
+    qs=qs+QString::fromStdString(answer);
+    qs=qs+"</body></html>";
+    solution_view->setHtml(qs);
 }
 
 void solution_widget::paintEvent(QPaintEvent *event)

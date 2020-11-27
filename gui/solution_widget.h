@@ -5,6 +5,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <string>
+#include <QWebEngineView>
+
 using namespace std;
 
 namespace Ui {
@@ -21,7 +23,7 @@ public:
     void init_window();
     void paintEvent(QPaintEvent *event);
     void method_dealer(int choice);
-    QPixmap* display_answer(string answer);
+    void display_answer(string answer);
 
 private:
     Ui::solution_widget *ui;
@@ -34,7 +36,8 @@ private:
     QString ascii_afteredit;
 
     QVBoxLayout* scrollarea_layout;
-    QWidget* scrollarea_widget;
+
+    QWebEngineView *solution_view;
 
     //QList<QLabel> steps;
 

@@ -14,12 +14,13 @@
 #include "math/polynomial/Polynomial.h"
 #include "steps/StepsHistory.h"
 #include "math/linear/LinearOperations.h"
+#include "debug_stress_test.h"
 #include <gmpxx.h>
 
 using namespace std;
 int main(){
     
-    console_main_loop();
-    
+    //console_main_loop();
+    run_test();
     return 0;
 }

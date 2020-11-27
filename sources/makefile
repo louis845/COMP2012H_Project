@@ -18,7 +18,7 @@ SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp
 DEBUG = -g
 
 
-link: main.o console.o Ring.o R.o Field.o Double.o DoubleComplex.o Long.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Linear3.o Steps.o History.o tools.o
+link: main.o console.o Ring.o R.o Field.o Double.o DoubleComplex.o Long.o mpz_wrap.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Linear3.o Steps.o History.o tools.o
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(LIBRARIES) $(OUTPUT_DIRECTORY)/*.o -lgmpxx -lgmp
 
 main.o: main.cpp
@@ -41,6 +41,9 @@ Double.o: math/double/Double.cpp
 
 Long.o: math/long/Long.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Long.o $(HEADER_ROOT_DIRECTORY) -c math/long/Long.cpp
+
+mpz_wrap.o: math/long/mpz_wrapper.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)mpz_wrap.o $(HEADER_ROOT_DIRECTORY) -c math/long/mpz_wrapper.cpp
 
 DoubleComplex.o: math/double/DoubleComplex.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)DoubleComplex.o $(HEADER_ROOT_DIRECTORY) -c math/double/DoubleComplex.cpp

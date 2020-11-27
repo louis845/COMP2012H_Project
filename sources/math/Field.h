@@ -2,7 +2,7 @@
 #define MATH_FIELD_H
 
 #include "debug.h"
-#include "math/ring.h"
+#include "math/Ring.h"
 #include <string>
 
 class Field : public Ring{

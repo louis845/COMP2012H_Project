@@ -1,4 +1,3 @@
-#include <gmp.h>
 #include "math/long/mpz_wrapper.h"
 
 using namespace std;
