@@ -1,8 +1,33 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
 #include "parser.h"
 #include "lexer.h"
 #include "tokens.h"
 using namespace std;
+
+// type = 0 for parsing only, 1 for evaluating using R class, 2 for using Armadillo
+void test_parser(const std::string& input, const std::string& name, int type = 0)
+{
+    Parser parser(input);
+    cout << boolalpha << name << ": " << parser.parse() << endl << endl;
+    cout << "raw input: " << endl << input << endl << endl;
+    cout << "infix notation: " << endl;
+    parser.print();
+    cout << endl << endl << "AsciiMath output: " << endl << parser.getAsciiMath() << endl << endl;
+    
+    if (type == 1)  
+    {   
+        cout << "evaluation using R: " << endl; 
+        parser.evalR();  
+    }
+    else if (type == 2)
+    {
+        cout << "evaluation using Armadillo: " << endl;
+        parser.eval();
+    }
+    cout << endl << endl << string(80, '-') << endl << endl; 
+}
+
 
 int main()
 {
@@ -20,40 +45,13 @@ int main()
 
     string greek{"sin(alpha) - cos(-beta) / sqrt(omega) * root(phi, varphi)"};
 
-    Parser parser(test_1);
-    cout << boolalpha << "test 1: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
-
-    parser.reset_input(test_2);
-    cout << "test 2: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
-
-    parser.reset_input(test_3);
-    cout << "test 3: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
-
-    parser.reset_input(poly);
-    cout << "poly: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
-
-    parser.reset_input(matrix);
-    cout << "matrix: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
-
-    parser.reset_input(func);
-    cout << "func: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
-
-    parser.reset_input(greek);
-    cout << "greek: " << parser.parse() << endl;
-    parser.print();
-    cout << endl << endl;
+    test_parser(test_1, "test 1");
+    test_parser(test_2, "test 2");
+    test_parser(test_3, "test 3");
+    test_parser(poly, "poly");
+    test_parser(matrix, "matrix");
+    test_parser(func, "func");
+    test_parser(greek, "greek");
 
     // ------------------------- test evaluator for R below ------------------------
 
@@ -63,20 +61,9 @@ int main()
 
     string eval_test_3{"(-2 (2601 + 5598 x - 61921 x^2 - 10126 x^3 + 6848 x^4 + 1056 x^5)) / (x + 3)"};
 
-    parser.reset_input(eval_test_1);
-    cout << "eval_test_1: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.evalR();  cout << endl << endl;
-
-    parser.reset_input(eval_test_2);
-    cout << "eval_test_2: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.evalR();  cout << endl << endl;
-
-    parser.reset_input(eval_test_3);
-    cout << "eval_test_3: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.evalR();  cout << endl << endl;
+    test_parser(eval_test_1, "R test 1", 1);
+    test_parser(eval_test_2, "R test 2", 1);
+    test_parser(eval_test_3, "R test 4", 1);
 
 
     // ------------------------- test Armadillo below ------------------------------
@@ -93,35 +80,12 @@ int main()
 
     string arma_test_6{"[[0, 1], [1, 0]]^20 - [[i, -i], [-1, 1]]^7"};
 
-    parser.reset_input(arma_test_1);
-    cout << "arma_test_1: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.eval();  cout << endl << endl;
-
-    parser.reset_input(arma_test_2);
-    cout << "arma_test_2: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.eval();  cout << endl << endl;
-
-    parser.reset_input(arma_test_3);
-    cout << "arma_test_3: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.eval();  cout << endl << endl;
-
-    parser.reset_input(arma_test_4);
-    cout << "arma_test_4: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.eval();  cout << endl << endl;
-
-    parser.reset_input(arma_test_5);
-    cout << "arma_test_5: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.eval();  cout << endl << endl;
-
-    parser.reset_input(arma_test_6);
-    cout << "arma_test_6: " << parser.parse() << endl;
-    parser.print(); cout << endl << endl;
-    parser.eval();  cout << endl << endl;
+    test_parser(arma_test_1, "arma test 1", 2);
+    test_parser(arma_test_2, "arma test 2", 2);
+    test_parser(arma_test_3, "arma test 3", 2);
+    test_parser(arma_test_4, "arma test 4", 2);
+    test_parser(arma_test_5, "arma test 5", 2);
+    test_parser(arma_test_6, "arma test 6", 2);
 
     cin.get(); cin.get();
 }

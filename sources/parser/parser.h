@@ -22,6 +22,7 @@ public:
     bool parse();
     ExprAst* get_root();
     void print() const;
+    std::string getAsciiMath() const { return root->genAsciiMath(); }
     ROperand evalR();
     ArmaOperand eval() const;
     void reset_input(const std::string& input);

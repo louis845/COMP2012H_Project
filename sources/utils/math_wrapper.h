@@ -41,6 +41,8 @@ public:
     ROperand operator/(ROperand rhs);
     ROperand operator^(int rhs);
 
+    std::string genTex() const;         // generate TeX formated strings for rendering
+
 private:
     Type type;
     std::vector<std::vector<R>> mat;
@@ -76,6 +78,8 @@ public:
         return fabs(value.imag()) <= std::numeric_limits<double>::epsilon();
     }
 
+    std::string genTex() const;
+
 private:
     Type type;
     arma::cx_mat mat;              // entries by default are stored in double, cx = complex
@@ -105,6 +109,6 @@ inline R newTerm(int degree)
     delete[] arr;
     return result;
 }
-
+ 
 
 #endif /* MATH_WRAPPER_H */

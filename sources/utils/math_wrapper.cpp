@@ -1,5 +1,7 @@
 #include "math_wrapper.h"
-
+#include <sstream>
+using std::string;
+using std::stringstream;
 
 ROperand ROperand::operator-()
 {
@@ -136,6 +138,39 @@ ROperand ROperand::operator^(int rhs)           // fast exponentiation
 }
 
 
+string ROperand::genTex() const
+{
+    switch (type)
+    {
+        case Type::NOR: 
+            return value.to_latex();
+
+        case Type::IMAT:
+        {
+            string coeff = value.to_latex();
+            for (unsigned char c : coeff)
+                if (c < '0' && c > '9' && c != '.') return "(" + coeff + ")I";
+            return coeff + "I";
+        }
+
+        case Type::MAT:
+        {
+            string tex{R"(\begin{bmatrix} )"};
+            for (auto row_it = mat.begin(); row_it != mat.end(); ++row_it)
+            {
+                for (auto col_it = row_it->begin(); col_it != row_it->end() - 1; ++col_it)
+                    tex += col_it->to_latex() + " & ";
+                if (row_it != mat.end() - 1)
+                    tex += (row_it->end() - 1)->to_latex() + R"(\\ )";
+                else tex += (row_it->end() - 1)->to_latex() + " ";
+            }
+            tex += R"(\end{bmatrix})";
+            return tex;
+        }
+    }
+}
+
+
 ArmaOperand ArmaOperand::operator+(const ArmaOperand& rhs) const
 {
     if (type == rhs.type)
@@ -254,3 +289,41 @@ ArmaOperand ArmaOperand::operator^(const ArmaOperand& rhs) const
         return ArmaOperand(ArmaOperand::Type::IMAT, pow(value, rhs.value.real()));
 }
 
+
+string ArmaOperand::genTex() const
+{
+    stringstream ss;
+    ss.flags(cout.flags());
+    ss.imbue(cout.getloc());
+    ss.precision(cout.precision());
+
+    switch (type)
+    {
+        case Type::NOR:
+            if (almostReal())   return std::to_string(value.real());
+            ss << value;
+            return ss.str();
+
+        case Type::IMAT:
+            if (almostReal())   return std::to_string(value.real()) + "I";
+            ss << "(" << value << ")I";
+            return ss.str();
+
+        case Type::MAT:
+            ss << R"(\begin{bmatrix} )";
+            for (size_t i = 0; i < mat.n_rows; ++i) 
+            {
+                for (size_t j = 0; j < mat.n_cols; ++j)
+                {
+                    if (fabs(mat(i, j).imag()) <= std::numeric_limits<double>::epsilon())
+                        ss << std::to_string(mat(i, j).real());
+                    else ss << mat(i, j);
+                    
+                    if (j != mat.n_cols - 1)    ss << R"( & )";
+                    if (j == mat.n_cols - 1 && i != mat.n_rows - 1)    ss << R"(\\ )";
+                }
+            }
+            ss << R"(\end{bmatrix})";
+            return ss.str();
+    }
+}
