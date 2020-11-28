@@ -1,11 +1,23 @@
 #include "input_key.h"
 
 #include <QApplication>
+#include <QObject>
+#include <QDebug>
+#include <QString>
+
+void enter_solve_stage(string user, string password){
+    qDebug()<<QString::fromStdString(user)<<" "<<QString::fromStdString(password)<<"\n";
+}
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     input_key w;
+    QObject::connect(&w, &input_key::user_quit, [=](){
+
+    });
+
+    QObject::connect(&w, &input_key::user_input, &enter_solve_stage);
     w.show();
 
 
