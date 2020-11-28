@@ -20,3 +20,7 @@ void StepText::print_to_console() const{
     }
     cout<<text<<"\n";
 }
+
+string StepText::get_html_latex() const{
+    return text;
+}
