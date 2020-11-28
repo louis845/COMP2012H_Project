@@ -104,3 +104,12 @@ if(RF::ensure_types_equal(matrix, rows, cols)){ //This function directly changes
     // Matrix has incompatible types, tell user
 }
 </pre>
+
+## Linear operations types (may add more later)
+Create an enum/int or something to represent the operation to be done. 
+* RREF
+* RCEF (reduced col echelon form)
+* Solve linear system eq
+* Find left/right/inverse of matrix (these three are the same operation)
+* Characteristic polynomial
+* Orthogonalization (Gram-Schmidt process)
