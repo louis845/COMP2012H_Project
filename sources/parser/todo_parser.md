@@ -105,6 +105,39 @@ if(RF::ensure_types_equal(matrix, rows, cols)){ //This function directly changes
 }
 </pre>
 
+# Parser
+## How to display a single mathematical expression (result)
+<pre>
+StepsHistory *steps=new StepsHistory();
+steps->addStep(new StepText{html_string}); //done, pass to return
+</pre>
+For example, to display quadratic equation
+<pre>
+StepsHistory *steps=new StepsHistory();
+steps->addStep(new StepText{"$$x=\\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$$"}); //done, pass to return
+</pre>
+## My suggestions on what to return
+Returns a struct containing an enum indicating the operation, and some other pointers. I think this is possible
+<pre>
+struct ParserReturn{
+    RF** matrix;
+    int rows,cols;
+    StepsHistory *steps;
+    enum class ParserResultType{
+        //...
+    }
+    ParserResultType type;
+}
+</pre>
+## Enum types
+1. Linear operation types with steps (see below)
+2. Linear operation without steps (direct result), NOT_R_OPER
+3. Cannot use both! (two interpretations above does not work), ERROR_OPER
+## Possible return values, possibly return a struct, with the data saved accordingly to the return type
+1. R** with row/col, if can be interpreted as R**
+2. Direct result. Return a newly allocated StepsHistory*, which can display the HTML
+3. Return nothing, the returned pointers can be uninitialized (preferrably nullptr)
+
 ## Linear operations types (may add more later)
 Create an enum/int or something to represent the operation to be done. 
 * RREF
