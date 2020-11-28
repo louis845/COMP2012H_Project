@@ -15,6 +15,7 @@ Our program lets users modify the input if the input is undesired (for the user)
  * Should be able to retreive a single matrix in the std::vector. For example, a user wants to input a matrix
  "[[3,4],[5,6]]" and then wants to choose the operation manually by clicking on a button. 
  * Now "[[3,4],[5,6]]" gives engine_used=1, but Info::mat_size.size()=0.
+ * For OCR test example, a single matrix is scanned as "([1,2,3],[2,3,4])" by the API, but there are no R matrix stored.
 ## Create integer (long)
 <pre>
 R val=R{ new Long{value} };
