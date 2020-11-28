@@ -82,14 +82,14 @@ void LongComplex::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*
     if(c==0 && d==0){
         throw "Divide by zero!";
     }
-
+    
     PRIMITIVE_LONG_TYPE c_factor=gcd(gcd(gcd(a,b),c),d); //Taking common factor of all
-
+    
     a=a/c_factor;
-    b=a/c_factor;
-    c=a/c_factor;
-    d=a/c_factor;    //Rescaling, so that it is harder to overflow
-
+    b=b/c_factor;
+    c=c/c_factor;
+    d=d/c_factor;    //Rescaling, so that it is harder to overflow
+    
     PRIMITIVE_LONG_TYPE mulRE=c;
     PRIMITIVE_LONG_TYPE mulIM=-d; //Conjugate
 
@@ -98,7 +98,7 @@ void LongComplex::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*
 
     PRIMITIVE_LONG_TYPE reQuot=a/c, reRem=a%c;
     PRIMITIVE_LONG_TYPE imQuot=b/c, imRem=b%c;
-
+    
     if(reRem>(c/2)){
         ++reQuot;
     }else if(reRem<(-(c/2))){

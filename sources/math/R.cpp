@@ -53,310 +53,211 @@ R& R::operator=(R&& move_from){
     return *this;
 }
 
+bool R::internal_type_compatibility(const Ring* &r1, const Ring* &r2, const Ring* &to_delete){
+    int i=Ring::compatibility(r1->get_type(), r2->get_type());
+    if(i==-2){
+        to_delete=nullptr;
+        return false; //not compatible
+    }else if(i==0){
+        to_delete=nullptr; //compatible and no promotion needed.
+    }else if(i==1){
+        to_delete=r1->promote(r2); //creates newly allocated ring and stores into to_delete
+        r2=to_delete;
+    }else{
+        to_delete=r2->promote(r1); //similar
+        r1=to_delete;
+    }
+    return true;
+}
+
 /**
- * Binary operations/comparison
+ * Binary operations/comparison. Internally, dynamically allocates a temporary Ring object if necessary to ensure the types are 
+ * exactly equal before passing into the functions in Ring (and its subclasses)
 */
 
 R R::operator+(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-    if(i==-2){
-        throw "cannot use + on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        return R{impl->copy()};
-    }
-
-    if(i==0){
-        return R{impl->addImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->addImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        const Ring* result=thisval->addImpl(otherval);
+        delete to_delete;
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->addImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use + on non-compatible types!";
     }
 }
 
 R R::operator-(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use - on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        return R{impl->copy()};
-    }
-
-    if(i==0){
-        return R{impl->minusImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->minusImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        const Ring* result=thisval->minusImpl(otherval);
+        delete to_delete;
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->minusImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use - on non-compatible types!";
     }
 }
 
 R R::operator*(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use * on non-compatible types!";
-    }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        return R{other.impl->copy()};
-    }
-    
-    if(i==0){
-        return R{impl->multImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->multImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        const Ring* result=thisval->multImpl(otherval);
+        delete to_delete;
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->multImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use * on non-compatible types!";
     }
 }
 
 R R::operator/(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use / on non-compatible types!";
+    if(other.is_zero()){
+        throw "divide by zero!";
     }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        throw "Divide by zero!";
-    }
-
-    if(i==0){
-        return R{impl->divImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->divImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        const Ring* result=thisval->divImpl(otherval);
+        delete to_delete;
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->divImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use / on non-compatible types!";
     }
 }
 
 R R::operator%(const R& other) const{
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use % on non-compatible types!";
+    if(other.is_zero()){
+        throw "divide by zero!";
     }
-
-    if(other.get_type_shallow()==RingType::SPECIAL_ZERO){
-        throw "Divide by zero!";
-    }
-
-    if(i==0){
-        return R{impl->remainderImpl(other.impl)};
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        const Ring* result=impl->remainderImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        const Ring* result=thisval->remainderImpl(otherval);
+        delete to_delete;
         return R{result};
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        const Ring* result=pro->remainderImpl(other.impl);
-        delete pro;
-        return R{result};
+        throw "cannot use % on non-compatible types!";
     }
 }
 
 void R::quotAndRemainder(const R& div, R& quot, R& rem) const{
-    int i=Ring::compatibility(impl->get_type(), div.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use % on non-compatible types!";
+    if(div.is_zero()){
+        throw "divide by zero!";
     }
-
-    if(div.get_type_shallow()==RingType::SPECIAL_ZERO){
-        throw "Divide by zero!";
-    }
-
-    const Ring *q, *r;
-
-    if(i==0){
-        impl->quotAndRemainder(div.impl, q, r);
-    }else if(i==1){
-        const Ring* pro=impl->promote(div.impl);
-        impl->quotAndRemainder(pro, q, r);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=div.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        const Ring *q,*r;
+        thisval->quotAndRemainder(otherval, q, r);
+        delete to_delete;
+        quot=R{q};
+        rem=R{r};
     }else{
-        const Ring* pro=div.impl->promote(impl);
-        pro->quotAndRemainder(div.impl, q, r);
-        delete pro;
+        throw "cannot use quot and remainder on non-compatible types!";
     }
-    quot=R{q};
-    rem=R{r};
 }
 
 bool R::operator<=(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        int result=thisval->euclideanFuncCompare(otherval);
+        delete to_delete;
+        return result<=0;
+    }else{
         throw "cannot use <= on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare<=0;
 }
 
 bool R::operator<(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        int result=thisval->euclideanFuncCompare(otherval);
+        delete to_delete;
+        return result<0;
+    }else{
         throw "cannot use < on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare<0;
 }
 
 bool R::operator>(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        int result=thisval->euclideanFuncCompare(otherval);
+        delete to_delete;
+        return result>0;
+    }else{
         throw "cannot use > on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare>0;
 }
 
 bool R::operator>=(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        int result=thisval->euclideanFuncCompare(otherval);
+        delete to_delete;
+        return result>=0;
+    }else{
         throw "cannot use >= on non-compatible types!";
     }
-
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
-    }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
-    }
-
-    return compare>=0;
 }
 
 bool R::operator==(const R& other) const{
-    int compat=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(compat==-2){
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        int result=thisval->euclideanFuncCompare(otherval);
+        delete to_delete;
+        return result==0;
+    }else{
         throw "cannot use == on non-compatible types!";
     }
+}
 
-    int compare;
-
-    if(compat==0){
-        compare=impl->euclideanFuncCompare(other.impl);
-    }else if(compat==1){
-        const Ring* pro=impl->promote(other.impl);
-        compare=impl->euclideanFuncCompare(pro);
-        delete pro;
+int R::euclidean_func_compare(const R& other) const{
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        int result=thisval->euclideanFuncCompare(otherval);
+        delete to_delete;
+        return result;
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        compare=pro->euclideanFuncCompare(other.impl);
-        delete pro;
+        throw "cannot use == on non-compatible types!";
     }
-
-    return compare==0;
 }
 
 bool R::exactly_equals(const R& other) const{
-
-    int i=Ring::compatibility(impl->get_type(), other.impl->get_type());
-
-    if(i==-2){
-        throw "cannot use exactly_equals on non-compatible types!";
-    }
-
-    if(i==0){
-        return impl->equalsImpl(other.impl);
-    }else if(i==1){
-        const Ring* pro=impl->promote(other.impl);
-        bool result=impl->equalsImpl(pro);
-        delete pro;
+    const Ring* thisval=impl;
+    const Ring* otherval=other.impl;
+    const Ring* to_delete;
+    if(internal_type_compatibility(thisval, otherval, to_delete)){
+        bool result=thisval->equalsImpl(otherval);
+        delete to_delete;
         return result;
     }else{
-        const Ring* pro=other.impl->promote(impl);
-        bool result=pro->equalsImpl(other.impl);
-        delete pro;
-        return result;
+        throw "cannot use exactly_equals on non-compatible types!";
     }
 }
 
+/**
+ * Unary operations.
+*/
 R R::operator-() const{
     return R{impl->negate()};
 }
@@ -371,10 +272,6 @@ bool R::is_zero() const{
 
 bool R::is_field() const{
     return impl->is_field();
-}
-
-int R::euclidean_func_compare(const R& other) const{
-    return impl->euclideanFuncCompare(other.impl);
 }
 
 string R::to_string() const{
@@ -429,18 +326,30 @@ bool R::is_type_compatible(const R& o) const{
     return Ring::is_type_compatible(get_type(),o.get_type());
 }
 
+/**
+ * Promotion functions, used to obtain an R, that has the same type as this, but keeps the same value as other.
+*/
 R R::promote(const R& other) const{
     return R{impl->promote(other.impl)};
 }
 
+/**
+ * Used internally for polynomimals and fractions.
+*/
 const Ring* R::promote_exp(const Ring* const& r) const{
     return impl->promote(r);
 }
 
+/**
+ * Returns the element having value one with same type as this
+*/
 R R::promote_one() const{
     return R{impl->promote_one()};
 }
 
+/**
+ * Splits into a product so that fractions can be expressed in a 'canonical way'.
+*/
 void R::split(R& morph, R& unit) const{
     const Ring *m, *u;
     impl->split_canonical(m,u);

@@ -46,7 +46,7 @@ void test_complex_ops(){
     for(int i=0;i<500;++i){
         R a=new LongComplex{values(rng),values(rng)};
         R b=new LongComplex{values(rng),values(rng)};
-
+        
         R c=a+b;
         R d=a*b;
         if(!c.exactly_equals(a+b)){
@@ -474,7 +474,7 @@ void run_test(){
         cout << "7 - test_fraction_complex_polynomial_ops\n";
         cout << "Enter other values to exit:  ";
         int i;
-        i=7;
+        cin>>i;
         
 
         switch(i){

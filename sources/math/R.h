@@ -10,6 +10,16 @@
  * Wrapper class for Rings. Use this class for computation (operators + - * / % etc).
 */
 class R{
+private:
+    /**
+     * Helper functions
+    */
+
+    /**
+     * Promotes r1,r2 to make types compatible. An extra Ring* will be created if needed. Returns true if possible,
+     * returns false if not. to_delete will be nullptr when types are not compatible or no promotion is needed.
+    */
+    static bool internal_type_compatibility(const Ring* &r1, const Ring* &r2, const Ring* &to_delete);
 protected:
     const Ring* impl;
 public:

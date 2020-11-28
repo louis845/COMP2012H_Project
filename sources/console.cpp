@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <algorithm>
 
 #include "console.h"
 #include "math/R.h"
