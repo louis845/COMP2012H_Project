@@ -15,11 +15,13 @@ class begin_widget : public QWidget
     Q_OBJECT
 
 public:
-    begin_widget(QWidget *parent = nullptr);
+    begin_widget(string ocr_user, string ocr_password, QWidget *parent = nullptr);
     ~begin_widget();
     void CaptureAndSolve();
 
     void paintEvent(QPaintEvent *);
+
+    QWidget *parent_window;
 
 private:
     Ui::begin_widget *ui;

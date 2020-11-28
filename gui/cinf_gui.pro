@@ -23,6 +23,12 @@ SOURCES += \
     ../sources/math/long/mpz_wrapper.cpp \
     ../sources/math/polynomial/Polynomial.cpp \
     ../sources/math/tools.cpp \
+    ../sources/parser/expr_ast.cpp \
+    ../sources/parser/lexer.cpp \
+    ../sources/parser/parser.cpp \
+    ../sources/parser/test_lexer.cpp \
+    ../sources/parser/test_parser.cpp \
+    ../sources/parser/test_regex.cpp \
     ../sources/steps/Step.cpp \
     ../sources/steps/StepsHistory.cpp \
     ../sources/utils/math_wrapper.cpp \
@@ -53,6 +59,10 @@ HEADERS += \
     ../sources/math/long/mpz_wrapper.h \
     ../sources/math/polynomial/Polynomial.h \
     ../sources/math/tools.h \
+    ../sources/parser/expr_ast.h \
+    ../sources/parser/lexer.h \
+    ../sources/parser/parser.h \
+    ../sources/parser/tokens.h \
     ../sources/steps/Step.h \
     ../sources/steps/StepsHistory.h \
     ../sources/utils/math_wrapper.h \

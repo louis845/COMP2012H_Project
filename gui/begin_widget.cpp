@@ -8,16 +8,16 @@
 #include "show_capture.h"
 #include "solution_widget.h"
 #include <QLineEdit>
-#include "input_key.h"
 #include <QDebug>
 
-begin_widget::begin_widget(QWidget *parent)
-    : QWidget(parent)
+begin_widget::begin_widget(string username,string password,QWidget *parent)
+    : QWidget(parent) , username(username), password(password)
     , ui(new Ui::begin_widget)
 {
     ui->setupUi(this);
     this -> setWindowTitle("CINF");
-    //this->setWindowFlags(Qt::FramelessWindowHint);
+    this->setAttribute(Qt::WA_DeleteOnClose);
+    this->setWindowFlags((Qt::CustomizeWindowHint | Qt::WindowTitleHint) & ~Qt::WindowCloseButtonHint);
 
     //set logo
     QLabel * logo = new QLabel;
@@ -39,40 +39,22 @@ begin_widget::begin_widget(QWidget *parent)
     photo_btn->setIcon(myicon);
     photo_btn->setIconSize(QSize(90,90));
 
+    begin_widget *pass_to_func=this;
+
     //click on the button to enter screen_capture window
     connect(photo_btn,&QToolButton::clicked,[=](){
         this->hide();
-
-        input_key * input_window = new input_key;
-        input_window->show();
-
-        connect(input_window,&input_key::user_quit,[=](){this->show();});
-
-        void(input_key:: *input_done)(string,string) = &input_key::user_input;
-
-        connect(input_window,input_done,[=](string username_input,string password_input){
-
-            username = username_input;
-            password = password_input;
-
+        QTimer *timer=new QTimer;
+        timer->setSingleShot(true);
+        QObject::connect(timer, &QTimer::timeout, [=](){
+            delete timer;
             CaptureAndSolve();
-
-            connect(this,&begin_widget::do_again,[=](){
-                this->show();
-                no_key_needed = true;
-            });
-            connect(this,nullptr,nullptr);
         });
+        timer->start(500);
+    });
 
-        if (no_key_needed) {
-            input_window->close();
-            CaptureAndSolve();
-            connect(this,&begin_widget::do_again,[=](){
-                this->show();
-            });
-        }
-
-
+    connect(this,&begin_widget::do_again,[=](){
+        this->show();
     });
 
 
@@ -91,44 +73,26 @@ begin_widget::begin_widget(QWidget *parent)
 
     //set background color in paintevent
     //currently disabled
-
-
 }
 
 void begin_widget::CaptureAndSolve(){
-
     window_capture * cap_window = new window_capture;
     void(window_capture:: *complete_cap_sig)(QPixmap) = &window_capture::sig_capture_completed;
 
     connect(cap_window,complete_cap_sig,[=](QPixmap cap_pic){
 
-        show_capture * show_cap = new show_capture(cap_pic,username,password);
+        show_capture * show_cap = new show_capture(cap_pic);
         show_cap->show();
 
-        void(show_capture:: *user_input)(QPixmap,string,string) = &show_capture::sig_checked;
-        connect(show_cap,user_input,[=](QPixmap capture,string get_latex,string get_ascii){
-
-            //parser func
-
-            QString latex = QString::fromStdString(get_latex);
-            QString ascii = QString::fromStdString(get_ascii);
-
-            solution_widget * solution_window = new solution_widget(capture,latex,ascii);
-            solution_window->show();
-
-            connect(solution_window,&solution_widget::finish_sig,[=](){
-                solution_window->close();
-                this->close();
-            });
-
-            connect(solution_window,&solution_widget::next_problem_sig,[=](){
-                solution_window->close();
-                emit do_again();
-            });
-
+        void(show_capture:: *user_input)(QPixmap) = &show_capture::sig_checked;
+        connect(show_cap,user_input,[=](QPixmap capture){
+            solution_widget *mparent=dynamic_cast<solution_widget*>(parent_window);
+            mparent->receiveImage(capture);
         });
 
-
+        connect(show_cap,&show_capture::sig_redo,[=](){
+            begin_widget::setVisible(true);
+        });
     });
 
 }

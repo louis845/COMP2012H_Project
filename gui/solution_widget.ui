@@ -54,34 +54,9 @@
      <x>30</x>
      <y>20</y>
      <width>381</width>
-     <height>531</height>
+     <height>541</height>
     </rect>
    </property>
-   <widget class="QLabel" name="image_label">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>12</y>
-      <width>351</width>
-      <height>191</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>0</width>
-      <height>0</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>800</width>
-      <height>800</height>
-     </size>
-    </property>
-    <property name="text">
-     <string>Image_input</string>
-    </property>
-   </widget>
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
@@ -94,11 +69,11 @@
     <property name="currentIndex">
      <number>0</number>
     </property>
-    <widget class="QWidget" name="latex_tab">
+    <widget class="QWidget" name="plain_tab">
      <attribute name="title">
-      <string>Latex</string>
+      <string>Plain</string>
      </attribute>
-     <widget class="QTextEdit" name="latex_textedit">
+     <widget class="QPlainTextEdit" name="plain_textedit">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -113,7 +88,7 @@
      <attribute name="title">
       <string>Asciimath</string>
      </attribute>
-     <widget class="QTextEdit" name="ascii_textedit">
+     <widget class="QPlainTextEdit" name="ascii_textedit">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -124,6 +99,42 @@
       </property>
      </widget>
     </widget>
+   </widget>
+   <widget class="QScrollArea" name="scrollAreaIntepretation">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>50</y>
+      <width>331</width>
+      <height>161</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>329</width>
+       <height>159</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="scan_btn">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>331</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Scan</string>
+    </property>
    </widget>
   </widget>
   <widget class="QWidget" name="finish_btn_widget" native="true">

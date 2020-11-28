@@ -9,6 +9,8 @@
 
 #include "steps/StepsHistory.h"
 #include "utils/ocr_api.h"
+#include "begin_widget.h"
+#include "parser/parser.h"
 
 using namespace std;
 
@@ -21,30 +23,33 @@ class solution_widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit solution_widget(QPixmap input_pic,QString latex,QString ascii,QWidget *parent = nullptr);
+    explicit solution_widget(string username, string password,QWidget *parent = nullptr);
     ~solution_widget();
     void init_window();
     void paintEvent(QPaintEvent *event);
     void method_dealer(int choice);
     void display_answer(string answer);
+    void captureMathExpression();
 
+    void handle_plain_update();
+    void handle_ascii_update();
+
+    void receiveImage(QPixmap p);
 private:
     Ui::solution_widget *ui;
-    QPixmap input_image;
 
-    QString latex_text;
-    QString ascii_text;
-
-    QString latex_afteredit;
-    QString ascii_afteredit;
+    string username;
+    string password;
+    Parser parser;
 
     QVBoxLayout* scrollarea_layout;
 
     QWebEngineView *solution_view;
+    QWebEngineView *intepretation_view;
 
     StepsHistory *steps;
 
-
+    begin_widget *input_window;
 signals:
     void finish_sig();
     void next_problem_sig();

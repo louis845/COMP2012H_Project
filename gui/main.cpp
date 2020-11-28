@@ -1,4 +1,5 @@
 #include "input_key.h"
+#include "solution_widget.h"
 
 #include <QApplication>
 #include <QObject>
@@ -6,7 +7,8 @@
 #include <QString>
 
 void enter_solve_stage(string user, string password){
-    qDebug()<<QString::fromStdString(user)<<" "<<QString::fromStdString(password)<<"\n";
+    solution_widget *w=new solution_widget{user, password};
+    w->show();
 }
 
 int main(int argc, char *argv[])

@@ -1,5 +1,6 @@
 #include "solution_widget.h"
 #include "ui_solution_widget.h"
+#include "begin_widget.h"
 #include <QPainter>
 #include <QMessageBox>
 #include <QMenu>
@@ -17,9 +18,8 @@
 #include "math/long/mpz_wrapper.h"
 
 
-solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,QWidget *parent) :
-    input_image(input_pic),latex_text(latex),ascii_text(ascii),QWidget(parent),
-    ui(new Ui::solution_widget)
+solution_widget::solution_widget(string username, string password, QWidget *parent) : QWidget(parent),
+    ui(new Ui::solution_widget), parser("")
 {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
@@ -30,30 +30,17 @@ solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,Q
 }
 
 void solution_widget::init_window(){
-    input_image = input_image.scaled(330,160,Qt::KeepAspectRatio,Qt::SmoothTransformation);
 
-    ui->image_label->setPixmap(input_image);
-    ui->image_label -> setFixedSize(330,160);
-    ui->image_label->setBackgroundRole(QPalette::Mid);
 
-    //ui->scrollArea->setAlignment(Qt::AlignTop);
+    connect(ui->plain_textedit,&QTextEdit::textChanged,this,&solution_widget::handle_plain_update);
+
+    connect(ui->ascii_textedit,&QTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
+
+    connect(ui->scan_btn,&QPushButton::pressed,this,&solution_widget::captureMathExpression);
+
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    //ui->scrollArea->setWidgetResizable(true);
+
     scrollarea_layout = new QVBoxLayout(this);
-    //widget = new QWidget(this);
-    //this->scrollarea_layout->setSizeConstraint(QVBoxLayout::SetMinAndMaxSize);
-
-    ui->latex_textedit->setText(latex_text);
-    ui->ascii_textedit->setText(ascii_text);
-
-    connect(ui->latex_textedit,&QTextEdit::textChanged,[=](){
-        latex_afteredit = ui->latex_textedit->toPlainText();
-    });
-
-    connect(ui->ascii_textedit,&QTextEdit::textChanged,[=](){
-        ascii_afteredit = ui->ascii_textedit->toPlainText();
-    });
-
 
     QMenu * method_menu = new QMenu(this);
     QAction * method1_act = new QAction("method1",this);
@@ -85,9 +72,38 @@ void solution_widget::init_window(){
     display_answer("<h1>This is just a test</h1>\n"
                    "The solutions of the quadratic equation should be displayed if an internet connection is correctly established.<br>\n"
                    "$$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$$");
-    R a=R{new Long{mpz_wrapper("104582958742895672409674389674380")}};
-    R b=R{new Long{mpz_wrapper("50439650486294754927689254342095842097638596739")}};
-    qDebug()<<QString::fromStdString((a*b).to_string())<<"\n";
+
+    input_window=new begin_widget{username,password};
+    input_window->setVisible(false);
+    input_window->parent_window=this;
+}
+
+void solution_widget::handle_ascii_update(){
+    QString text=ui->ascii_textedit->toPlainText();
+    string std_text=text.toStdString();
+    parser.reset_input(std_text);
+    parser.parse();
+}
+
+void solution_widget::handle_plain_update(){
+
+}
+
+void solution_widget::captureMathExpression(){
+    /*if(username==""){
+        return;
+    }*/
+
+    input_window->show();
+    this->setVisible(false);
+}
+
+void solution_widget::receiveImage(QPixmap p){
+    this->setVisible(true);
+    std::pair<string, string> result=Ocr::getInstance().request(p);
+    string asciimath=result.second;
+    ui->ascii_textedit->setText(QString::fromStdString(asciimath));
+    handle_ascii_update();
 }
 
 void solution_widget::method_dealer(int choice){
@@ -144,5 +160,6 @@ void solution_widget::paintEvent(QPaintEvent *event)
 
 solution_widget::~solution_widget()
 {
+    input_window->close();
     delete ui;
 }

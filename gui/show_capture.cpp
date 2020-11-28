@@ -4,36 +4,27 @@
 #include <QPainter>
 #include <QMessageBox>
 
-show_capture::show_capture(QPixmap &capture_pic,string user,string password,QWidget *parent) :
-    capture(capture_pic),user(user),password(password),QWidget(parent),
+show_capture::show_capture(QPixmap &capture_pic,QWidget *parent) :
+    capture(capture_pic),QWidget(parent),
     ui(new Ui::show_capture)
 {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
+    setWindowState(windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
+    this->setWindowFlags((Qt::CustomizeWindowHint | Qt::WindowTitleHint) & ~Qt::WindowCloseButtonHint);
     this->setWindowTitle("CINF");
 
     ui->show_pic->setPixmap(capture);
 
     connect(ui->ok,&QPushButton::clicked,[=](){
-
-            bool valid_input = true;
-            string latex = "latex";
-            string ascii = "ascii";
-            //parser func: input capture & username & password, get latex & ascii
-
-
-            //warning
-            if (!valid_input){
-                QMessageBox::critical(this,"Error","Invalid username or password");
-            }
-            if (valid_input){
-                this->close();
-                emit sig_checked(capture,latex,ascii);
-            }
-
+        this->close();
+        emit sig_checked(capture);
     });
 
-
+    connect(ui->again,&QPushButton::clicked,[=](){
+        this->close();
+        emit sig_redo();
+    });
 }
 
 
