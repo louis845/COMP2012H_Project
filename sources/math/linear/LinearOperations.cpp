@@ -1,4 +1,6 @@
 #include "math/linear/LinearOperations.h"
+#include "math/linear/CoupledOperations.h"
+#include "math/fraction/Fraction.h"
 #include <string>
 using namespace std;
 
@@ -233,4 +235,191 @@ bool LinearOperations::is_diagonally_one() const{
         }
     }
     return true;
+}
+
+namespace LinearOperationsFunc{
+    void row_reduce(R** mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            RF::promote_to_field(mat,rows,cols);
+            steps=new StepsHistory;
+            LinOpsRecorder rc{steps, mat, rows, cols};
+            rc.capture_initial();
+
+            LinearOperations o{mat, rows, cols, false, &rc};
+
+            o.toRREF();
+
+            RF::deallocate_matrix(mat,rows);
+
+        }else{
+            steps=nullptr;
+        }
+    }
+
+    void col_reduce(R** mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            RF::promote_to_field(mat,rows,cols);
+            steps=new StepsHistory;
+            LinOpsRecorder rc{steps, mat, rows, cols};
+            rc.capture_initial();
+
+            LinearOperations o{mat, rows, cols, true, &rc};
+
+            o.toRREF();
+
+            RF::deallocate_matrix(mat,rows);
+
+        }else{
+            steps=nullptr;
+        }
+    }
+
+    void solve(R** mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            RF::promote_to_field(mat,rows,cols);
+
+            RF** last_col=new RF*[rows];
+            for(int i=0;i<rows;i++){
+                last_col[i]=(mat[i]+cols-1); //The submatrix with column starting from col (the last column). No need to do value copy.
+            }
+
+            steps=new StepsHistory;
+            LinOpsRecorder rc{steps, mat, rows, cols};
+            rc.capture_initial();
+
+            CoupledOperations o{mat, rows, cols-1, false, &rc, last_col, 1};
+
+            o.toRREF();
+
+            RF::deallocate_matrix(mat,rows);
+            delete[] last_col; //No need to deep delete last_col since last_col is only stores the pointers that point to the same values as mat.
+        }else{
+            steps=nullptr;
+        }
+    }
+
+    void invert(R** mat_slow, int rows, int cols, StepsHistory* &steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            RF** combined_matrix;
+            RF** cpl; //Coupled matrix, submatrix of combined_matrix. Saves a pointer to the pointers of combined_matrix.
+            int mrows;
+            int mcols;
+
+            //we create a combined matrix here by combining with the identity matrix. Throughout this process, mat will be deallocated.
+            if(rows>=cols){
+                mrows=rows;
+                mcols=rows+cols;
+
+                combined_matrix=new RF*[rows];
+                cpl=new RF*[rows];
+                for(int i=0;i<rows;i++){
+                    combined_matrix[i]=new RF[mcols];
+                    for(int j=0;j<cols;j++){
+                        if(!mat[i][j].is_field()){
+                            R one=mat[i][j].promote_one();
+                            combined_matrix[i][j]=RF{new Fraction{mat[i][j],one}};
+                        }else{
+                            combined_matrix[i][j]=mat[i][j];
+                        }
+                    }
+                    for(int j=cols;j<mcols;j++){
+                        if(i==j-cols){
+                            //j-cols is the columns in the right submatrix. We want it to be diagonally one.
+                            combined_matrix[i][j]=combined_matrix[0][0].promote_one(); //combined_matrix[0][0] is already initialized.
+                        }else{
+                            combined_matrix[i][j]=combined_matrix[0][0].promote(R::ZERO);
+                        }
+                    }
+                    delete[] mat[i];
+
+                    cpl[i]=(combined_matrix[i]+cols); //copy the pointer position, starting from cols.
+                }
+                delete[]mat;
+            }else{
+                mrows=rows+cols;
+                mcols=cols;
+
+                combined_matrix=new RF*[mrows];
+                cpl=new RF*[cols];
+                for(int i=0;i<mrows;i++){
+                    combined_matrix[i]=new RF[cols];
+                    for(int j=0;j<cols;j++){
+                        if(i<rows){
+                            if(!mat[i][j].is_field()){
+                                R one=mat[i][j].promote_one();
+                                combined_matrix[i][j]=RF{new Fraction{mat[i][j],one}};
+                            }else{
+                                combined_matrix[i][j]=mat[i][j];
+                            }
+                        }else{
+                            if(i-rows==j){
+                                //i-rows is the row in the bottom submatrix.
+                                combined_matrix[i][j]=combined_matrix[0][0].promote_one();
+                            }else{
+                                combined_matrix[i][j]=combined_matrix[0][0].promote(R::ZERO);
+                            }
+                        }
+                    }
+                    if(i<rows)
+                        delete[] mat[i];
+                }
+                delete[]mat;
+
+                for(int i=0;i<cols;i++){
+                    cpl[i]=combined_matrix[rows+i]; //copy the pointer position, starting from rows.
+                }
+            }
+
+            //Now combined_matrix are the values of mat adjoined with identity matrix, and mat is deallocated here
+            //Cpl is the submatrix pointing to the same addresses as combined_matrix
+
+            steps=new StepsHistory;
+            LinOpsRecorder rc{steps, combined_matrix, mrows, mcols}; //we record the whole matrix
+            rc.capture_initial();
+            
+            if(rows>=cols){
+                CoupledOperations o{combined_matrix, rows, cols, false, &rc, cpl, rows};
+
+                o.toRREF();
+                if(o.is_diagonally_one()){
+                    if(rows==cols){
+                        steps->add_step(new MatrixSpaceStep{cpl, rows, rows, -1, true, "The inverse of the matrix is:"});
+                    }else{
+                        cout<<"bf_add_step\n";
+                        string text="General left inverse is A+XB, for arbitrary matrix X (with size "+to_string(cols)+"x"+to_string(rows-cols)+" ).\n This is such that (A+XB)*input=I";
+                        steps->add_step(new MatrixSpaceStep{cpl, rows, rows, cols, true, text});
+                        cout<<"af_add_step\n";
+                    }
+                }else{
+                    steps->add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
+                }
+            }else{
+                CoupledOperations o{combined_matrix, rows, cols, true, &rc, cpl, cols};
+
+                o.toRREF();
+                if(o.is_diagonally_one()){
+                    string text="General right inverse is A+BX, for arbitrary matrix X (with size "+to_string(cols-rows)+"x"+to_string(rows)+" ).\n This is such that input*(A+BX)=I";
+                    steps->add_step(new MatrixSpaceStep{cpl, cols, cols, rows, false, text});
+                }else{
+                    steps->add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
+                }
+            }
+
+            for(int i=0;i<mrows;i++){
+                delete[]combined_matrix[i];
+            }
+            delete[]combined_matrix;
+            delete[]cpl; //no need to delete the subarrays, it is deleted in combined_matrix since cpl is a pointer copy.
+        }else{
+            steps=nullptr;
+        }
+    }
 }

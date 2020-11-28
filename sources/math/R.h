@@ -294,6 +294,19 @@ public:
      * Promotes all types of the matrix to have exactly the same type. Returns true if possible, false if not.
     */
     static bool ensure_types_equal(RF* const* const matrix, int rows, int cols);
+
+    /**
+     * Copies the matrix and promotes the type to make sure they are equal, if possible. Returns a newly allocated copy of the matrix
+     * where the types are exactly equal, returns nullptr if it is not possbile.
+    */
+    static RF** copy_and_promote_if_compatible(const R* const* const matrix, int rows, int cols);
+
+    /**
+     * Promotes all the types to a field. Assumes the types are already exactly equal (see copy_and_promote_if_compatible and ensure_types_equal)
+    */
+    static void promote_to_field(RF* const* const matrix, int rows, int cols);
+
+    static void deallocate_matrix(RF **matrix, int rows);
 };
 
 /**

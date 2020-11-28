@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <sstream>
 #include "LinOpsSteps.h"
 
 using namespace std;
@@ -33,7 +34,7 @@ LinOpsSteps::LinOpsSteps(RF** matrix,int rows,int cols, std::string* console, st
 
 LinOpsSteps::~LinOpsSteps(){
     for(int i=0;i<rows;i++){
-        delete[]matrix;
+        delete[] matrix[i];
     }
     delete[]matrix;
 
@@ -71,6 +72,37 @@ void LinOpsSteps::print_to_console() const{
     }
 
     delete[] col_width;
+}
+
+void write_matrix_to_html_latex(ostringstream& os, RF** matrix, int rows, int cols){
+    os<<"\\begin{pmatrix}\n";
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            os<<matrix[rows][cols].to_latex();
+            if(j==cols-1){
+                os<<" \\\\\n";
+            }else{
+                os<<" & ";
+            }
+        }
+    }
+    os<<"\\end{pmatrix}\n";
+}
+
+string LinOpsSteps::get_html_latex() const{
+    ostringstream os;
+    os<<"<h1>Step operations:</h1>\n";
+    os<<"\\begin{gather}\n";
+    for(int i=0;i<length;i++){
+        os<<latex[i]<<"\\\\\n";
+    }
+    os<<"\\end{gather}\n";
+    os<<"<br>";
+    os<<"<h1>Matrix after operations:</h1>";
+    os<<"\\begin{gather}\n";
+    write_matrix_to_html_latex(os,matrix,rows,cols);
+    os<<"\\end{gather}\n";
+    return os.str();
 }
 
 MatrixSpaceStep::MatrixSpaceStep(RF** mat,int rows,int cols,int cutoff,bool row_or_col,const std::string& text){
@@ -168,4 +200,23 @@ void MatrixSpaceStep::print_to_console() const{
     }else{
         enclosed_matrix_print(matrix,rows,cols);
     }
+}
+
+string MatrixSpaceStep::get_html_latex() const{
+    ostringstream os;
+    os<<"<h2>"<<text<<"</h2>\n";
+    cout<<"<br>\n";
+    if(space_matrix!=nullptr){
+        os<<"\\begin{gather}\n";
+        os<<"A=";
+        write_matrix_to_html_latex(os,this->matrix,rows,cols);
+        os<<"\\\\\nB=";
+        write_matrix_to_html_latex(os,space_matrix,rows_space,cols_space);
+        os<<"\\end{gather}\n";
+    }else{
+        os<<"\\begin{gather}\n";
+        write_matrix_to_html_latex(os,this->matrix,rows,cols);
+        os<<"\\end{gather}\n";
+    }
+    return os.str();
 }

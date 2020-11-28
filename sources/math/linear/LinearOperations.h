@@ -76,4 +76,31 @@ private:
     int rows;
     int cols;
 };
+
+/**
+ * In all of the functions here, StepsHistory is dynamically allocated if matrix contains compatible types,
+ * else steps will be set to nullptr. Does not deallocate any pointers passed to this function.
+*/
+namespace LinearOperationsFunc{
+    /**
+     * Reduces the given matrix to row echelon, along with steps. StepsHistory is dynamically allocated if matrix contains compatible types,
+     * else steps will be set to nullptr. Does not deallocate any pointers passed to this function.
+    */
+    void row_reduce(R** mat, int rows, int cols, StepsHistory* &steps);
+
+    /**
+     * See row_reduce.
+    */
+    void col_reduce(R** mat, int rows, int cols, StepsHistory* &steps);
+
+    /**
+     * Reduces the augmented matrix to obtain the result. Cols is the exact number columns of the augmented matrix.
+    */
+    void solve(R** mat, int rows, int cols, StepsHistory* &steps);
+
+    /**
+     * Finds the left/right/general inverse, if exists, of the matrix.
+    */
+    void invert(R** mat, int rows, int cols, StepsHistory* &steps);
+}
 #endif
