@@ -7,6 +7,9 @@
 #include <string>
 #include <QWebEngineView>
 
+#include "steps/StepsHistory.h"
+#include "utils/ocr_api.h"
+
 using namespace std;
 
 namespace Ui {
@@ -39,7 +42,8 @@ private:
 
     QWebEngineView *solution_view;
 
-    //QList<QLabel> steps;
+    StepsHistory *steps;
+
 
 signals:
     void finish_sig();

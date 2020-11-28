@@ -85,10 +85,10 @@ void LongComplex::quotAndRemainder(const Ring* r, const Ring*& quot, const Ring*
 
     PRIMITIVE_LONG_TYPE c_factor=gcd(gcd(gcd(a,b),c),d); //Taking common factor of all
 
-    a/=c_factor;
-    b/=c_factor;
-    c/=c_factor;
-    d/=c_factor;    //Rescaling, so that it is harder to overflow
+    a=a/c_factor;
+    b=a/c_factor;
+    c=a/c_factor;
+    d=a/c_factor;    //Rescaling, so that it is harder to overflow
 
     PRIMITIVE_LONG_TYPE mulRE=c;
     PRIMITIVE_LONG_TYPE mulIM=-d; //Conjugate

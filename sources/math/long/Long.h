@@ -4,7 +4,8 @@
 #include "math/Ring.h"
 #include "math/long/LongType.h"
 
-#include <gmpxx.h> // GNU GMP, we only use the big integer class mpz_class in place of long.
+
+#include "math/long/mpz_wrapper.h" // GNU GMP, we only use the big integer class mpz_class in place of long.
 
 using namespace std;
 

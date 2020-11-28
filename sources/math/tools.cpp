@@ -180,7 +180,7 @@ void simple_parse_cpx(const string& input, string& err, R& val, int& success, co
         }else{
             plong=input.substr(start_index, end_index-start_index);
         }
-        mpz_class l;
+        mpz_wrapper l(0);
         try{
             l=plong;
         }catch(...){

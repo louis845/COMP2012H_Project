@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <string>
+#include "utils/ocr_api.h"
 using namespace std;
 
 namespace Ui {

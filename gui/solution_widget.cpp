@@ -14,6 +14,7 @@
 #include "math/polynomial/Polynomial.h"
 #include "math/long/Long.h"
 #include "math/R.h"
+#include "math/long/mpz_wrapper.h"
 
 
 solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,QWidget *parent) :
@@ -24,6 +25,8 @@ solution_widget::solution_widget(QPixmap input_pic,QString latex,QString ascii,Q
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("CINF");
     init_window();
+
+    steps=nullptr;
 }
 
 void solution_widget::init_window(){

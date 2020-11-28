@@ -1,13 +1,13 @@
 #ifndef MATH_WRAPPER_H
 #define MATH_WRAPPER_H
 
-#include "R.h"
-#include "Polynomial.h"
-#include "Long.h"
-#include "LongComplex.h"
-#include "Fraction.h"
-#include "Double.h"
-#include "DoubleComplex.h"
+#include "math/R.h"
+#include "math/polynomial/Polynomial.h"
+#include "math/long/Long.h"
+#include "math/long/LongComplex.h"
+#include "math/fraction/Fraction.h"
+#include "math/double/Double.h"
+#include "math/double/DoubleComplex.h"
 #include <vector>
 #include <complex>
 #include <armadillo>

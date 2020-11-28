@@ -25,6 +25,9 @@ SOURCES += \
     ../sources/math/tools.cpp \
     ../sources/steps/Step.cpp \
     ../sources/steps/StepsHistory.cpp \
+    ../sources/utils/math_wrapper.cpp \
+    ../sources/utils/ocr_api.cpp \
+    ../sources/utils/test_ocr.cpp \
     input_key.cpp \
     main.cpp \
     begin_widget.cpp \
@@ -33,7 +36,6 @@ SOURCES += \
     window_capture.cpp
 
 HEADERS += \
-    ../libraries/gmp_621_msvc_x64/gmp.h \
     ../sources/math/Field.h \
     ../sources/math/R.h \
     ../sources/math/Ring.h \
@@ -54,6 +56,8 @@ HEADERS += \
     ../sources/math/tools.h \
     ../sources/steps/Step.h \
     ../sources/steps/StepsHistory.h \
+    ../sources/utils/math_wrapper.h \
+    ../sources/utils/ocr_api.h \
     begin_widget.h \
     input_key.h \
     show_capture.h \
@@ -68,7 +72,8 @@ FORMS += \
 
 INCLUDEPATH += \
     ../sources/ \
-    ../libraries/gmp_621_msvc_x64
+    ../libraries/gmp_621_msvc_x64 \
+    ../libraries/Armadillo/include \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
