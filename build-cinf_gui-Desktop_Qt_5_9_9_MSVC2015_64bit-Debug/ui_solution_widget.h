@@ -40,14 +40,14 @@ public:
     QPushButton *scan_btn;
     QWidget *finish_btn_widget;
     QHBoxLayout *horizontalLayout_2;
-    QPushButton *next_btn;
+    QPushButton *next_btn2;
     QPushButton *finish_btn;
     QWidget *widget;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *methods_btn;
     QSpacerItem *horizontalSpacer;
     QPushButton *previous_btn;
-    QPushButton *next_btn_2;
+    QPushButton *next_btn;
 
     void setupUi(QWidget *solution_widget)
     {
@@ -98,10 +98,10 @@ public:
         finish_btn_widget->setGeometry(QRect(420, 520, 381, 41));
         horizontalLayout_2 = new QHBoxLayout(finish_btn_widget);
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        next_btn = new QPushButton(finish_btn_widget);
-        next_btn->setObjectName(QStringLiteral("next_btn"));
+        next_btn2 = new QPushButton(finish_btn_widget);
+        next_btn2->setObjectName(QStringLiteral("next_btn2"));
 
-        horizontalLayout_2->addWidget(next_btn);
+        horizontalLayout_2->addWidget(next_btn2);
 
         finish_btn = new QPushButton(finish_btn_widget);
         finish_btn->setObjectName(QStringLiteral("finish_btn"));
@@ -127,10 +127,10 @@ public:
 
         horizontalLayout_3->addWidget(previous_btn);
 
-        next_btn_2 = new QPushButton(widget);
-        next_btn_2->setObjectName(QStringLiteral("next_btn_2"));
+        next_btn = new QPushButton(widget);
+        next_btn->setObjectName(QStringLiteral("next_btn"));
 
-        horizontalLayout_3->addWidget(next_btn_2);
+        horizontalLayout_3->addWidget(next_btn);
 
 
         retranslateUi(solution_widget);
@@ -147,11 +147,11 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(plain_tab), QApplication::translate("solution_widget", "Plain", Q_NULLPTR));
         tabWidget->setTabText(tabWidget->indexOf(ascii_tab), QApplication::translate("solution_widget", "Asciimath", Q_NULLPTR));
         scan_btn->setText(QApplication::translate("solution_widget", "Scan", Q_NULLPTR));
-        next_btn->setText(QApplication::translate("solution_widget", "Next Problem", Q_NULLPTR));
+        next_btn2->setText(QApplication::translate("solution_widget", "Next Problem", Q_NULLPTR));
         finish_btn->setText(QApplication::translate("solution_widget", "Finished", Q_NULLPTR));
         methods_btn->setText(QApplication::translate("solution_widget", "Methods", Q_NULLPTR));
         previous_btn->setText(QApplication::translate("solution_widget", "Previous", Q_NULLPTR));
-        next_btn_2->setText(QApplication::translate("solution_widget", "Next", Q_NULLPTR));
+        next_btn->setText(QApplication::translate("solution_widget", "Next", Q_NULLPTR));
     } // retranslateUi
 
 };

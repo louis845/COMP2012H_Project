@@ -34,6 +34,11 @@ public:
     void handle_plain_update();
     void handle_ascii_update();
 
+    void navigatePrev();
+    void navigateNext();
+    void updateAnsDisp();
+    void setNewSteps(StepsHistory* s);
+
     void receiveImage(QPixmap p);
 private:
     Ui::solution_widget *ui;

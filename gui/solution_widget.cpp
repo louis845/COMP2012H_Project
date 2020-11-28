@@ -12,31 +12,28 @@
 #include <QApplication>
 #include <QWebEngineView>
 
-#include "math/polynomial/Polynomial.h"
-#include "math/long/Long.h"
-#include "math/R.h"
-#include "math/long/mpz_wrapper.h"
+#include "math/linear/LinearOperations.h"
 
 
 solution_widget::solution_widget(string username, string password, QWidget *parent) : QWidget(parent),
-    ui(new Ui::solution_widget), parser("")
+    ui(new Ui::solution_widget), parser(""), username(username), password(password)
 {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("CINF");
     init_window();
-
-    steps=nullptr;
 }
 
 void solution_widget::init_window(){
+    connect(ui->plain_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_plain_update);
 
-
-    connect(ui->plain_textedit,&QTextEdit::textChanged,this,&solution_widget::handle_plain_update);
-
-    connect(ui->ascii_textedit,&QTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
+    //connect(ui->ascii_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
 
     connect(ui->scan_btn,&QPushButton::pressed,this,&solution_widget::captureMathExpression);
+
+    connect(ui->previous_btn,&QPushButton::pressed,this,&solution_widget::navigatePrev);
+
+    connect(ui->next_btn,&QPushButton::pressed,this,&solution_widget::navigateNext);
 
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -69,10 +66,13 @@ void solution_widget::init_window(){
 
     solution_view=new QWebEngineView{ui->scrollArea};
     ui->scrollArea->setWidget(solution_view);
-    display_answer("<h1>This is just a test</h1>\n"
-                   "The solutions of the quadratic equation should be displayed if an internet connection is correctly established.<br>\n"
-                   "$$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$$");
 
+    steps=new StepsHistory;
+    steps->add_step(new StepText{"<h1>This is just a test</h1>\n"
+                                 "The solutions of the quadratic equation should be displayed if an internet connection is correctly established.<br>\n"
+                                 "$$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$$\n"
+                                 "<h1>Type something or scan a picture to start</h1>"});
+    updateAnsDisp();
     input_window=new begin_widget{username,password};
     input_window->setVisible(false);
     input_window->parent_window=this;
@@ -82,7 +82,14 @@ void solution_widget::handle_ascii_update(){
     QString text=ui->ascii_textedit->toPlainText();
     string std_text=text.toStdString();
     parser.reset_input(std_text);
-    parser.parse();
+    const Info& i=parser.parse();
+    qDebug()<<i.engine_used;
+    qDebug()<<i.success;
+    qDebug()<<QString::fromStdString(i.interpreted_input);
+    qDebug()<<i.mat_size.size();
+    qDebug()<<i.parsed_mat.size();
+    qDebug()<<QString::fromStdString(i.eval_result);
+    qDebug()<<"----------------------------------------------------\n";
 }
 
 void solution_widget::handle_plain_update(){
@@ -90,9 +97,9 @@ void solution_widget::handle_plain_update(){
 }
 
 void solution_widget::captureMathExpression(){
-    /*if(username==""){
+    if(username==""){
         return;
-    }*/
+    }
 
     input_window->show();
     this->setVisible(false);
@@ -102,8 +109,28 @@ void solution_widget::receiveImage(QPixmap p){
     this->setVisible(true);
     std::pair<string, string> result=Ocr::getInstance().request(p);
     string asciimath=result.second;
-    ui->ascii_textedit->setText(QString::fromStdString(asciimath));
+    ui->ascii_textedit->setPlainText(QString::fromStdString(asciimath));
     handle_ascii_update();
+}
+
+void solution_widget::updateAnsDisp(){
+    display_answer(steps->get_current_node().get_html_latex());
+}
+
+void solution_widget::navigateNext(){
+    steps->next_node();
+    updateAnsDisp();
+}
+
+void solution_widget::navigatePrev(){
+    steps->previous_node();
+    updateAnsDisp();
+}
+
+void solution_widget::setNewSteps(StepsHistory *new_step){
+    delete steps;
+    steps=new_step;
+    updateAnsDisp();
 }
 
 void solution_widget::method_dealer(int choice){
@@ -111,15 +138,50 @@ void solution_widget::method_dealer(int choice){
     QString answer;
     QPixmap answer_png;
     switch (choice) {
-        case 0:
+        case 0:{
             //call method1 func
             valid_answer = true;
             answer = "$";
             this->display_answer(answer.toStdString());
+
+            R **matrix=new R*[2];
+            for(int i=0;i<2;i++){
+                matrix[i]=new R[3];
+                for(int j=0;j<3;j++){
+                    matrix[i][j]=R{new Long{i+j}};
+                }
+            }
+            StepsHistory* step;
+            LinearOperationsFunc::invert(matrix,2,3,step);
+            setNewSteps(step);
+            for(int i=0;i<2;i++){
+                delete[] matrix[i];
+            }
+            delete[]matrix;
+
             break;
-        case 1:
-            //call method2 func
+        }
+        case 1:{
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(-999, 999);
+
+            R **matrix=new R*[4];
+            for(int i=0;i<4;i++){
+                matrix[i]=new R[5];
+                for(int j=0;j<5;j++){
+                    matrix[i][j]=R{new Long{dis(gen)}};
+                }
+            }
+            StepsHistory* step;
+            LinearOperationsFunc::solve(matrix,4,5,step);
+            setNewSteps(step);
+            for(int i=0;i<4;i++){
+                delete[] matrix[i];
+            }
+            delete[]matrix;
             break;
+        }
         case 2:
             //call method3 func
             break;
@@ -146,6 +208,8 @@ void solution_widget::display_answer(string answer){
     qs=qs+QString::fromStdString(answer);
     qs=qs+"</body></html>";
     solution_view->setHtml(qs);
+    qDebug().noquote();
+    qDebug()<<qs;
 }
 
 void solution_widget::paintEvent(QPaintEvent *event)
@@ -162,4 +226,5 @@ solution_widget::~solution_widget()
 {
     input_window->close();
     delete ui;
+    delete steps;
 }

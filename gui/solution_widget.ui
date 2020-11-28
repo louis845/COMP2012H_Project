@@ -148,7 +148,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="QPushButton" name="next_btn">
+     <widget class="QPushButton" name="next_btn2">
       <property name="text">
        <string>Next Problem</string>
       </property>
@@ -201,7 +201,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="next_btn_2">
+     <widget class="QPushButton" name="next_btn">
       <property name="text">
        <string>Next</string>
       </property>

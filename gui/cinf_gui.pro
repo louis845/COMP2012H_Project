@@ -26,9 +26,7 @@ SOURCES += \
     ../sources/parser/expr_ast.cpp \
     ../sources/parser/lexer.cpp \
     ../sources/parser/parser.cpp \
-    ../sources/parser/test_lexer.cpp \
-    ../sources/parser/test_parser.cpp \
-    ../sources/parser/test_regex.cpp \
+    ../sources/parser/tokens.cpp \
     ../sources/steps/Step.cpp \
     ../sources/steps/StepsHistory.cpp \
     ../sources/utils/math_wrapper.cpp \
