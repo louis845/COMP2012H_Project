@@ -15,18 +15,105 @@ std::unordered_map<TokName, int> BinaryExprAst::precedence =
 };
 
 
-ROperand NumberExprAst::evalR()
+Info::~Info()
+{
+    for (size_t i = 0; i < parsed_mat.size(); ++i)
+    {
+        R** matR = parsed_mat[i].second;
+        size_t n_rows = mat_size[i].first, n_cols = mat_size[i].second;
+        for (size_t j = 0; j < n_rows; ++j) delete [] matR[j];
+        delete [] matR;
+        matR = nullptr;
+    }
+    delete err;
+}
+
+
+void Info::clear()
+{
+    success = true;
+    engine_used = 1;
+    err = nullptr;
+    for (size_t i = 0; i < parsed_mat.size(); ++i)
+    {
+        R** mat = parsed_mat[i].second;
+        size_t row = mat_size[i].first;
+        for (size_t j = 0; j < row; ++j)    delete [] mat[j];
+    }
+    mat_size.clear();
+    parsed_mat.clear();
+    interpreted_input = eval_result = warning = "";
+    float_exists = var_exists = func_exists = false;
+}
+
+
+void Info::addMat(ROperand operand, TokName op)
+{
+    if (operand.type != ROperand::Type::NOR)   return;
+    auto &mat = operand.mat;
+    auto n_rows = mat.size(), n_cols = mat[0].size();
+
+    R** matR = new R* [n_rows];
+    for (auto i = 0; i < n_rows; ++i)   matR[i] = new R [n_cols];
+
+    for (auto i = 0; i < n_rows; ++i)
+        for (auto j = 0; j < n_cols; ++j)
+            matR[i][j] = mat[i][j];
+
+    parsed_mat.emplace_back(std::make_pair(op, matR));
+    mat_size.emplace_back(std::make_pair(n_rows, n_cols));
+}
+
+
+NumberExprAst::NumberExprAst(TokName name, const string& raw): name(name), raw(raw)
+{
+    if (raw.find('e') != string::npos || raw.find('E') != string::npos) 
+        scientific = true;
+}
+
+
+ROperand NumberExprAst::evalR(Info& res)
 {
     switch (name)
     {
         case TokName::INTEGRAL:
-            return ROperand(newInt(static_cast<long>(int_value)));
+        {
+            if (scientific)
+            {
+                try 
+                { 
+                    long value = stol(raw); 
+                    return ROperand(newInt(value));
+                }
+                catch (const std::invalid_argument& err)
+                {
+                    throw std::invalid_argument(raw + " is not a valid numerical value");
+                }
+                catch (const std::out_of_range& err)
+                {
+                    throw std::out_of_range(raw + " contains scientific notation but is out of range of built-in long type");
+                }
+            }
+            else return ROperand(newInt(raw));
+        }
         
-        case TokName::FLOAT:
-        {                // not really recommended, use Armadillo for approximated solutions
-            long int_part = static_cast<long>(float_value);
-            long float_part = static_cast<long>((float_value - int_part) * 1e6);    // naive implementation, avoid to use it
-            return ROperand(newFrac(newInt(int_part), newInt(1L)) + newFrac(newInt(float_part), newInt(1e6L)));
+        case TokName::FLOAT:    // not really recommended, use Armadillo for approximated solutions               
+        {
+            try 
+            { 
+                double value = stod(raw);
+                long int_part = static_cast<long>(value);
+                long float_part = static_cast<long>((value - int_part) * 1e6);    // naive implementation, avoid to use it
+                return ROperand(newFrac(newInt(int_part), newInt(1L)) + newFrac(newInt(float_part), newInt(1e6L))); 
+            }
+            catch (const std::invalid_argument& err)
+            {
+                throw std::invalid_argument(raw + " is not a valid numerical value");
+            }
+            catch (const std::out_of_range& err)
+            {
+                throw std::invalid_argument(raw + " contains scientific notation but is out of range of built-in double type");
+            }
         }
 
         case TokName::E:
@@ -42,7 +129,7 @@ ROperand NumberExprAst::evalR()
             return ROperand();
 
         default:
-            throw std::runtime_error("Error: unknown numerical value.");
+            throw std::runtime_error("unknown numerical value.");
     }
 }
 
@@ -51,11 +138,19 @@ ArmaOperand NumberExprAst::eval()
 {
     switch (name)
     {
-        case TokName::INTEGRAL: 
-            return ArmaOperand(static_cast<double>(int_value));
-        
-        case TokName::FLOAT:
-            return ArmaOperand(float_value);
+        case TokName::INTEGRAL: case TokName::FLOAT: 
+            try 
+            {
+                return ArmaOperand(stod(raw)); 
+            }
+            catch (const std::invalid_argument& err)
+            {
+                throw std::invalid_argument(raw + " is not a valid numerical value");
+            }
+            catch (const std::out_of_range& err)
+            {
+                throw std::invalid_argument(raw + " is out of range of built-in double type");
+            }
 
         case TokName::E: 
             return ArmaOperand(arma::datum::e);
@@ -70,21 +165,21 @@ ArmaOperand NumberExprAst::eval()
             return ArmaOperand();
 
         default:
-            throw std::runtime_error("Error: unknown numerical value.");
+            throw std::runtime_error("unknown numerical value.");
     }
 }
 
 
-ROperand MatrixExprAst::evalR()
+ROperand MatrixExprAst::evalR(Info& res)
 {
     ROperand matrix(entries.size());
     for (size_t row = 0; row < entries.size(); ++row)
         for (size_t col = 0; col < entries[row].size(); ++col)
         {
-            ROperand entry = entries[row][col]->evalR();
+            ROperand entry = entries[row][col]->evalR(res);
             
             if (entry.type != ROperand::Type::NOR)
-                throw std::runtime_error("Nested matrices are not supported currently.");
+                throw std::invalid_argument("nested matrices are not supported currently.");
 
             matrix.mat[row].push_back(entry.value);
         }
@@ -101,7 +196,7 @@ ArmaOperand MatrixExprAst::eval()
             ArmaOperand entry = entries[row][col]->eval();
 
             if (entry.type != ArmaOperand::Type::NOR)
-                throw std::runtime_error("Nested matrices are not supported currently.");
+                throw std::invalid_argument("nested matrices are not supported currently.");
 
             matrix.mat(row, col) = entry.value;
         }
@@ -127,7 +222,7 @@ string MatrixExprAst::genAsciiMath() const
 }
 
 
-ROperand VariableExprAst::evalR()
+ROperand VariableExprAst::evalR(Info& res)
 {   
     return ROperand(newTerm(1));
 }
@@ -140,10 +235,13 @@ ArmaOperand VariableExprAst::eval()
 }
 
 
-ROperand BinaryExprAst::evalR()
+ROperand BinaryExprAst::evalR(Info& res)
 {
-    ROperand lhsR = lhs->evalR();
-    ROperand rhsR = rhs->evalR();
+    ROperand lhsR = lhs->evalR(res);
+    ROperand rhsR = rhs->evalR(res);
+
+    if (lhsR.type == ROperand::Type::MAT) res.addMat(lhsR, TokName::NA);
+    if (rhsR.type == ROperand::Type::MAT) res.addMat(rhsR, TokName::NA);
     
     switch (op)
     {
@@ -163,12 +261,21 @@ ROperand BinaryExprAst::evalR()
             if (typeid(*rhs) == typeid(NumberExprAst))
             {
                 NumberExprAst* temp = dynamic_cast<NumberExprAst*>(rhs);
-                if (temp->name == TokName::INTEGRAL)    return lhsR ^ (static_cast<int>(temp->int_value));
+                if (temp->name == TokName::INTEGRAL)    
+                    try { return lhsR ^ (stoi(temp->raw)); }        // may overflow
+                    catch (const std::invalid_argument& err)
+                    {
+                        throw std::invalid_argument(temp->raw + " is not a valid numerical value");
+                    }
+                    catch (const std::out_of_range& err)
+                    {
+                        throw std::invalid_argument(temp->raw + " is out of range of built-in int type");
+                    }
             }
-            else throw std::runtime_error("Error: unsupported exponential operation, expecting a natural number as exponential.");       
+            else throw std::invalid_argument("unsupported exponential operation, expecting a natural number as exponential.");       
             
         default:
-            throw std::runtime_error("Error: unsupported binary operation.");   // mod may be added soon
+            throw std::invalid_argument("unsupported binary operation.");   // mod may be added soon
     }
 }
 
@@ -196,7 +303,7 @@ ArmaOperand BinaryExprAst::eval()
             return left_operand ^ right_operand;
             
         default:
-            throw std::runtime_error("Error: unsupported binary operation.");
+            throw std::invalid_argument("unsupported binary operation.");
     }
 }
 
@@ -223,15 +330,22 @@ string BinaryExprAst::genAsciiMath() const
 }
 
 
-ROperand FunctionExprAst::evalR()
+ROperand FunctionExprAst::evalR(Info& res)
 {
-    // TODO: need to check the implementation for row reduction, etc
-
     switch (op)
     {
-        case TokName::NEG:  return -(args[0]->evalR());
-        default: throw std::runtime_error("function " + raw + " is not supported yet");
+        case TokName::NEG:  return -(args[0]->evalR(res));
+
+        case TokName::RREF: case TokName::SOLVE: case TokName::DET: case TokName::INV: case TokName::ORTH:
+            break;
+
+        default: throw std::invalid_argument("function " + raw + " is not supported yet");
     }
+
+    ROperand operand = args[0]->evalR(res);
+    if (operand.type == ROperand::Type::MAT) res.addMat(operand, op);
+
+    // TODO: do the evaluation
 }
 
 
@@ -248,17 +362,17 @@ ArmaOperand FunctionExprAst::eval()
     {
         case TokName::SOLVE:
             if (num_args != 1 && num_args != 2) 
-                throw std::runtime_error("expect one or two arguments for " + raw + "()");
+                throw std::invalid_argument("expect one or two arguments for " + raw + "()");
 
         case TokName::MIN: case TokName::MAX: case TokName::ROOTS:
             break;          // min, max, roots can have arbitrary number of arguments
 
         case TokName::ROOT: case TokName::LOG: case TokName::GCD: case TokName::LCM:
-            if (num_args != 2)  throw std::runtime_error("expect two arguments for " + raw + "()");
+            if (num_args != 2)  throw std::invalid_argument("expect two arguments for " + raw + "()");
             break;
 
         default:
-            if (num_args != 1)  throw std::runtime_error("expect one argument for " + raw + "()");
+            if (num_args != 1)  throw std::invalid_argument("expect one argument for " + raw + "()");
     }
 
     vector<ArmaOperand> arg_vals;
@@ -270,11 +384,11 @@ ArmaOperand FunctionExprAst::eval()
         {
             case TokName::ROOT:
                 if (arg_vals[0].type == Type::IMAT)
-                    throw std::runtime_error("root funtion for indentity matrix is invalid");
+                    throw std::invalid_argument("root funtion for indentity matrix is invalid");
                 if (arg_vals[0].type == Type::MAT)
                 {
                     if (!arg_vals[1].almostReal())  
-                        throw std::logic_error("complex value for root is unsupported");
+                        throw std::invalid_argument("complex value for root is unsupported");
                     return ArmaOperand(arma::powmat(arg_vals[0].mat, 1 / arg_vals[1].value.real()));
                 }
                 return ArmaOperand(pow(arg_vals[0].value, std::complex<double>(1, 0) / arg_vals[1].value));
@@ -282,9 +396,9 @@ ArmaOperand FunctionExprAst::eval()
             case TokName::SOLVE:
             {
                 if (arg_vals[0].type != Type::MAT || arg_vals[1].type != Type::MAT)
-                    throw std::logic_error("both arguments for function solve() should be matrices");
+                    throw std::invalid_argument("both arguments for function solve() should be matrices");
                 if (arg_vals[0].type == Type::IMAT && arg_vals[1].type == Type::IMAT)
-                    throw std::logic_error("two arguments for function solve() cannot be identity matrix with no size simultaneously");
+                    throw std::invalid_argument("two arguments for function solve() cannot be identity matrix with no size simultaneously");
 
                 arma::cx_mat A = arg_vals[0].mat, B = arg_vals[1].mat;
                 if (arg_vals[0].type == Type::IMAT)
@@ -295,7 +409,7 @@ ArmaOperand FunctionExprAst::eval()
                 return ArmaOperand(arma::solve(A, B));
             }
 
-            default: throw std::runtime_error("unsupported function: " + raw);
+            default: throw std::invalid_argument("unsupported function: " + raw);
         }
 
 
@@ -341,7 +455,7 @@ ArmaOperand FunctionExprAst::eval()
             {
                 size_t num_cols = arg_vals[0].mat.n_cols;
                 arma::cx_vec B = arg_vals[0].mat.col(num_cols - 1);
-                return ArmaOperand(arma::solve(arg_vals[0].mat.cols(1, num_cols -2), B));
+                return ArmaOperand(arma::solve(arg_vals[0].mat.cols(0, num_cols -2), B));
             }
 
             case TokName::ABS:  
@@ -349,7 +463,7 @@ ArmaOperand FunctionExprAst::eval()
 
             case TokName::SQRT: return ArmaOperand(arma::sqrt(arg_vals[0].mat));
 
-            default: throw std::runtime_error("unsupported function: " + raw);
+            default: throw std::invalid_argument("unsupported function: " + raw);
         }
 
     switch (op) 
@@ -376,15 +490,15 @@ ArmaOperand FunctionExprAst::eval()
 
         case TokName::SQRT: 
             if (arg_vals[0].type == Type::IMAT)
-                throw std::logic_error("square root cannot be applied to identity matrix");
+                throw std::invalid_argument("square root cannot be applied to identity matrix");
             return ArmaOperand(std::sqrt(arg_vals[0].value));
 
         case TokName::NORM:
             if (arg_vals[0].type == Type::IMAT)
-                throw std::logic_error("norm function cannot be applied to identity matrix");
+                throw std::invalid_argument("norm function cannot be applied to identity matrix");
             return ArmaOperand(std::norm(arg_vals[0].value));
 
-        default: throw std::runtime_error("unsupported function " + raw);
+        default: throw std::invalid_argument("unsupported function " + raw);
     }
 }
 

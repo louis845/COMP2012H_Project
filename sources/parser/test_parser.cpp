@@ -9,28 +9,35 @@ using namespace std;
 void test_parser(const std::string& input, const std::string& name, int type = 0)
 {
     Parser parser(input);
-    cout << boolalpha << name << ": " << parser.parse() << endl << endl;
-    cout << "raw input: " << endl << input << endl << endl;
-    cout << "infix notation: " << endl;
-    parser.print();
-    cout << endl << endl << "AsciiMath output: " << endl << parser.getAsciiMath() << endl << endl;
-    
-    if (type == 1)  
-    {   
-        cout << "evaluation using R: " << endl; 
-        parser.evalR();  
-    }
-    else if (type == 2)
+    const Info& res = parser.parse(type);
+
+    if (res.success)
     {
-        cout << "evaluation using Armadillo: " << endl;
-        parser.eval();
+        cout << boolalpha << name << "  status: " << res.success << "  engine_used: " << res.engine_used << endl << endl;
+        cout << "raw input: " << endl << input << endl << endl;
+        cout << "infix notation: " << endl;
+        parser.print();
+        cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
+        cout << "computation result: " << res.eval_result << endl << endl;
     }
-    cout << endl << endl << string(80, '-') << endl << endl; 
+    else
+    {
+        cout << boolalpha << name << "  status: " << res.success << "  engine_used: " << res.engine_used << endl << endl;
+        cout << "raw input: " << endl << input << endl << endl;
+        cout << "infix notation: " << endl;
+        parser.print();
+        cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
+        cout << res.err->what() << endl << endl;
+    }
+
+    cout << endl << endl << string(80, '-') << endl << endl;
 }
 
 
 int main()
 {
+    int engine = 0;
+
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 
     string test_2{"4xy + e^x + sqrt(x) // 3y - 3.44 % 10e23"};  // note that sqrt(x) // 3y should be parse as sqrt(x) / 3 * y
@@ -39,7 +46,7 @@ int main()
 
     string poly{"x^3 - x^0.5 / x^(pi+i) * 4x(x-1)(x+3x)^(10x)"};
 
-    string matrix{"det([[3, 4], [pi, e]] xx [[ipi, sqrt(x + x^2 / 1)]])"};
+    string matrix{"det([[3, 4], [pi, e]] xx [[ipi, sqrt(x + x^2 / 1)], [sin2, exp(-2)]])"};
 
     string func{"sin(cos(tan(exp(ln(min(3, 4, 5, 6) + x) - y) * pi) / 42) ** i)"};
 
@@ -61,9 +68,9 @@ int main()
 
     string eval_test_3{"(-2 (2601 + 5598 x - 61921 x^2 - 10126 x^3 + 6848 x^4 + 1056 x^5)) / (x + 3)"};
 
-    test_parser(eval_test_1, "R test 1", 1);
-    test_parser(eval_test_2, "R test 2", 1);
-    test_parser(eval_test_3, "R test 4", 1);
+    test_parser(eval_test_1, "R test 1", engine);
+    test_parser(eval_test_2, "R test 2", engine);
+    test_parser(eval_test_3, "R test 3", engine);
 
 
     // ------------------------- test Armadillo below ------------------------------
@@ -76,16 +83,22 @@ int main()
 
     string arma_test_4{"[[sqrt(3), arcsin(4)], [ln4, exp(-4)]] + [[1, 2], [2, 3]] * [[-i, 2 - 3i], [0, 7]]"};
 
-    string arma_test_5{"Col[[4i, 1-8i], [e, i^3]] + Ran[[0.223223090, 1e-7], [1E10, -i-1]] + norm(3 - 4i)"};
+    string arma_test_5{"Col[[4i, 1-8i, 56], [e, i^3, cos7], [sqrt(6e), -23, 2^0.5]]"};
 
     string arma_test_6{"[[0, 1], [1, 0]]^20 - [[i, -i], [-1, 1]]^7"};
 
-    test_parser(arma_test_1, "arma test 1", 2);
-    test_parser(arma_test_2, "arma test 2", 2);
-    test_parser(arma_test_3, "arma test 3", 2);
-    test_parser(arma_test_4, "arma test 4", 2);
-    test_parser(arma_test_5, "arma test 5", 2);
-    test_parser(arma_test_6, "arma test 6", 2);
+    string arma_test_7{"inv([[1, 2], [3, 4]]) + pinv([[1e2, 2i+3], [3e*4, 4pi/5]])"};
+
+    string arma_test_8{"solve([[1, 2i, 6], [3e, 4, 9pi]])"};
+
+    test_parser(arma_test_1, "arma test 1", engine);
+    test_parser(arma_test_2, "arma test 2", engine);
+    test_parser(arma_test_3, "arma test 3", engine);
+    test_parser(arma_test_4, "arma test 4", engine);
+    test_parser(arma_test_5, "arma test 5", engine);
+    test_parser(arma_test_6, "arma test 6", engine);
+    test_parser(arma_test_7, "arma test 7", engine);
+    test_parser(arma_test_8, "arma test 8", engine);
 
     cin.get(); cin.get();
 }

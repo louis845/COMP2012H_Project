@@ -25,6 +25,7 @@ class ROperand
     friend class MatrixExprAst;
     friend class FunctionExprAst;
     friend class Parser;
+    friend class Info;
 
 public:
     enum class Type { NOR, MAT, IMAT };             // IMAT : identity matrix 
@@ -89,8 +90,13 @@ private:
 
 
 inline R newInt(long value) { return R{new Long{value}}; }
+inline R newInt(std::string value) { return R{new Long{mpz_wrapper(value)}}; }
 
 inline R newComplex(long real, long imag) { return R{new LongComplex{real, imag}}; }
+inline R newComplex(std::string real, std::string imag) 
+{
+    return R{new LongComplex{mpz_wrapper(real), mpz_wrapper(imag)}};
+}
 
 inline R newFrac(R num, R denom)
 {
