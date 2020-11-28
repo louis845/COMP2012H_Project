@@ -105,26 +105,9 @@ Token* Lexer::parseNum()
     regex_search(input, result, NUM_RE);
     if (result.empty()) return nullptr;
 
-    try
-    {
-        Token* temp = new TokNum(result[1]);
-        input = std::move(result.suffix().str());
-        return temp;
-    }
-    catch (const std::invalid_argument& e)
-    {
-        std::cerr << "Invalid numerical value: " << result[1] 
-                  << " is not a valid or supported numerical value." << std::endl;
-        Token* temp = new TokErr(TokName::INVALID_TOKEN, result[1]);
-        return temp;
-    }
-    catch (const std::out_of_range& e)
-    {
-        std::cerr << "Invalid numerical value: " << result[1] 
-                  << " is out of range of built-in types." << std::endl;
-        Token* temp = new TokErr(TokName::NUMERICAL_ERROR, result[1]);
-        return temp;
-    }
+    Token* temp = new TokNum(result[1]);
+    input = std::move(result.suffix().str());
+    return temp;
 }
 
 

@@ -183,43 +183,37 @@ std::vector<ExprAst*> Parser::parseBracket()
 ExprAst* Parser::parseParen()
 {
     if (cur_tok == nullptr)     return nullptr;
-    try
-    {
-        if (cur_tok->get_name() == TokName::LP)
-        {
-            getNextToken();
-            ExprAst* temp = parseExpr();
-            if (cur_tok->get_name() != TokName::RP)
-            {
-                delete temp;
-                throw std::domain_error("Missing right parenthesis.");
-            }
 
-            getNextToken();
-            return temp;
-        }
-        
-        if (cur_tok->get_name() == TokName::TEXTBAR)
-        {
-            getNextToken();
-            ExprAst* temp = parseExpr(true);
-            if (cur_tok->get_name() != TokName::TEXTBAR)
-            {
-                delete temp;
-                throw std::domain_error("Missing closing textbar.");
-            }
-
-            FunctionExprAst* abs = new FunctionExprAst(TokName::ABS, cur_tok->get_raw_value());
-            abs->args.push_back(temp);
-            getNextToken();
-            return abs;
-        }
-    }
-    catch (...)
+    if (cur_tok->get_name() == TokName::LP)
     {
-        throw;      // rethrow, leave the exceptions to parsePrimary()
+        getNextToken();
+        ExprAst* temp = parseExpr();
+        if (cur_tok->get_name() != TokName::RP)
+        {
+            delete temp;
+            throw std::invalid_argument("Missing right parenthesis.");
+        }
+
+        getNextToken();
+        return temp;
     }
     
+    if (cur_tok->get_name() == TokName::TEXTBAR)
+    {
+        getNextToken();
+        ExprAst* temp = parseExpr(true);
+        if (cur_tok->get_name() != TokName::TEXTBAR)
+        {
+            delete temp;
+            throw std::invalid_argument("Missing closing textbar.");
+        }
+
+        FunctionExprAst* abs = new FunctionExprAst(TokName::ABS, cur_tok->get_raw_value());
+        abs->args.push_back(temp);
+        getNextToken();
+        return abs;
+    }
+
     return nullptr;
 }
 
@@ -276,7 +270,7 @@ ExprAst* Parser::parseId()
             }
 
             if (cur_tok->get_name() != TokName::RP)
-                throw std::domain_error("Missing right parenthesis for function.");
+                throw std::invalid_argument("Missing right parenthesis for function.");
 
             getNextToken();
             return func;
@@ -324,42 +318,19 @@ ExprAst* Parser::parsePrimary(bool inside_textbar)
 
     if (cur_tok->get_name() == TokName::LP || cur_tok->get_name() == TokName::TEXTBAR)
     {
-        try
-        {
-            ExprAst* parenexpr = parseParen();
-            return parenexpr;
-        }
-        catch (...)
-        {
-            throw;      // rethrow for now, need further refinement
-        }
+        ExprAst* parenexpr = parseParen();
+        return parenexpr;
     }
 
     if (cur_tok->get_name() == TokName::LSB)
     {
-        try
-        {
-            ExprAst* matrixexpr = parseMatrix();
-            return matrixexpr;
-        }
-        catch (...)
-        {
-            throw;      // rethrow
-        }
+        ExprAst* matrixexpr = parseMatrix();
+        return matrixexpr;
     }
 
-    try
-    {
-        ExprAst* expr = parseId();
-        if (!expr)  throw std::domain_error("Unknown expression.");
-        return expr;
-    }
-    catch (...)
-    {
-        throw;          // rethrow
-    }
-
-    return nullptr;     // unreachable normally
+    ExprAst* expr = parseId();
+    if (!expr)  throw std::invalid_argument("Unknown expression.");
+    return expr;
 }
 
 
@@ -410,14 +381,14 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
                 getNextToken();
 
                 rhs = parsePrimary(inside_textbar);
-                if (!rhs)   throw std::domain_error("Incomplete expression, missing right hand side operand.");
+                if (!rhs)   throw std::invalid_argument("Incomplete expression, missing right hand side operand.");
                 neg_rhs->args.emplace_back(rhs);
                 rhs = neg_rhs;
             }
             else
             {
                 rhs = parsePrimary(inside_textbar);
-                if (!rhs)   throw std::domain_error("Incomplete expression, missing right hand side operand.");
+                if (!rhs)   throw std::invalid_argument("Incomplete expression, missing right hand side operand.");
             }
         }
         catch (...)
@@ -434,7 +405,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
             try
             {
                 rhs = parseBinOpRhs(cur_precedence + 1, rhs, inside_textbar);
-                if (!rhs)   throw std::domain_error("Incomplete expression, missing right hand side operand.");
+                if (!rhs)   throw std::invalid_argument("Incomplete expression, missing right hand side operand.");
             }
             catch (...)
             {
@@ -452,66 +423,131 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
 //      ::= ( '+' | '-' )? primaryexpr binoprhs
 ExprAst* Parser::parseExpr(bool inside_textbar)
 {
-    try
+    if (cur_tok->get_name() == TokName::PLUS)   getNextToken();     // uniary positive operator
+    else if (cur_tok->get_name() == TokName::MINUS)                 // uniary negative operator
     {
-        if (cur_tok->get_name() == TokName::PLUS)   getNextToken();     // uniary positive operator
-        else if (cur_tok->get_name() == TokName::MINUS)                 // uniary negative operator
+        FunctionExprAst* neg_expr = new FunctionExprAst(TokName::NEG, cur_tok->get_raw_value());
+        getNextToken();
+        
+        ExprAst* expr = parsePrimary(inside_textbar);
+        if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");
+        neg_expr->args.emplace_back(expr);
+        return parseBinOpRhs(0, neg_expr, inside_textbar);
+    }
+
+    ExprAst* expr = parsePrimary(inside_textbar);
+    if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");   // should not occur during normal exception handling
+    return parseBinOpRhs(0, expr, inside_textbar);
+}
+
+
+// auto detect which engine to use
+void Parser::autoDetect(ExprAst* root)
+{
+    if (root == nullptr || !res.success)    return;
+    if (typeid(*root) == typeid(NumberExprAst))
+    {
+        NumberExprAst* temp = dynamic_cast<NumberExprAst*>(root);
+        if (temp->name == TokName::FLOAT || temp->name == TokName::PI || temp->name == TokName::E)
         {
-            FunctionExprAst* neg_expr = new FunctionExprAst(TokName::NEG, cur_tok->get_raw_value());
-            getNextToken();
+            res.float_exists = true;
+            if (res.engine_chosen == 1)
+            {
+                res.success = false;
+                return;
+            }
+            res.engine_chosen = 2;
+        }
+    }
+    
+    if (typeid(*root) == typeid(MatrixExprAst))
+    {
+        MatrixExprAst* temp = dynamic_cast<MatrixExprAst*>(root);
+        for (auto row : temp->entries)
+            for (auto entry : row)
+            {
+                autoDetect(entry);
+                if (!res.success)   return;
+            }
+    }
+
+    if (typeid(*root) == typeid(BinaryExprAst))
+    {
+        BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(root);
+        autoDetect(temp->lhs);
+        if (!res.success)   return;
+        autoDetect(temp->rhs);
+        if (!res.success)   return;
+    }
+
+    if (typeid(*root) == typeid(FunctionExprAst))
+    {
+        FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(root);
+        switch (temp->op)
+        {
+            case TokName::RREF: case TokName::SOLVE: case TokName::DET: 
+            case TokName::INV: case TokName::ORTH: case TokName::NEG:
+                break;
             
-            ExprAst* expr = parsePrimary(inside_textbar);
-            if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");
-            neg_expr->args.emplace_back(expr);
-            return parseBinOpRhs(0, neg_expr, inside_textbar);
+            default:
+                res.func_exists = true;
+                if (res.engine_chosen == 1)
+                {
+                    res.success = false;
+                    return;
+                }
+                res.engine_chosen = 2;
         }
 
-        ExprAst* expr = parsePrimary(inside_textbar);
-        if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");   // should not occur during normal exception handling
-        return parseBinOpRhs(0, expr, inside_textbar);
-    }
-    catch (const std::domain_error& err)
-    {
-        throw;
-    }
-    catch (const std::runtime_error& err)
-    {
-        throw;
-    }
-    catch (...)
-    {
-        throw std::runtime_error("Fatal error, unexpected exception occurs.");
+        for (auto arg : temp->args)
+        {
+            autoDetect(arg);
+            if (!res.success)   return;
+        }
     }
 }
 
 
 // main driver function, handles all exceptions
-bool Parser::parse()
+const Info& Parser::parse(int engine_type)
 {
+    res.clear();
+    res.engine_chosen = engine_type;
+
     try
     {
+        delete root;
         root = parseExpr();
-        return true;
+        res.interpreted_input = getAsciiMath();
     }
-    catch (const std::domain_error& err)
+    catch (const std::invalid_argument& err)
     {
-        std::cerr << err.what() << std::endl
-                  << "Parsing unfinished." << std::endl;
-        delete root;
-    }
-    catch (const std::runtime_error& err)
-    {
-        std::cerr << err.what() << std::endl
-                  << "Parsing aborted." << std::endl;
-        delete root;
+        string err_msg = "Error: parsing failed, " + string(err.what());
+        res.err = new std::invalid_argument(err_msg.c_str());
+        // delete root;
+        return res;
     }
     catch (...)
     {
-        std::cerr << "Unexpected exception raised, parsing aborted." << std::endl;
-        delete root; 
+        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during parsing");
+        // delete root;
+        return res;
     }
 
-    return false;
+    if (engine_type == 0)   autoDetect(this->root);
+    if (res.success)
+    {
+        res.engine_used = res.engine_chosen ? res.engine_chosen : res.engine_used;
+        if (res.engine_used == 1) evalR();
+        if (res.engine_used == 2) eval();
+        return res;
+    }
+    else
+    {
+        res.err = new std::domain_error("Error: auto detection failed, please specify engine type");
+        // delete root;
+        return res;
+    }
 }
 
 
@@ -537,9 +573,9 @@ void Parser::printAst(ExprAst* root) const
     {
         NumberExprAst* temp = dynamic_cast<NumberExprAst*>(root);
         if (temp->name == TokName::INTEGRAL)
-            cout << temp->int_value;
+            cout << stol(temp->raw);
         else if (temp->name == TokName::FLOAT)
-            cout << temp->float_value;
+            cout << stod(temp->raw);
         else cout << temp->raw;
     }
     else if (typeid(*root) == typeid(VariableExprAst))
@@ -604,12 +640,38 @@ void Parser::print() const
 }
 
 
-ROperand Parser::evalR()             // only for testing so far
+void Parser::evalR()
 {
-    if (var_table.size() > 1)  
-        std::cerr << "Warning: more than one variable in the expression, result might be unexpected." << endl;
+    if (var_table.size() > 1)
+    {  
+        res.var_exists = true;
+        res.success = false;
+        res.warning += "Warning: more than one variable with unknown value in the expression.\n";
+        res.warning += "You may want to assign values to some of the variables.\n";
+        return;
+    }
 
-    ROperand result = root->evalR();
+    try
+    {
+        ROperand result = root->evalR(res);
+        res.eval_result = result.genTex();
+        return;
+    }
+    catch (const std::invalid_argument& err)
+    {
+        res.success = false;
+        string err_msg = "Error: evaluation failed, " + string(err.what());
+        res.err = new std::invalid_argument(err_msg.c_str());
+        return;
+    }
+    catch (...)
+    {
+        res.success = false;
+        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        return;
+    }
+
+    /*        only for debugging or console output
     if (result.type == ROperand::Type::NOR) cout << result.value;
     else
     {
@@ -623,34 +685,48 @@ ROperand Parser::evalR()             // only for testing so far
         }
         cout << "]";
     }
-    
-    return result;
+    */
 }
 
 
-ArmaOperand Parser::eval() const
+void Parser::eval()
 {
     if (var_table.size() > 0)
-        std::cerr << "Warning: variables are not allowed when using Armadillo." << endl;
+    {
+        res.var_exists = true;
+        res.success = false;
+        res.err = new std::invalid_argument("Warning: variables with unknown values are not supported in Armadillo.\n");
+        res.warning += "You may want to assign values to the variables.\n";
+        return;
+    }
 
     try
     {
         ArmaOperand result = root->eval();
-        if (result.type == ArmaOperand::Type::NOR)  cout << result.value;
-        else if (result.type == ArmaOperand::Type::MAT) cout << result.mat;
-        else cout << "(" << result.value << ")" << "I";
-        return result;
+        // if (result.type == ArmaOperand::Type::NOR)  cout << result.value;
+        // else if (result.type == ArmaOperand::Type::MAT) cout << result.mat;
+        // else cout << "(" << result.value << ")" << "I";
+        res.eval_result = result.genTex();
+        return;
     }
-    catch (const std::logic_error& err)
+    catch (const std::invalid_argument& err)
     {
-        std::cerr << err.what() << '\n';
+        string err_msg = "Error: evaluation failed, " + string(err.what());
+        res.err = new std::invalid_argument(err_msg.c_str());
+        res.success = false;
+        return;
     }
     catch (const std::runtime_error& err)
     {
-        std::cerr << err.what() << '\n';
+        string err_msg = "Fatal error: " + string(err.what());
+        res.err = new std::runtime_error(err_msg.c_str());
+        res.success = false;
+        return;
     }
     catch (...)
     {
-        std::cerr << "Unhandled exception" << std::endl;
+        res.success = false;
+        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        return;
     }
 }

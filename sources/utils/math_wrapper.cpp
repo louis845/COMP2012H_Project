@@ -308,12 +308,16 @@ string ArmaOperand::genTex() const
     {
         case Type::NOR:
             if (almostReal())   return std::to_string(value.real());
-            ss << value;
+            ss << value.real();
+            if (value.imag() > 0)   ss << "+";
+            ss << value.imag() << "i";
             return ss.str();
 
         case Type::IMAT:
             if (almostReal())   return std::to_string(value.real()) + "I";
-            ss << "(" << value << ")I";
+            ss << "(" << value.real();
+            if (value.imag() > 0)   ss << "+";
+            ss << value.imag() << "i)I";
             return ss.str();
 
         case Type::MAT:
@@ -324,7 +328,12 @@ string ArmaOperand::genTex() const
                 {
                     if (fabs(mat(i, j).imag()) <= std::numeric_limits<double>::epsilon())
                         ss << std::to_string(mat(i, j).real());
-                    else ss << mat(i, j);
+                    else 
+                    {
+                        ss << mat(i, j).real();
+                        if (mat(i, j).imag() > 0)   ss << "+";
+                        ss << mat(i, j).imag() << "i";
+                    }
                     
                     if (j != mat.n_cols - 1)    ss << R"( & )";
                     if (j == mat.n_cols - 1 && i != mat.n_rows - 1)    ss << R"(\\ )";

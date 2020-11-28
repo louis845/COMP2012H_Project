@@ -11,11 +11,45 @@
 #include <armadillo>
 
 
+struct Info         // for communications between parser and gui / step-by-step functions
+{
+    Info() = default;
+    Info(const Info&) = delete;
+    Info& operator=(const Info&) = delete;
+    ~Info();
+
+    bool success{true};
+    std::exception* err{nullptr};
+    int engine_chosen{0};           // user chosen engine, 0 = auto, 1 = R, 2 = Armadillo
+    int engine_used{1};             // 1 for using R class, 2 for using Armadillo
+    bool float_exists{false};
+    bool var_exists{false};
+    bool func_exists{false};        // true only if function that R cannot handle appears
+
+    std::vector<std::pair<Token::TokName, R**>> parsed_mat;    
+    // contains all matrices and corresponding operators the input for step-by-step functions
+    // N.B. the 2D arrays are deep-copied hence needed to be deallocated
+    // after calling the step-by-step functions
+
+    std::vector<std::pair<int, int>>    mat_size;  // corresponding sizes, row first
+
+    std::string interpreted_input{""};  // an AsciiMath format string of the interpreted input
+    std::string eval_result{""};        // computation result in LaTeX format
+                                        // N.B. both are raw strings and are NOT enclosed by delimiters
+                                        // i.e. $$ for LaTeX and ` for AsciiMath
+
+    std::string warning{""};
+
+    void clear();
+    void addMat(ROperand operand, Token::TokName op);
+};
+
+
 class ExprAst
 {
 public:
     virtual ~ExprAst() = default;
-    virtual ROperand evalR() = 0;               // using our own implementation of linear algebra library
+    virtual ROperand evalR(Info& res) = 0;               // using our own implementation of linear algebra library
     virtual ArmaOperand eval() = 0;             // using Armadillo, for approximated solutions
     virtual std::string genAsciiMath() const = 0;   // generate AsciiMath formated strings
 };
@@ -28,13 +62,9 @@ class NumberExprAst : public ExprAst
     friend class BinaryExprAst;
 
 public:
-    NumberExprAst(Token::TokName name, const std::string& raw): name(name), raw(raw) 
-    {
-        if (name == Token::TokName::INTEGRAL)    int_value = stol(raw);
-        else if (name == Token::TokName::FLOAT)    float_value = stod(raw);
-    }
+    NumberExprAst(Token::TokName name, const std::string& raw);
          
-    ROperand evalR() override;
+    ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
     std::string genAsciiMath() const override { return raw; }; 
 
@@ -45,8 +75,7 @@ private:
     Token::TokName name{Token::TokName::INTEGRAL};
     std::string raw{""};
     std::string tex{""};
-    double float_value{0.0L};
-    long int_value{0L};
+    bool scientific{false};                 // whether scientific notation is used
 };
 
 
@@ -63,7 +92,7 @@ public:
                 delete col;
     }
 
-    ROperand evalR() override;
+    ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
     std::string genAsciiMath() const override;
 
@@ -83,7 +112,7 @@ public:
     VariableExprAst(const std::string& name): name(name) {}
     std::string get_name() const { return name; }
 
-    ROperand evalR() override;
+    ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
     std::string genAsciiMath() const override { return name; }
 
@@ -103,7 +132,7 @@ public:
 
     ~BinaryExprAst() { delete lhs; delete rhs; }
 
-    ROperand evalR() override;
+    ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
     std::string genAsciiMath() const override;
 
@@ -125,7 +154,7 @@ public:
     
     ~FunctionExprAst() { for (auto arg : args)  delete arg; }
 
-    ROperand evalR() override;
+    ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
     std::string genAsciiMath() const override;
 
