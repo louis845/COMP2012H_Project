@@ -12,6 +12,9 @@ Our program lets users modify the input if the input is undesired (for the user)
  * Accept rounded braces input as matrix input - e.g. "((1,2,3),(4,5,6),(7,8,9))".
  * Now rounded braces gives interpreted_input as empty string
  * Parser accepts "sin([[3,4],[5,6]])", but not rref
+ * Should be able to retreive a single matrix in the std::vector. For example, a user wants to input a matrix
+ "[[3,4],[5,6]]" and then wants to choose the operation manually by clicking on a button. 
+ * Now "[[3,4],[5,6]]" gives engine_used=1, but Info::mat_size.size()=0.
 ## Create integer (long)
 <pre>
 R val=R{ new Long{value} };
