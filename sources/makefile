@@ -10,7 +10,8 @@ INCLUDE_DIRS = -I. -Imath -Imath/double -Imath/fraction -Imath/linear -Imath/lon
 
 CFLAGS = -g -O3 -Wall -o $(OUTPUT_DIRECTORY)$@ $(INCLUDE_DIRS) -c $<
 
-OBJS = $(wildcard $(CURDIR)/../compile/*.o)
+OBJ_FILE = $(wildcard $(CURDIR)/../compile/*.o)
+OBJS = $(filter-out $(CURDIR)/../compile/main.o $(CURDIR)/../compile/console.o, $(OBJ_FILE))
 
 SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp 
 
@@ -74,8 +75,9 @@ tools.o: math/tools.cpp
 
 # --------------------------------------------------------------------------------------
 # O3 optimization is enabled, compilation could be slow
-test_parser: parser/test_parser.cpp expr_ast.o lexer.o parser.o math_wrapper.o
-	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)$@ $(OBJS) $(LIBRARIES) -lgmpxx -lgmp
+
+test_parser: test_parser.o expr_ast.o lexer.o parser.o math_wrapper.o
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)test $(OBJS) $(LIBRARIES) -lgmpxx -lgmp
 
 expr_ast.o: parser/expr_ast.cpp parser/expr_ast.h
 	$(CC) $(CFLAGS)
@@ -87,6 +89,9 @@ parser.o: parser/parser.cpp parser/parser.h
 	$(CC) $(CFLAGS)
 
 math_wrapper.o: utils/math_wrapper.cpp utils/math_wrapper.h
+	$(CC) $(CFLAGS)
+
+test_parser.o: parser/test_parser.cpp
 	$(CC) $(CFLAGS)
 
 .PHONY: clean 

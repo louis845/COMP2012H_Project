@@ -1,9 +1,11 @@
 #include "ocr_api.h"
 using std::string;
+using std::pair;
 using std::to_string;
 
 Ocr::Ocr()
 {
+    // obsoleted, Ocr is now not a derived class of QObject any more
     // QObject::connect(&network_mgr, SIGNAL(finished(QNetworkReply*)), this, SLOT(OnFinish(QNetworkReply*)));
 }
 
@@ -18,7 +20,7 @@ QByteArray Ocr::img2Base64(QString img_path) const
 {
     QFile img_file(img_path);
     if (!img_file.exists() || !img_file.open(QIODevice::ReadOnly))
-        throw string("Image file is not existent or corrupted");
+        throw std::runtime_error("image file is not existent or corrupted");
 
     QImage img(img_path);
     QByteArray ba;
@@ -39,8 +41,8 @@ QNetworkRequest Ocr::initRequest() const
     QNetworkRequest request;
     request.setUrl(QUrl(QString::fromStdString(API_URL)));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader(QByteArray("app_id"), QByteArray::fromStdString(app_id));
-    request.setRawHeader(QByteArray("app_key"), QByteArray::fromStdString(app_key));
+    request.setRawHeader(QByteArray("app_id"), QByteArray::fromStdString(api_id));
+    request.setRawHeader(QByteArray("app_key"), QByteArray::fromStdString(api_key));
     return request;
 }
 
@@ -74,11 +76,11 @@ pair<string, string>Ocr::parseJson(QByteArray response) const
     QJsonParseError err;
     QJsonDocument json = QJsonDocument::fromJson(response, &err);
     if (err.error != QJsonParseError::NoError)
-        throw string("Error: Response is not in a valid JSON format.");
+        throw std::runtime_error("response is not in a valid JSON format.");
 
     QJsonObject json_object = json.object();
     if (json_object.contains("error"))
-        throw string("Error: ") + json_object.value("error").toString().toStdString();
+        throw std::runtime_error(json_object.value("error").toString().toStdString());
 
     QString latex_output, asciimath_output;
     QJsonArray array = json_object.value("data").toArray();
@@ -105,6 +107,7 @@ void Ocr::post(const string& img_path)
 }
 
 
+/*  totally obsoleted, simply use a event loop to handle the event
 void Ocr::onFinish(QNetworkReply* reply)
 {
     std::cout << "enter OnFinish\n";
@@ -119,55 +122,35 @@ void Ocr::onFinish(QNetworkReply* reply)
     reply->deleteLater();
     return;
 }
+*/
 
 
-// When using_latex = true (default), the output will be in LaTeX format
-// Otherwise the output will be in asciiMath 
-pair<string, string> Ocr::request(const string& img_path, const bool& using_latex)
+pair<string, string> Ocr::request(const string& img_path)
 {
-    try
-    {
-        QByteArray img_base64 = img2Base64(QString::fromStdString(img_path));
-        QNetworkRequest request = initRequest();
-        QJsonObject json = initJson(img_base64);
+    QByteArray img_base64 = img2Base64(QString::fromStdString(img_path));
+    QNetworkRequest request = initRequest();
+    QJsonObject json = initJson(img_base64);
 
-        QNetworkAccessManager mgr;
-        QNetworkReply* reply = mgr.post(request, QJsonDocument(json).toJson());
-        
-        QEventLoop event_loop;
-        QObject::connect(&mgr, QNetworkAccessManager::finished, &event_loop, QEventLoop::quit);
-        event_loop.exec();
+    QNetworkAccessManager mgr;
+    QNetworkReply* reply = mgr.post(request, QJsonDocument(json).toJson());
+    
+    QEventLoop event_loop;
+    QObject::connect(&mgr, QNetworkAccessManager::finished, &event_loop, QEventLoop::quit);
+    event_loop.exec();
 
-        if (reply->error() == QNetworkReply::NoError)
-        {
-            QByteArray response = reply->readAll();
-            result = parseJson(response);
-            reply->deleteLater();
-            return result;
-        }
-        else
-        {
-            int status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-            reply->deleteLater();
-            return {"Error", "HTTP error: " + to_string(status_code)};
-        }
-    } 
-    catch(string error)
+    if (reply->error() == QNetworkReply::NoError)
     {
-        return {"Error", error};
+        QByteArray response = reply->readAll();
+        result = parseJson(response);
+        reply->deleteLater();
+        return result;
     }
-
-    /********************
-    try
+    else
     {
-        Post(img_path, using_latex);
-        return {"Success", result};
+        int status_code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        reply->deleteLater();
+        throw std::runtime_error("HTTP error: " + to_string(status_code));
     }
-    catch(string msg)
-    {
-        return {"Error", msg};
-    }
-    */
 }
 
 
