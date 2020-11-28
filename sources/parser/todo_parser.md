@@ -1,7 +1,14 @@
 # Parser
-1. If expression is of type double - use other packages
-2. If expression is integer type (or fraction or polynomial etc..), convert expression into RF**
-
+## Handle some 'strange' inputs
+Our program lets users modify the input if the input is undesired (for the user), therefore we have to 'manage' the bad inputs that might be typed in by the user. Maybe if an input is bad, just return the boolean value Info::success=false.
+### Strange input crashes GUI program directly, for example:
+ * Empty string - now crashes the program
+ * Syntax error in ascii math - e.g. "{", unclosed braces
+ * Syntax error - unexpected operations e.g. "3++4"
+ * Etc.....
+### Other input
+ * Accept rounded braces input as matrix input - e.g. '((1,2,3),(4,5,6),(7,8,9))".
+ * Now curly braces gives interpreted_input as empty string
 ## Create integer (long)
 <pre>
 R val=R{ new Long{value} };
