@@ -4,18 +4,30 @@
 #include <QCoreApplication>
 using namespace std;
 
-int test_ocr(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    string filename;
+
+    Ocr::getInstance().testSslSettings();
+
+    string app_id = "zymk73_gmail_com_0f4cf4";     // user input app_id
+    string app_key = "2433a3fce24bd809b0a0";    // user input app_key
+
+    Ocr::getInstance().setCredentials(app_id, app_key);    // set the credentials
+
+    try { Ocr::getInstance().testConnectivity(); cout << "Connection: OK" << endl;}
+    catch (const std::runtime_error& err) { cerr << err.what() << std::endl; }
+    catch (...) { cerr << "Unhandled exception" << std::endl; }
+
+    string img_path;        // relative path to the image file
     cout << "Input the relative path for the image for testing." << endl;
-    cin >> filename;
-    string app_id = "";     // left blank
-    string app_key = "";    // left blank
-    Ocr::getInstance().set_app_id(app_id);
-    Ocr::getInstance().set_app_key(app_key);
-    auto res = Ocr::getInstance().request(filename);
-    cout << res.first << endl << res.second << endl;
+    cin >> img_path;
+
+    auto result = Ocr::getInstance().request(img_path);     // pass the image path and get a pair of strings
+
+    cout << result.first << endl;   // the first component is the LaTeX string
+    cout << result.second << endl;  // the second component is AsciiMath
+
     cin.get(); cin.get();
     return app.exec();
 }

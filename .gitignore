@@ -5,6 +5,7 @@
 /build
 /cmake-build-debug
 /cmake-build-debug-visual-studio
-/sources/utils/test_ocr.cpp
+# /sources/utils/test_ocr.cpp
+/sources/utils/test_arma.cpp
 # CMakeLists.txt
 workspace.code-workspace

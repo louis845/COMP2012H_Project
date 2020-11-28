@@ -7,18 +7,12 @@
 #include <iostream>
 #include <string>
 #include <utility>
-using std::pair;
-using std::string;
-using std::cout;
-using std::cin;
 
 
 // Singleton class for OCR
 // Use Ocr::getInstance() to retrieve the unique instance
-class Ocr final : public QObject
+class Ocr final
 {
-    Q_OBJECT
-
 public:
     static Ocr& getInstance()
     {
@@ -26,42 +20,36 @@ public:
         return instance;
     }
 
-    pair<string, string> request(const string& img_path, const bool& using_latex=true);
+    // return LaTeX and AsciiMath strings as a pair
+    std::pair<std::string, std::string> request(const std::string& img_path) const;
+    std::pair<std::string, std::string> request(const QPixmap& pixmap) const;
 
-    inline void set_app_key(const string &app_key)
-    {
-        this->app_key = app_key;
+    inline void setCredentials(const std::string& api_id, const std::string &api_key) 
+    { 
+        this->api_id = api_id;
+        this->api_key = api_key; 
     }
 
-    inline void set_app_id(const string &app_id)
-    {
-        this->app_id = app_id;
-    }
-
+    void testConnectivity() const;
     void testSslSettings() const;
 
-private slots:
-    void onFinish(QNetworkReply *reply);
-
 private:
-    const string API_URL = "https://api.mathpix.com/v3/text";
+    const std::string API_URL = "https://api.mathpix.com/v3/text";
 
-    Ocr();
-    ~Ocr();
-    Ocr(const Ocr&) { }
-    Ocr& operator=(const Ocr&);
+    Ocr() = default;
+    ~Ocr() = default;
+    Ocr(const Ocr&) = delete;
+    Ocr& operator=(const Ocr&) = delete;
 
-    QByteArray img2Base64(QString img_path) const;
+    QByteArray img2Base64(const QString& img_path) const;
+    QByteArray img2Base64(const QPixmap& pixmap) const;
     QNetworkRequest initRequest() const;
-    QJsonObject initJson(QByteArray img_base64) const;
-    pair<string, string> parseJson(QByteArray response) const;
-    void post(const string& img_path);
+    QJsonObject initJson(const QByteArray& img_base64) const;
+    std::pair<std::string, std::string> parseJson(const QByteArray& response) const;
+    QByteArray post(const QNetworkRequest& request, const QJsonObject& json) const;
 
-    string app_key{""};
-    string app_id{""};
-    pair<string, string> result{"", ""};
-    // int status_code = 200;
-    // QNetworkAccessManager network_mgr;
+    std::string api_key{""};
+    std::string api_id{""};
 };
 
 #endif /* OCR_H_ */

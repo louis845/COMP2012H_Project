@@ -290,6 +290,13 @@ ArmaOperand ArmaOperand::operator^(const ArmaOperand& rhs) const
 }
 
 
+arma::cx_mat ArmaOperand::fromImat(size_t row) const 
+{
+    if (type != Type::IMAT) throw std::runtime_error("operand type is not identity matrix");
+    return arma::cx_mat(row, row, arma::fill::eye) * value;
+}
+
+
 string ArmaOperand::genTex() const
 {
     stringstream ss;
