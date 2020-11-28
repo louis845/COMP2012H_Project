@@ -5,10 +5,13 @@ Our program lets users modify the input if the input is undesired (for the user)
  * Empty string - now crashes the program
  * Syntax error in ascii math - e.g. "{", unclosed braces
  * Syntax error - unexpected operations e.g. "3++4"
+ * Trying out "rref([[3,4],[5,6]])" crashes.
+ * Trying out "rref[[3,4],[5,6]]" crashes also.
  * Etc.....
 ### Other input
- * Accept rounded braces input as matrix input - e.g. '((1,2,3),(4,5,6),(7,8,9))".
- * Now curly braces gives interpreted_input as empty string
+ * Accept rounded braces input as matrix input - e.g. "((1,2,3),(4,5,6),(7,8,9))".
+ * Now rounded braces gives interpreted_input as empty string
+ * Parser accepts "sin([[3,4],[5,6]])", but not rref
 ## Create integer (long)
 <pre>
 R val=R{ new Long{value} };
