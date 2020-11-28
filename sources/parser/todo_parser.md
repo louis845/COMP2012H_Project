@@ -109,7 +109,7 @@ if(RF::ensure_types_equal(matrix, rows, cols)){ //This function directly changes
 ## How to display a single mathematical expression (result)
 <pre>
 StepsHistory *steps=new StepsHistory();
-steps->addStep(new StepText{html_string}); //done, pass to return
+steps->addStep(new StepText{html_string}); //done, pass to return, no need to dealloc since addStep does not copy the given object
 </pre>
 For example, to display quadratic equation
 <pre>
@@ -130,8 +130,8 @@ struct ParserReturn{
 }
 </pre>
 ## Enum types
-1. Linear operation types with steps (see below)
-2. Linear operation without steps (direct result), NOT_R_OPER
+1. Linear operation types with steps (see below). In here StepsHistory* steps=nullptr
+2. Linear operation without steps (direct result), NOT_R_OPER. In here matrix=nullptr
 3. Cannot use both! (two interpretations above does not work), ERROR_OPER
 ## Possible return values, possibly return a struct, with the data saved accordingly to the return type
 1. R** with row/col, if can be interpreted as R**
