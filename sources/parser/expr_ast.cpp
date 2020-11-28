@@ -246,19 +246,15 @@ ArmaOperand FunctionExprAst::eval()
     int num_args = args.size();
     switch (op)
     {
-        case TokName::SOLVE:
-            if (num_args != 1 && num_args != 2) 
-                throw std::runtime_error("expect one or two arguments for " + raw + "()");
-
-        case TokName::MIN: case TokName::MAX: case TokName::ROOTS:
-            break;          // min, max, roots can have arbitrary number of arguments
+        case TokName::MIN: case TokName::MAX:
+            break;              // arbitrary number of arguments
 
         case TokName::ROOT: case TokName::LOG: case TokName::GCD: case TokName::LCM:
-            if (num_args != 2)  throw std::runtime_error("expect two arguments for " + raw + "()");
+            if (num_args != 2)  throw std::runtime_error("invalid number of arguments for " + raw + "()");
             break;
 
         default:
-            if (num_args != 1)  throw std::runtime_error("expect one argument for " + raw + "()");
+            if (num_args != 1)  throw std::runtime_error("invalid number of arguments for " + raw + "()");
     }
 
     vector<ArmaOperand> arg_vals;
@@ -278,22 +274,6 @@ ArmaOperand FunctionExprAst::eval()
                     return ArmaOperand(arma::powmat(arg_vals[0].mat, 1 / arg_vals[1].value.real()));
                 }
                 return ArmaOperand(pow(arg_vals[0].value, std::complex<double>(1, 0) / arg_vals[1].value));
-
-            case TokName::SOLVE:
-            {
-                if (arg_vals[0].type != Type::MAT || arg_vals[1].type != Type::MAT)
-                    throw std::logic_error("both arguments for function solve() should be matrices");
-                if (arg_vals[0].type == Type::IMAT && arg_vals[1].type == Type::IMAT)
-                    throw std::logic_error("two arguments for function solve() cannot be identity matrix with no size simultaneously");
-
-                arma::cx_mat A = arg_vals[0].mat, B = arg_vals[1].mat;
-                if (arg_vals[0].type == Type::IMAT)
-                    A = arg_vals[0].fromImat(B.n_rows);
-                if (arg_vals[1].type == Type::IMAT)
-                    B = arg_vals[1].fromImat(A.n_rows);
-                
-                return ArmaOperand(arma::solve(A, B));
-            }
 
             default: throw std::runtime_error("unsupported function: " + raw);
         }
@@ -332,17 +312,6 @@ ArmaOperand FunctionExprAst::eval()
             case TokName::TR:   return ArmaOperand(arma::trace(arg_vals[0].mat));
 
             case TokName::NORM: return ArmaOperand(arma::norm(arg_vals[0].mat));
-
-            case TokName::INV:  return ArmaOperand(arma::inv(arg_vals[0].mat));
-
-            case TokName::PINV: return ArmaOperand(arma::pinv(arg_vals[0].mat));
-
-            case TokName::SOLVE:
-            {
-                size_t num_cols = arg_vals[0].mat.n_cols;
-                arma::cx_vec B = arg_vals[0].mat.col(num_cols - 1);
-                return ArmaOperand(arma::solve(arg_vals[0].mat.cols(1, num_cols -2), B));
-            }
 
             case TokName::ABS:  
                 return ArmaOperand(arma::cx_mat(arma::abs(arg_vals[0].mat), arma::mat(arma::size(arg_vals[0].mat), arma::fill::zeros)));

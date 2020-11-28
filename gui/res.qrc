@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>rsc/repeat.png</file>
+        <file>rsc/transparent_camera.png</file>
+        <file>rsc/transparent_logo.png</file>
+        <file>rsc/check.png</file>
+    </qresource>
+</RCC>

@@ -72,7 +72,6 @@ public:
     ArmaOperand operator*(const ArmaOperand& rhs) const;
     ArmaOperand operator/(const ArmaOperand& rhs) const;
     ArmaOperand operator^(const ArmaOperand& rhs) const;
-    arma::cx_mat fromImat(size_t row) const;                // return a square matrix with given size
 
     bool almostReal() const
     {
