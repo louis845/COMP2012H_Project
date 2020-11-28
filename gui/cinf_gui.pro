@@ -27,7 +27,6 @@ SOURCES += \
     ../sources/steps/StepsHistory.cpp \
     ../sources/utils/math_wrapper.cpp \
     ../sources/utils/ocr_api.cpp \
-    ../sources/utils/test_ocr.cpp \
     input_key.cpp \
     main.cpp \
     begin_widget.cpp \
@@ -74,6 +73,7 @@ INCLUDEPATH += \
     ../sources/ \
     ../libraries/gmp_621_msvc_x64 \
     ../libraries/Armadillo/include \
+    ../libraries/Armadillo/include/armadillo_bits \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -88,3 +88,14 @@ win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libraries/gmp_621_msvc_
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libraries/gmp_621_msvc_x64/ -llibgmp
 
 DEPENDPATH += ../libraries/gmp_621_msvc_x64
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libraries/ -llibopenblas
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libraries/ -llibopenblas
+
+INCLUDEPATH += $$PWD/../libraries
+DEPENDPATH += $$PWD/../libraries
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/liblibopenblas.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/liblibopenblas.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/libopenblas.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/libopenblas.lib

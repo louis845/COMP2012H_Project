@@ -61,7 +61,7 @@ begin_widget::begin_widget(QWidget *parent)
                 this->show();
                 no_key_needed = true;
             });
-
+            connect(this,nullptr,nullptr);
         });
 
         if (no_key_needed) {

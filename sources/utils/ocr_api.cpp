@@ -106,7 +106,7 @@ QByteArray Ocr::post(const QNetworkRequest& request, const QJsonObject& json) co
     QNetworkReply* reply = mgr.post(request, QJsonDocument(json).toJson());
     
     QEventLoop event_loop;
-    QObject::connect(&mgr, QNetworkAccessManager::finished, &event_loop, QEventLoop::quit);
+    QObject::connect(&mgr, &QNetworkAccessManager::finished, &event_loop, &QEventLoop::quit);
     event_loop.exec();
 
     if (reply->error() == QNetworkReply::NoError)

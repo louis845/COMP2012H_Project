@@ -16,7 +16,7 @@ public:
 
     virtual void print_to_console() const=0;
 
-    virtual string get_html_latex() const=0;
+    virtual std::string get_html_latex() const=0;
 };
 
 /**
@@ -29,7 +29,7 @@ public:
 
     void print_to_console() const override;
 
-    string get_html_latex() const;
+    std::string get_html_latex() const;
 };
 
 #endif

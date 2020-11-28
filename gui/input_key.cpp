@@ -19,16 +19,16 @@ input_key::input_key(QWidget *parent) :
         password = password_qstr.toStdString();
         if (user.empty() || password.empty()){
             QMessageBox::warning(this,"Warning","The input must not be empty");
-        }
-        else{
+        }else{
             this->close();
             emit user_input(user,password);
         }
-
     });
 
     connect(ui->cancel_btn,&QPushButton::clicked,[=](){this->close();emit user_quit();});
-
+    connect(ui->no_ocr_btn,&QPushButton::clicked,[=](){
+        this->close(); emit user_input("","");
+    });
 }
 
 input_key::~input_key()

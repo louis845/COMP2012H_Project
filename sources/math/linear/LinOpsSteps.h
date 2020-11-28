@@ -72,7 +72,7 @@ public:
 
     virtual void print_to_console() const override;
 
-    virtual string get_html_latex() const override;
+    virtual std::string get_html_latex() const override;
 };
 
 #endif

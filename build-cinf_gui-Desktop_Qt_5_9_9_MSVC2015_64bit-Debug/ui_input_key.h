@@ -44,6 +44,7 @@ public:
     QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer_5;
     QPushButton *cancel_btn;
+    QPushButton *no_ocr_btn;
     QPushButton *ok_btn;
     QSpacerItem *horizontalSpacer_6;
 
@@ -51,9 +52,7 @@ public:
     {
         if (input_key->objectName().isEmpty())
             input_key->setObjectName(QStringLiteral("input_key"));
-        input_key->resize(280, 220);
-        input_key->setMinimumSize(QSize(280, 220));
-        input_key->setMaximumSize(QSize(280, 220));
+        input_key->resize(702, 220);
         verticalLayout = new QVBoxLayout(input_key);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         widget = new QWidget(input_key);
@@ -71,6 +70,11 @@ public:
 
         user_text = new QLineEdit(widget);
         user_text->setObjectName(QStringLiteral("user_text"));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        sizePolicy.setHorizontalStretch(100);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(user_text->sizePolicy().hasHeightForWidth());
+        user_text->setSizePolicy(sizePolicy);
 
         horizontalLayout->addWidget(user_text);
 
@@ -96,6 +100,11 @@ public:
 
         password_text = new QLineEdit(widget_2);
         password_text->setObjectName(QStringLiteral("password_text"));
+        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        sizePolicy1.setHorizontalStretch(150);
+        sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(password_text->sizePolicy().hasHeightForWidth());
+        password_text->setSizePolicy(sizePolicy1);
         password_text->setEchoMode(QLineEdit::Password);
 
         horizontalLayout_2->addWidget(password_text);
@@ -119,6 +128,11 @@ public:
         cancel_btn->setObjectName(QStringLiteral("cancel_btn"));
 
         horizontalLayout_3->addWidget(cancel_btn);
+
+        no_ocr_btn = new QPushButton(widget_3);
+        no_ocr_btn->setObjectName(QStringLiteral("no_ocr_btn"));
+
+        horizontalLayout_3->addWidget(no_ocr_btn);
 
         ok_btn = new QPushButton(widget_3);
         ok_btn->setObjectName(QStringLiteral("ok_btn"));
@@ -144,6 +158,7 @@ public:
         user_label->setText(QApplication::translate("input_key", "Username:", Q_NULLPTR));
         password_label->setText(QApplication::translate("input_key", "Password:", Q_NULLPTR));
         cancel_btn->setText(QApplication::translate("input_key", "Cancel", Q_NULLPTR));
+        no_ocr_btn->setText(QApplication::translate("input_key", "Do not use OCR", Q_NULLPTR));
         ok_btn->setText(QApplication::translate("input_key", "OK", Q_NULLPTR));
     } // retranslateUi
 
