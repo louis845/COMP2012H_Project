@@ -1,9 +1,9 @@
 #ifndef EXPR_AST_H_
 #define EXPR_AST_H_
 
-#include "lexer.h"
-#include "tokens.h"
-#include "math_wrapper.h"
+#include "parser/lexer.h"
+#include "parser/tokens.h"
+#include "utils/math_wrapper.h"
 #include <vector>
 #include <string>
 #include <cmath>

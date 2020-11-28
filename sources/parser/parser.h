@@ -4,7 +4,7 @@
 #include "expr_ast.h"
 #include "lexer.h"
 #include "tokens.h"
-#include "math_wrapper.h"
+#include "utils/math_wrapper.h"
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
