@@ -8,10 +8,14 @@
 #include <string>
 
 class LinearOperations{
-protected:
+public:
     virtual void row_add(int from, int to, const RF& mult);
     virtual void row_swap(int i, int j);
     virtual void row_multiply(int row, const RF& mult);
+
+    virtual void col_add(int from, int to, const RF& mult);
+    virtual void col_swap(int i, int j);
+    virtual void col_multiply(int col, const RF& mult);
 public:
     /**
      * Creates a LinearOperations class to work on the given matrix. DOES NOT create a copy of RF. Also assumes that the type of RF is exactly the same!
@@ -41,6 +45,18 @@ public:
     void toRREF();
 
     /**
+     * Diagonalizes the matrix without doing row/col multiplication operations. Virtual to let subclasses that disallow col operations to 'disable' this function
+     * by throwing an error.
+    */
+    virtual void diagonalize_no_mult();
+
+    /**
+     * Diagonalizes the matrix without doing row/col multiplication operations, and also works for all Ring classes.
+     * Virtual to let subclasses that disallow col operations to 'disable' this function by throwing an error.
+    */
+    virtual void diagonalize_no_mult_no_div();
+
+    /**
      * Checks whether the matrix now is diagonal, with entries equal to one.
     */
     bool is_diagonally_one() const;
@@ -53,6 +69,12 @@ private:
      * Complete the steps, to reduced row echelon form
     */
     void complete_reduce(int cur_row, int cur_col);
+
+    void diagonalize_submat(int cur_row,int cur_col);
+
+    void diagonalize_nmd_submat(int cur_row,int cur_col);
+
+    void findSmallestEuclideanFunc(int cur_row,int cur_col,int& non_zero_row, int& non_zero_col);
 
     /**
      * Pauses recording, any operations will be saved as a string. Creates an internal string array with length i.
@@ -70,7 +92,7 @@ private:
     bool recording;
     int record_index,record_length;
     std::string *recorded_ops_in_pause, *recorded_latex_ops_in_pause;
-    char row_col;
+    char row_col, row_col_T;
 
     RF*** matrix;
     int rows;
@@ -102,5 +124,9 @@ namespace LinearOperationsFunc{
      * Finds the left/right/general inverse, if exists, of the matrix.
     */
     void invert(R** mat, int rows, int cols, StepsHistory* &steps);
+
+    void determinant(R** mat,int rows,int cols,StepsHistory*& steps);
+
+    void char_poly(R** mat,int rows,int cols,StepsHistory*& steps);
 }
 #endif

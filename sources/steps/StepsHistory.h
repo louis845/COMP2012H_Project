@@ -1,6 +1,7 @@
 #ifndef STEPS_STEPSHISTORY
 #define STEPS_STEPSHISTORY
 #include "steps/Step.h"
+#include "math/R.h"
 
 /**
  * Linked list of steps,.
@@ -64,5 +65,11 @@ public:
      * Go to the previous node
     */
     void previous_node();
+
+    /**
+     * Allocates and returns a new R** matrix respresenting the result, and passes the rows and cols onto the references.
+     * result would be nullptr if there is none
+    */
+    void getAnswer(R** &result, int& rows, int& cols);
 };
 #endif

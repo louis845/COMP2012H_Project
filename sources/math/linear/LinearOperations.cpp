@@ -1,6 +1,7 @@
 #include "math/linear/LinearOperations.h"
 #include "math/linear/CoupledOperations.h"
 #include "math/fraction/Fraction.h"
+#include "math/polynomial/Polynomial.h"
 #include <string>
 using namespace std;
 
@@ -22,6 +23,7 @@ LinearOperations::LinearOperations(RF** mat, const int& rows, const int& cols, b
         this->cols=rows;
 
         row_col='C'; //transposed, we are doing column operations.
+        row_col_T='R'; //transpose of transpose of rows is still rows.
     }else{
         matrix=new RF**[rows];
         for(int i=0;i<rows;i++){
@@ -34,6 +36,7 @@ LinearOperations::LinearOperations(RF** mat, const int& rows, const int& cols, b
         this->cols=cols;
 
         row_col='R';
+        row_col_T='C';
     }
 }
 
@@ -91,6 +94,53 @@ void LinearOperations::row_multiply(int row, const RF& mult) {
     }
 }
 
+void LinearOperations::col_add(int from, int to, const RF& mult) {
+    for(int row=0;row<rows;++row){
+        A(row,to) = A(row,from)*mult+A(row,to);
+    }
+    if(recording){
+        string* console=new string[1]{row_col_T+to_string(to+1)+mult.to_coeff()+row_col_T+to_string(from+1)};
+        string* latex=new string[1]{row_col_T+string{"_{"}+to_string(to+1)+"}"+mult.to_latex_coeff()+row_col_T+string{"_{"}+to_string(from+1)+"}"};
+        recorder->capture_instance(console,latex,1);
+    }else{
+        recorded_ops_in_pause[record_index]=string{row_col_T+to_string(to+1)+mult.to_coeff()+row_col_T+to_string(from+1)};
+        recorded_latex_ops_in_pause[record_index]=string{row_col_T+string{"_{"}+to_string(to+1)+"}"+mult.to_latex_coeff()+row_col_T+string{"_{"}+to_string(from+1)+"}"};
+        ++record_index;
+    }
+}
+
+void LinearOperations::col_swap(int i, int j) {
+    for(int row=0;row<rows;++row){
+        RF temp=A(row,i);
+        A(row,i)=A(row,j);
+        A(row,j)=temp;
+    }
+    if(recording){
+        string* console=new string[1]{row_col_T+to_string(i+1)+"<->"+row_col_T+to_string(j+1)};
+        string* latex=new string[1]{row_col_T+string{"_{"}+to_string(i+1)+"} \\Leftrightarrow "+string{row_col_T}+"_{"+to_string(j+1)+"}"};;
+        recorder->capture_instance(console,latex,1);
+    }else{
+        recorded_ops_in_pause[record_index]=string{row_col_T+to_string(i+1)+"<->"+row_col_T+to_string(j+1)};
+        recorded_latex_ops_in_pause[record_index]=string{row_col_T+string{"_{"}+to_string(i+1)+"} \\Leftrightarrow "+string{row_col_T}+"_{"+to_string(j+1)+"}"};
+        ++record_index;
+    }
+}
+
+void LinearOperations::col_multiply(int col, const RF& mult) {
+    for(int row=0;row<rows;++row){
+        A(row,col) = A(row,col)*mult;
+    }
+    if(recording){
+        string* console=new string[1]{mult.to_coeff()+row_col_T+to_string(col+1)};
+        string* latex=new string[1]{mult.to_latex_coeff()+row_col_T+"_{"+to_string(col+1)+"}"};
+        recorder->capture_instance(console,latex,1);
+    }else{
+        recorded_ops_in_pause[record_index]=string{mult.to_coeff()+row_col_T+to_string(col+1)};
+        recorded_latex_ops_in_pause[record_index]=string{mult.to_latex_coeff()+row_col_T+"_{"+to_string(col+1)+"}"};
+        ++record_index;
+    }
+}
+
 const int& LinearOperations::get_rows() const{
     return rows;
 }
@@ -99,11 +149,17 @@ const int& LinearOperations::get_cols() const{
     return cols;
 }
 
+/**
+ * Row echleon form / column echelon form, depending on whether the matrix is transposed.
+*/
 void LinearOperations::toRREF(){
-    ref_reduce(0,0);
-    complete_reduce(0,0);
+    ref_reduce(0,0); //Row echelon form
+    complete_reduce(0,0); //Complete reduced row echelon form
 }
 
+/**
+ * Reduces to row echelon form
+*/
 void LinearOperations::ref_reduce(int cur_row, int cur_col){
     if(cur_col==cols){
         return;
@@ -161,6 +217,9 @@ void LinearOperations::ref_reduce(int cur_row, int cur_col){
     ref_reduce(cur_row+1, cur_col+1);
 }
 
+/**
+ * To reduced row echelon form here
+*/
 void LinearOperations::complete_reduce(int cur_row, int cur_col){
     if(cur_col==cols){
         return;
@@ -199,6 +258,201 @@ void LinearOperations::complete_reduce(int cur_row, int cur_col){
         // not found, go next
         complete_reduce(cur_row, cur_col+1);
     }
+}
+
+void LinearOperations::diagonalize_no_mult(){
+    diagonalize_submat(0,0);
+}
+
+void LinearOperations::diagonalize_submat(int cur_row,int cur_col){
+    if(cur_row==cols || cur_row==rows){
+        return;
+    }
+    bool is_all_zero=true; //Is the row cur_row, and the col cur_col all zero?
+    int non_zero_row=-1;
+    int non_zero_col=-1; //The location (row,col), of an instance of an non-zero element.
+
+    for(int row=cur_row+1;row<rows;++row){
+        if(!A(row,cur_col).is_zero()){
+            is_all_zero=false;
+            non_zero_row=row;
+            non_zero_col=cur_col;
+            break;
+        }
+    }
+    if(is_all_zero){
+        for(int col=cur_col+1;col<cols;++col){
+            if(!A(cur_row,col).is_zero()){
+                is_all_zero=false;
+                non_zero_row=cur_row;
+                non_zero_col=col;
+                break;
+            }
+        }
+    }
+
+    //If not all zero, we need to do operations.
+    if(!is_all_zero){
+        if(A(cur_row,cur_col).is_zero()){
+            //need to swap.
+            if(cur_row==non_zero_row){
+                //col swap
+                col_swap(cur_col,non_zero_col);
+            }else{
+                //row swap (here cur_col==non_zero_col)
+                row_swap(cur_row,non_zero_row);
+            }
+        }
+
+        int num_non_zero=0; //Number of non_zero elements.
+        //Now zero the whole column.
+        for(int row=cur_row+1;row<rows;++row){
+            if(!A(row,cur_col).is_zero()){
+                ++num_non_zero;
+            }
+        }
+
+        if(num_non_zero>0){
+            pause_recording(num_non_zero);
+            for(int row=cur_row+1;row<rows;++row){
+                if(!A(row,cur_col).is_zero()){
+                    RF mult=-A(row,cur_col)/A(cur_row,cur_col);
+                    row_add(cur_row,row,mult);
+                }
+            }
+            commit_recording_and_continue();
+        }
+
+        num_non_zero=0;
+        //Now zero the whole row.
+        for(int col=cur_col+1;col<cols;++col){
+            if(!A(cur_row,col).is_zero()){
+                ++num_non_zero;
+            }
+        }
+
+        if(num_non_zero>0){
+            pause_recording(num_non_zero);
+            for(int col=cur_col+1;col<cols;++col){
+                if(!A(cur_row,col).is_zero()){
+                    RF mult=-A(cur_row,col)/A(cur_row,cur_col);
+                    col_add(cur_col,col,mult);
+                }
+            }
+            commit_recording_and_continue();
+        }
+    }
+    diagonalize_submat(cur_row+1,cur_col+1);
+}
+
+void LinearOperations::diagonalize_no_mult_no_div(){
+    diagonalize_nmd_submat(0,0);
+}
+
+void LinearOperations::findSmallestEuclideanFunc(int cur_row,int cur_col,int& non_zero_row, int& non_zero_col){
+    non_zero_row=non_zero_col=-1;
+    RF smallest_euc;
+
+    for(int row=cur_row+1;row<rows;++row){
+        if(!A(row,cur_col).is_zero()){
+            if(non_zero_row==-1){
+                non_zero_row=row;
+                non_zero_col=cur_col;
+                smallest_euc=A(row,cur_col);
+            }else{
+                if(A(row,cur_col) < smallest_euc){
+                    non_zero_row=row;
+                    non_zero_col=cur_col;
+                    smallest_euc=A(row,cur_col);
+                }
+            }
+            break;
+        }
+    }
+    for(int col=cur_col+1;col<cols;++col){
+        if(!A(cur_row,col).is_zero()){
+            if(non_zero_row==-1){
+                non_zero_row=cur_row;
+                non_zero_col=col;
+                smallest_euc=A(cur_row,col);
+            }else{
+                if(A(cur_row,col) < smallest_euc){
+                    non_zero_row=cur_row;
+                    non_zero_col=col;
+                    smallest_euc=A(cur_row,col);
+                }
+            }
+            break;
+        }
+    }
+}
+
+void LinearOperations::diagonalize_nmd_submat(const int cur_row,const int cur_col){
+    if(cur_row==cols || cur_row==rows){
+        return;
+    }
+    bool not_all_zeroed=true;
+    while(not_all_zeroed){
+        int non_zero_row=-1;
+        int non_zero_col=-1; //The location (row,col), of a non-zero element with the smallest euclidean func.
+
+        findSmallestEuclideanFunc(cur_row,cur_col,non_zero_row,non_zero_col);
+
+        //If not all zero, we need to do operations.
+        if(non_zero_row!=-1){
+            if(A(cur_row,cur_col).is_zero() || (A(non_zero_row,non_zero_col)<A(cur_row,cur_col))){
+                //now we swap
+                if(cur_row==non_zero_row){
+                    //col swap
+                    col_swap(cur_col,non_zero_col);
+                }else{
+                    //row swap (here cur_col==non_zero_col)
+                    row_swap(cur_row,non_zero_row);
+                }
+            }
+
+            int num_non_zero=0; //Number of non_zero elements.
+            //Now zero the whole column.
+            for(int row=cur_row+1;row<rows;++row){
+                if(!A(row,cur_col).is_zero()){
+                    ++num_non_zero;
+                }
+            }
+
+            if(num_non_zero>0){
+                pause_recording(num_non_zero);
+                for(int row=cur_row+1;row<rows;++row){
+                    if(!A(row,cur_col).is_zero()){
+                        RF mult=-A(row,cur_col)/A(cur_row,cur_col);
+                        row_add(cur_row,row,mult);
+                    }
+                }
+                commit_recording_and_continue();
+            }
+
+            num_non_zero=0;
+            //Now zero the whole row.
+            for(int col=cur_col+1;col<cols;++col){
+                if(!A(cur_row,col).is_zero()){
+                    ++num_non_zero;
+                }
+            }
+
+            if(num_non_zero>0){
+                pause_recording(num_non_zero);
+                for(int col=cur_col+1;col<cols;++col){
+                    if(!A(cur_row,col).is_zero()){
+                        RF mult=-A(cur_row,col)/A(cur_row,cur_col);
+                        col_add(cur_col,col,mult);
+                    }
+                }
+                commit_recording_and_continue();
+            }
+        }else{
+            not_all_zeroed=false;
+        }
+    }
+    diagonalize_nmd_submat(cur_row+1,cur_col+1);
 }
 
 void LinearOperations::pause_recording(int length){
@@ -420,6 +674,89 @@ namespace LinearOperationsFunc{
             delete[]cpl; //no need to delete the subarrays, it is deleted in combined_matrix since cpl is a pointer copy.
         }else{
             steps=nullptr;
+        }
+    }
+
+    void determinant(R** mat_slow,int rows,int cols,StepsHistory*& steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            RF::promote_to_field(mat, rows, cols);
+            steps=new StepsHistory;
+            LinOpsRecorder rc{steps, mat, rows, cols};
+            rc.capture_initial();
+
+            LinearOperations o{mat, rows, cols, false, &rc};
+
+            o.diagonalize_no_mult();
+
+            RF val=mat[0][0].promote_one();
+            for(int i=0;i<std::min(rows,cols);i++){
+                val=val*mat[i][i];
+            }
+            steps->add_step(new StepText{val.to_string()});
+
+            RF::deallocate_matrix(mat,rows);
+        }else{
+            steps=nullptr;
+        }
+    }
+
+    void char_poly(R** mat_slow,int rows,int cols,StepsHistory*& steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            NestedRingType *type=new NestedRingType{RingType::FRACTION};
+            NestedRingType *inside=new NestedRingType{RingType::COMPLEXIFY};
+            type->set_sub_type_no_copy(inside);
+            inside->set_sub_type_no_copy(new NestedRingType{RingType::LONG});
+
+            //Only FRACTION COMPLEXIFY LONG, which means polynomials and rational polynomials are excluded.
+
+            if(!Ring::is_type_subset(*type,mat[0][0].get_type())){
+                //Not subset of FRACTION COMPLEXIFY LONG, dealloc and remove
+                delete type; //NestedRingType deletes it's children nodes, so no need to del inside
+                RF::deallocate_matrix(mat,rows);
+            }else{
+                delete type;
+
+                //Form Char Poly tI-A
+                RF::promote_to_field(mat,rows,cols);
+                for(int row=0;row<rows;row++){
+                    for(int col=0;col<cols;col++){
+                        R *coeff_arr;
+                        int coeff_len;
+                        if(row==col){
+                            coeff_arr=new R[2];
+                            coeff_arr[0] = -mat[row][col];
+                            coeff_arr[1] = mat[row][col].promote_one();
+                            coeff_len=2;
+                        }else{
+                            coeff_arr=new R[1];
+                            coeff_len=1;
+                            coeff_arr[0] = -mat[row][col];
+                        }
+                        mat[row][col]=RF{new Polynomial{coeff_arr,coeff_len}};
+                        delete[] coeff_arr;
+                    }
+                }
+
+                steps=new StepsHistory;
+                LinOpsRecorder rc{steps, mat, rows, cols};
+                rc.capture_initial();
+
+                LinearOperations o{mat, rows, cols, false, &rc};
+
+                o.diagonalize_no_mult_no_div();
+
+                RF val=mat[0][0].promote_one();
+                for(int i=0;i<std::min(rows,cols);i++){
+                    val=val*mat[i][i];
+                }
+                steps->add_step(new StepText{val.to_string()});
+
+                RF::deallocate_matrix(mat,rows);
+            }
         }
     }
 }

@@ -64,6 +64,22 @@ void CoupledOperations::row_multiply(int row, const RF& mult) {
     LinearOperations::row_multiply(row, mult); //same reason
 }
 
+void CoupledOperations::col_add(int from, int to, const RF& mult){
+    throw "Does not support col_add on coupled operations!";
+}
+
+void CoupledOperations::col_swap(int i,int j){
+    throw "Does not support col_swap on coupled operations!";
+}
+
+void CoupledOperations::col_multiply(int row, const RF& mult){
+    throw "Does not support col_multiply on coupled operations!";
+}
+
+void CoupledOperations::diagonalize_no_mult(){
+    throw "Does not support diagonalize_no_mult on coupled operations!";
+}
+
 RF& CoupledOperations::A(const int& row, const int& col) const{
     return *(couple[row][col]);
 }

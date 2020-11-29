@@ -281,6 +281,65 @@ void console_invert(){
     delete steps;
 }
 
+void console_determinant(){
+    cout<<"Input matrix dimension:  ";
+    int dimension=input_integer();
+    while(dimension<2 || dimension>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        dimension=input_integer();
+    }
+    const int& rows=dimension;
+    const int& cols=dimension;
+    
+    cout<<"Input matrix:\n";
+    // use integer for now
+    bool aborted=false;
+    R** mat_slow=input_matrix(rows,cols,aborted);
+    if(aborted){
+        for(int i=0;i<rows;i++){
+            delete[] mat_slow[i];
+        }
+        delete[] mat_slow;
+        return;
+    }
+    StepsHistory *steps;
+    LinearOperationsFunc::determinant(mat_slow,rows,cols,steps);
+    
+    display_steps(*steps);
+    delete steps;
+}
+
+void console_char_poly(){
+    cout<<"Input matrix dimension:  ";
+    int dimension=input_integer();
+    while(dimension<2 || dimension>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        dimension=input_integer();
+    }
+    const int& rows=dimension;
+    const int& cols=dimension;
+    
+    cout<<"Input matrix:\n";
+    // use integer for now
+    bool aborted=false;
+    R** mat_slow=input_matrix(rows,cols,aborted);
+    if(aborted){
+        for(int i=0;i<rows;i++){
+            delete[] mat_slow[i];
+        }
+        delete[] mat_slow;
+        return;
+    }
+    StepsHistory *steps;
+    LinearOperationsFunc::char_poly(mat_slow,rows,cols,steps);
+    if(steps!=nullptr){
+        display_steps(*steps);
+        delete steps;
+    }else{
+        cout<<"Error: Matrix of characteristic polynomial must not be itself of type polynomial!\n";
+    }
+}
+
 void to_lower_case(string& str){
     transform(str.begin(), str.end(), str.begin(), [](unsigned char ch){ return tolower(ch);});
 }
@@ -320,6 +379,10 @@ void console_main_loop(){
             cout<<"Type NO in the prompt to continue computing expressions.\n";
             cout<<"\n";
             input_expression(b);
+        }else if(s.rfind("determinant",0)==0){
+            console_determinant();
+        }else if(s.rfind("char_poly",0)==0){
+            console_char_poly();
         }
     }
 }

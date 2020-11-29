@@ -11,10 +11,14 @@ private:
     int couple_cols;
 
     RF& A(const int&, const int&) const;
-protected:
+public:
     virtual void row_add(int from, int to, const RF& mult) override;
     virtual void row_swap(int i, int j) override;
     virtual void row_multiply(int row, const RF& mult) override;
+    virtual void col_add(int from, int to, const RF& mult) override;
+    virtual void col_swap(int i, int j) override;
+    virtual void col_multiply(int col, const RF& mult) override;
+    virtual void diagonalize_no_mult() override;
 public:
     /**
      *  When no transpose the matrices are placed in order (matrix, couple). When transpose it is placed
