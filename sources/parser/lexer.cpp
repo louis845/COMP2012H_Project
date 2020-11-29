@@ -9,7 +9,7 @@ std::unordered_map<std::string, int> Token::tok_map =
 {
     {",", 100}, 
     {"**", 200}, {"*", 201}, {"xx", 202}, {"//", 203}, {"/", 204}, {"%", 205}, {"+", 206}, {"-", 207},
-    {"^", 208}, {"_", 209}, {"|", 210}, {"(", 211}, {")", 212}, {"[", 213}, {"]", 214}, {"{", 215}, {"}", 216}, {"=", 217},
+    {"^", 208}, {"_", 209}, {"|", 210}, {"(", 211}, {")", 212}, {"[", 213}, {"]", 214}, {"{", 213}, {"}", 214}, {"=", 217},
     {"sin", 218}, {"cos", 219}, {"tan", 220}, {"sec", 221}, {"csc", 222}, {"cot", 223}, {"arcsin", 224}, {"arccos", 225}, 
     {"arctan", 226}, {"exp", 227}, {"log", 228}, {"ln", 229}, {"det", 230}, {"rank", 231}, {"ran", 232}, {"col", 232}, {"orth", 232},
     {"ker", 234}, {"null", 234}, {"mod", 235}, {"gcd", 236}, {"lcm", 237}, {"min", 238}, {"max", 239}, {"trace", 240}, {"tr", 240}, 
@@ -36,7 +36,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
 {
     while (input.length() > 0)
     {
-        if (regex_match(input, WHITESPACE_RE))   return new TokErr(TokName::TOKEOF, "");
+        if (regex_match(input, WHITESPACE_RE))   return nullptr;
 
         // each parser function will handle exceptions and return TokErr
         // if no pattern matches, the Token* returned will be a nullptr
@@ -61,7 +61,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
         }
         return temp;
     }
-    return new TokErr(TokName::TOKEOF, "");   
+    return nullptr;   
 }
 
 

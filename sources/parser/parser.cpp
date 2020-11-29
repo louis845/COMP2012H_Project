@@ -83,10 +83,14 @@ NumberExprAst* Parser::parseNum()
 
 
 // matrixexpr      
-//          ::= '[' bracketexpr (',' bracketexpr)* ']'
+//          ::= '[' bracketexpr ( ',' bracketexpr )* ']'
+//          ::= '(' bracketexpr ( ',' bracketexpr )* ')'
 MatrixExprAst* Parser::parseMatrix()
 {
-    if (cur_tok == nullptr || cur_tok->get_name() != TokName::LSB)  return nullptr;
+    if (cur_tok == nullptr || (cur_tok->get_name() != TokName::LSB && cur_tok->get_name() != TokName::LP))
+        return nullptr;
+
+    TokName expected_paren_type = cur_tok->get_name() == TokName::LP ? TokName::RP : TokName::RSB;
     getNextToken();
 
     MatrixExprAst* matrix = new MatrixExprAst;
@@ -131,13 +135,15 @@ MatrixExprAst* Parser::parseMatrix()
             throw std::invalid_argument("Column sizes mismatch.");
         }
         matrix->entries.push_back(row);
-        // getNextToken();
     }
 
-    if (cur_tok->get_name() != TokName::RSB)
+    if (cur_tok == nullptr || cur_tok->get_name() != expected_paren_type)
     {
         delete matrix;
-        throw std::invalid_argument("Missing right square bracket for the matrix.");
+        if (expected_paren_type == TokName::RP)
+            throw std::invalid_argument("missing right parenthesis for the matrix");
+        else
+            throw std::invalid_argument("missing right square bracket for the matrix");
     }
     getNextToken();
     return matrix;
@@ -182,16 +188,16 @@ std::vector<ExprAst*> Parser::parseBracket()
 //          ::= '|' expression '|'
 ExprAst* Parser::parseParen()
 {
-    if (cur_tok == nullptr)     return nullptr;
+    if (cur_tok == nullptr || cur_tok->get_type() == TokType::ERR)     return nullptr;
 
     if (cur_tok->get_name() == TokName::LP)
     {
         getNextToken();
         ExprAst* temp = parseExpr();
-        if (cur_tok->get_name() != TokName::RP)
+        if (cur_tok == nullptr || cur_tok->get_name() != TokName::RP)
         {
             delete temp;
-            throw std::invalid_argument("Missing right parenthesis.");
+            throw std::invalid_argument("missing right parenthesis");
         }
 
         getNextToken();
@@ -202,10 +208,10 @@ ExprAst* Parser::parseParen()
     {
         getNextToken();
         ExprAst* temp = parseExpr(true);
-        if (cur_tok->get_name() != TokName::TEXTBAR)
+        if (cur_tok == nullptr || cur_tok->get_name() != TokName::TEXTBAR)
         {
             delete temp;
-            throw std::invalid_argument("Missing closing textbar.");
+            throw std::invalid_argument("missing closing textbar");
         }
 
         FunctionExprAst* abs = new FunctionExprAst(TokName::ABS, cur_tok->get_raw_value());
@@ -239,10 +245,15 @@ ExprAst* Parser::parseId()
     FunctionExprAst* func = new FunctionExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
     getNextToken();
 
+    if (cur_tok == nullptr)
+    {
+        delete func;
+        return nullptr;
+    }
+
     if (cur_tok->get_type() == TokType::NUM)
     {
         func->args.emplace_back(parseNum());
-        // getNextToken();
         return func;
     }
 
@@ -255,34 +266,48 @@ ExprAst* Parser::parseId()
         return func;
     }
 
+    string backup = tokenizer.get_input();
     if (cur_tok->get_name() == TokName::LP)
     {
         getNextToken();
         try
         {
             ExprAst* expr = parseExpr();
-            func->args.emplace_back(expr);
-            while (cur_tok && cur_tok->get_name() == TokName::COMMA)
+            if (expr != nullptr)
             {
-                getNextToken();
-                expr = parseExpr();
                 func->args.emplace_back(expr);
+                while (cur_tok && cur_tok->get_name() == TokName::COMMA)
+                {
+                    getNextToken();
+                    expr = parseExpr();
+                    if (expr == nullptr)
+                    {
+                        delete func;
+                        return nullptr;
+                    }
+                    func->args.emplace_back(expr);
+                }
+
+                if (cur_tok == nullptr || cur_tok->get_name() != TokName::RP)
+                    throw std::invalid_argument("missing right parenthesis for function");
+
+                getNextToken();
+                return func;
             }
-
-            if (cur_tok->get_name() != TokName::RP)
-                throw std::invalid_argument("Missing right parenthesis for function.");
-
-            getNextToken();
-            return func;
+            else 
+            {
+                tokenizer.reset_input(backup);      // use time traval to resolve undetermined parsing state
+                getNextToken();
+            }
         }
         catch (...)
-        {
-            delete func;
-            throw;      // rethrow, main driver function will handle
+        {               
+            tokenizer.reset_input(backup);
+            getNextToken();
         }
     }
 
-    if (cur_tok->get_name() == TokName::LSB)
+    if (cur_tok->get_name() == TokName::LSB || cur_tok->get_name() == TokName::LP)
     {
         try
         {
@@ -310,19 +335,32 @@ ExprAst* Parser::parseId()
 ExprAst* Parser::parsePrimary(bool inside_textbar)
 {
     if (cur_tok == nullptr)     return nullptr;
-    if (cur_tok->get_type() == TokType::NUM)
+    if (cur_tok->get_type() == TokType::NUM) 
+        return parseNum();
+
+    if (cur_tok->get_name() == TokName::TEXTBAR) 
+        return parseParen();
+
+    string backup = tokenizer.get_input();
+    if (cur_tok->get_name() == TokName::LP)
     {
-        ExprAst* numexpr = parseNum();
-        return numexpr;
+        try
+        {
+            ExprAst* parenexpr = parseParen();
+            if (parenexpr)  return parenexpr;
+            tokenizer.reset_input(backup);          // time travel
+            delete cur_tok;
+            cur_tok = new TokOp("(");
+        }
+        catch (...)
+        {
+            tokenizer.reset_input(backup);          // time travel
+            delete cur_tok;
+            cur_tok = new TokOp("(");
+        } 
     }
 
-    if (cur_tok->get_name() == TokName::LP || cur_tok->get_name() == TokName::TEXTBAR)
-    {
-        ExprAst* parenexpr = parseParen();
-        return parenexpr;
-    }
-
-    if (cur_tok->get_name() == TokName::LSB)
+    if (cur_tok->get_name() == TokName::LSB || cur_tok->get_name() == TokName::LP)
     {
         ExprAst* matrixexpr = parseMatrix();
         return matrixexpr;
@@ -444,7 +482,11 @@ ExprAst* Parser::parseExpr(bool inside_textbar)
         getNextToken();
         
         ExprAst* expr = parsePrimary(inside_textbar);
-        if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");
+        if (!expr)   
+        {   
+            delete neg_expr;
+            throw std::runtime_error("Fatal error, unexpected exception occurs.");
+        }
         neg_expr->args.emplace_back(expr);
         return parseBinOpRhs(0, neg_expr, inside_textbar);
     }
