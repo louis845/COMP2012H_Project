@@ -23,7 +23,7 @@ public:
         SVD, SOLVE, QR, ROOTS, CHAR_POLY, NA,  // OPERATOR
         E = 300, PI, I, IDENTITY_MATRIX, INTEGRAL, FLOAT, // NUM
         ALPHA = 400, BETA, THETA, LAMBDA, MU, PHI, VARPHI, OMEGA, VARIABLE, // IDENTIFIER
-        INVALID_TOKEN = 500, NUMERICAL_ERROR // ERR
+        INVALID_TOKEN = 500, NUMERICAL_ERROR, TOKEOF // ERR
     };
 
     static std::unordered_map<std::string, int> tok_map;

@@ -362,17 +362,17 @@ ArmaOperand FunctionExprAst::eval()
     {
         case TokName::SOLVE:
             if (num_args != 1 && num_args != 2) 
-                throw std::invalid_argument("expect one or two arguments for " + raw + "()");
+                throw std::invalid_argument("expect one or two arguments for " + raw + "(), but got " + std::to_string(num_args));
 
         case TokName::MIN: case TokName::MAX: case TokName::ROOTS:
             break;          // min, max, roots can have arbitrary number of arguments
 
         case TokName::ROOT: case TokName::LOG: case TokName::GCD: case TokName::LCM:
-            if (num_args != 2)  throw std::invalid_argument("expect two arguments for " + raw + "()");
+            if (num_args != 2)  throw std::invalid_argument("expect two arguments for " + raw + "(), but got " + std::to_string(num_args));
             break;
 
         default:
-            if (num_args != 1)  throw std::invalid_argument("expect one argument for " + raw + "()");
+            if (num_args != 1)  throw std::invalid_argument("expect one argument for " + raw + "(), but got " + std::to_string(num_args));
     }
 
     vector<ArmaOperand> arg_vals;
@@ -435,7 +435,7 @@ ArmaOperand FunctionExprAst::eval()
 
             case TokName::LN:   return ArmaOperand(arma::log(arg_vals[0].mat));
 
-            case TokName::DET:  return ArmaOperand(arma::det(arg_vals[0].mat));
+            case TokName::DET:  case TokName::ABS: return ArmaOperand(arma::det(arg_vals[0].mat));
 
             case TokName::RANK: return ArmaOperand(arma::rank(arg_vals[0].mat));
 
@@ -458,8 +458,8 @@ ArmaOperand FunctionExprAst::eval()
                 return ArmaOperand(arma::solve(arg_vals[0].mat.cols(0, num_cols -2), B));
             }
 
-            case TokName::ABS:  
-                return ArmaOperand(arma::cx_mat(arma::abs(arg_vals[0].mat), arma::mat(arma::size(arg_vals[0].mat), arma::fill::zeros)));
+            // case TokName::ABS:  
+            //    return ArmaOperand(arma::cx_mat(arma::abs(arg_vals[0].mat), arma::mat(arma::size(arg_vals[0].mat), arma::fill::zeros)));
 
             case TokName::SQRT: return ArmaOperand(arma::sqrt(arg_vals[0].mat));
 

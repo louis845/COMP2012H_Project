@@ -22,7 +22,7 @@ public:
     const Info& parse(int engine_type=0);      // 0 for auto-detection, 1 for R forced, 2 for Armadillo forced
     ExprAst* get_root();
     void print() const;
-    std::string getAsciiMath() const { return root->genAsciiMath(); }
+    std::string getAsciiMath() const;
     void reset_input(const std::string& input);
     
 private:
@@ -37,7 +37,8 @@ private:
     ExprAst* parsePrimary(bool inside_textbar);
     ExprAst* parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_textbar);
     ExprAst* parseExpr(bool inside_textbar=false);
-
+    
+    void evalDecomp();          // decomposition will return several parallel matrices
     void evalR();
     void eval();
     void printAst(ExprAst* root) const;

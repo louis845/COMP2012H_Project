@@ -14,7 +14,7 @@ std::unordered_map<std::string, int> Token::tok_map =
     {"arctan", 226}, {"exp", 227}, {"log", 228}, {"ln", 229}, {"det", 230}, {"rank", 231}, {"ran", 232}, {"col", 232}, {"orth", 232},
     {"ker", 234}, {"null", 234}, {"mod", 235}, {"gcd", 236}, {"lcm", 237}, {"min", 238}, {"max", 239}, {"trace", 240}, {"tr", 240}, 
     {"rref", 241}, {"norm", 242}, {"abs", 243}, {"sqrt", 244}, {"root", 245}, {"inv", 247}, {"pinv", 248}, {"eigen", 249}, {"schur", 250},
-    {"svd", 251}, {"solve", 252}, {"qr", 253},
+    {"svd", 251}, {"solve", 252}, {"qr", 253}, {"charpoly", 255},
     {"e", 300}, {"pi", 301}, {"i", 302}, {"I", 303},
     {"alpha", 400}, {"beta", 401}, {"theta", 402}, {"lambda", 403}, {"mu", 404}, {"phi", 405}, {"varphi", 406}, {"omega", 407}
 };
@@ -22,7 +22,7 @@ std::unordered_map<std::string, int> Token::tok_map =
 
 std::regex Lexer::WHITESPACE_RE = std::regex((R"(\s+)"));
 std::regex Lexer::DELIM_RE = std::regex((R"(^\s*,)"));
-std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr))"));
+std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr|charpoly))"));
 std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|((\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?)))"));
 std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z]))"));
 
@@ -36,7 +36,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
 {
     while (input.length() > 0)
     {
-        if (regex_match(input, WHITESPACE_RE))   return nullptr;
+        if (regex_match(input, WHITESPACE_RE))   return new TokErr(TokName::TOKEOF, "");
 
         // each parser function will handle exceptions and return TokErr
         // if no pattern matches, the Token* returned will be a nullptr
@@ -61,7 +61,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
         }
         return temp;
     }
-    return nullptr;   
+    return new TokErr(TokName::TOKEOF, "");   
 }
 
 

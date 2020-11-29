@@ -374,8 +374,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
         ExprAst* rhs = nullptr;
         try
         {
-            if (cur_tok->get_name() == TokName::PLUS)   getNextToken();
-            else if (cur_tok->get_name() == TokName::MINUS)
+            if (cur_tok->get_name() == TokName::MINUS)         // unitary minus
             {
                 FunctionExprAst* neg_rhs = new FunctionExprAst(TokName::NEG, cur_tok->get_raw_value());
                 getNextToken();
@@ -387,6 +386,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
             }
             else
             {
+                if (cur_tok->get_name() == TokName::PLUS)   getNextToken();     // unitary plus
                 rhs = parsePrimary(inside_textbar);
                 if (!rhs)   throw std::invalid_argument("Incomplete expression, missing right hand side operand.");
             }
@@ -423,6 +423,20 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
 //      ::= ( '+' | '-' )? primaryexpr binoprhs
 ExprAst* Parser::parseExpr(bool inside_textbar)
 {
+    if (cur_tok == nullptr) return nullptr;
+    switch (cur_tok->get_name())
+    {
+        // decomposition needs special handling
+        case TokName::SVD: case TokName:: SCHUR: case TokName::QR: case TokName::EIGEN:
+        {
+            FunctionExprAst* decomp = new FunctionExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
+            ExprAst* expr = parsePrimary(inside_textbar);
+            decomp->args.emplace_back(expr);
+            return decomp;          // all remaining expression will be dumped
+        }
+        default:    break;
+    }
+
     if (cur_tok->get_name() == TokName::PLUS)   getNextToken();     // uniary positive operator
     else if (cur_tok->get_name() == TokName::MINUS)                 // uniary negative operator
     {
@@ -518,6 +532,7 @@ const Info& Parser::parse(int engine_type)
     {
         delete root;
         root = parseExpr();
+        if (root == nullptr)    return res;
         res.interpreted_input = getAsciiMath();
     }
     catch (const std::invalid_argument& err)
@@ -525,12 +540,14 @@ const Info& Parser::parse(int engine_type)
         string err_msg = "Error: parsing failed, " + string(err.what());
         res.err = new std::invalid_argument(err_msg.c_str());
         // delete root;
+        res.success = false;
         return res;
     }
     catch (...)
     {
         res.err = new std::runtime_error("Fatal error: unexpected exception thrown during parsing");
         // delete root;
+        res.success = false;
         return res;
     }
 
@@ -551,11 +568,169 @@ const Info& Parser::parse(int engine_type)
 }
 
 
+void Parser::evalR()
+{
+    if (var_table.size() > 1)
+    {  
+        res.var_exists = true;
+        res.success = false;
+        res.warning += "Warning: more than one variable with unknown value in the expression.\n";
+        res.warning += "You may want to assign values to some of the variables.\n";
+        return;
+    }
+
+    try
+    {
+        ROperand result = root->evalR(res);
+        res.eval_result = result.genTex();
+        return;
+    }
+    catch (const std::invalid_argument& err)
+    {
+        res.success = false;
+        string err_msg = "Error: evaluation failed, " + string(err.what());
+        res.err = new std::invalid_argument(err_msg.c_str());
+        return;
+    }
+    catch (...)
+    {
+        res.success = false;
+        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        return;
+    }
+
+    /*        only for debugging or console output
+    if (result.type == ROperand::Type::NOR) cout << result.value;
+    else
+    {
+        cout << "[";
+        for (auto row : result.mat)
+        {
+            cout << "[";
+            for (auto col : row)
+                cout << col << ", ";
+            cout << "]"; 
+        }
+        cout << "]";
+    }
+    */
+}
+
+
+void Parser::eval()
+{
+    if (var_table.size() > 0)
+    {
+        res.var_exists = true;
+        res.success = false;
+        res.err = new std::invalid_argument("Warning: variables with unknown values are not supported in Armadillo.\n");
+        res.warning += "You may want to assign values to the variables.\n";
+        return;
+    }
+
+    try
+    {
+        if (typeid(*root) == typeid(FunctionExprAst))
+        {
+            FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(root);
+            switch (temp->op)
+            {
+                case TokName::QR: case TokName::EIGEN: case TokName::SCHUR: case TokName::SVD:
+                    evalDecomp();
+                    return;
+                default: break;
+            }
+        }
+
+        ArmaOperand result = root->eval();
+        // if (result.type == ArmaOperand::Type::NOR)  cout << result.value;
+        // else if (result.type == ArmaOperand::Type::MAT) cout << result.mat;
+        // else cout << "(" << result.value << ")" << "I";
+        res.eval_result = result.genTex();
+        return;
+    }
+    catch (const std::logic_error& err)     // both evaluator and Armadillo's exception will be caught here
+    {
+        string err_msg = "Error: evaluation failed, " + string(err.what());
+        res.err = new std::invalid_argument(err_msg.c_str());
+        res.success = false;
+        return;
+    }
+    catch (const std::runtime_error& err)   // part of Armadillo's exception and some fatal error
+    {
+        string err_msg = "Fatal error: " + string(err.what());
+        res.err = new std::runtime_error(err_msg.c_str());
+        res.success = false;
+        return;
+    }
+    catch (...)
+    {
+        res.success = false;
+        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        return;
+    }
+}
+
+
+void Parser::evalDecomp()
+{
+    FunctionExprAst* func = dynamic_cast<FunctionExprAst*>(root);
+    ArmaOperand arg = func->args[0]->eval();
+    if (arg.type != ArmaOperand::Type::MAT)
+    {
+        res.success = false;
+        throw std::logic_error("the operand of " + func->raw + " decomposition should be a matrix");
+    }
+
+    if (func->op == TokName::EIGEN)
+    {
+        arma::cx_mat eigvec;
+        arma::cx_vec eigval;
+        arma::eig_gen(eigval, eigvec, arg.mat);
+        res.eval_result = "eigenvalues: " + ArmaOperand(arma::cx_mat(eigval)).genTex() 
+                            + R"( \\ eigenvectors: )" + ArmaOperand(eigvec).genTex();
+        return;
+    }
+
+    if (func->op == TokName::SCHUR)
+    {
+        arma::cx_mat U, S;
+        arma::schur(U, S, arg.mat);
+        res.eval_result = R"(Schur decomposition: \\ )";
+        res.eval_result += arg.genTex() + " = " + ArmaOperand(U).genTex() + ArmaOperand(S).genTex() 
+                            + ArmaOperand(U).genTex() + R"(^*)";
+        return;
+    }
+
+    if (func->op == TokName::QR)
+    {
+        arma::cx_mat Q, R;
+        arma::qr(Q, R, arg.mat);
+        res.eval_result = R"(QR decomposition: \\ )";
+        res.eval_result += arg.genTex() + " = " + ArmaOperand(Q).genTex() + ArmaOperand(R).genTex();
+        return;
+    }
+
+    if (func->op == TokName::SVD)
+    {
+        arma::cx_mat U, V;
+        arma::vec s;
+        arma::svd(U, s, V, arg.mat);
+        arma::cx_mat S(arma::size(arg.mat), arma::fill::zeros);
+        s.resize(arma::size(arg.mat.diag()));
+        S.diag() = arma::cx_vec(s, arma::vec(arma::size(s), arma::fill::zeros));
+        res.eval_result = R"(SVD: \\ )";
+        res.eval_result += arg.genTex() + " = " + ArmaOperand(U).genTex() + ArmaOperand(S).genTex() 
+                            + ArmaOperand(V).genTex() + R"(^T)";
+        return;
+    }
+}
+
+
 // do pre-order traversal on the AST and print the infix notation of the expression
-// partially done for now
+// only used in pure CLI mode
 void Parser::printAst(ExprAst* root) const
 {
-    // TODO: need to implement evaluator
     if (!root)  return;
     if (typeid(*root) == typeid(BinaryExprAst))
     {
@@ -639,94 +814,8 @@ void Parser::print() const
     printAst(root);
 }
 
-
-void Parser::evalR()
+string Parser::getAsciiMath() const
 {
-    if (var_table.size() > 1)
-    {  
-        res.var_exists = true;
-        res.success = false;
-        res.warning += "Warning: more than one variable with unknown value in the expression.\n";
-        res.warning += "You may want to assign values to some of the variables.\n";
-        return;
-    }
-
-    try
-    {
-        ROperand result = root->evalR(res);
-        res.eval_result = result.genTex();
-        return;
-    }
-    catch (const std::invalid_argument& err)
-    {
-        res.success = false;
-        string err_msg = "Error: evaluation failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
-        return;
-    }
-    catch (...)
-    {
-        res.success = false;
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
-        return;
-    }
-
-    /*        only for debugging or console output
-    if (result.type == ROperand::Type::NOR) cout << result.value;
-    else
-    {
-        cout << "[";
-        for (auto row : result.mat)
-        {
-            cout << "[";
-            for (auto col : row)
-                cout << col << ", ";
-            cout << "]"; 
-        }
-        cout << "]";
-    }
-    */
-}
-
-
-void Parser::eval()
-{
-    if (var_table.size() > 0)
-    {
-        res.var_exists = true;
-        res.success = false;
-        res.err = new std::invalid_argument("Warning: variables with unknown values are not supported in Armadillo.\n");
-        res.warning += "You may want to assign values to the variables.\n";
-        return;
-    }
-
-    try
-    {
-        ArmaOperand result = root->eval();
-        // if (result.type == ArmaOperand::Type::NOR)  cout << result.value;
-        // else if (result.type == ArmaOperand::Type::MAT) cout << result.mat;
-        // else cout << "(" << result.value << ")" << "I";
-        res.eval_result = result.genTex();
-        return;
-    }
-    catch (const std::invalid_argument& err)
-    {
-        string err_msg = "Error: evaluation failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
-        res.success = false;
-        return;
-    }
-    catch (const std::runtime_error& err)
-    {
-        string err_msg = "Fatal error: " + string(err.what());
-        res.err = new std::runtime_error(err_msg.c_str());
-        res.success = false;
-        return;
-    }
-    catch (...)
-    {
-        res.success = false;
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
-        return;
-    }
+    if (root == nullptr)    return "";
+    return root->genAsciiMath();
 }
