@@ -14,7 +14,7 @@ public:
 
     enum class TokName
     {
-        COMMA = 100, // DELIM
+        COMMA = 100, ENDL,  // DELIM
         AST = 200, CDOT, CROSS, DIV, FRAC, PERCENT, PLUS, MINUS,
         SUP, SUB, TEXTBAR, LP, RP, LSB, RSB, LCB, RCB, EQUAL, 
         SIN, COS, TAN, SEC, CSC, COT, ARCSIN, ARCCOS, ARCTAN, EXP, LOG, LN,
