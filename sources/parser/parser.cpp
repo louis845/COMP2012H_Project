@@ -297,13 +297,15 @@ ExprAst* Parser::parseId()
             else 
             {
                 tokenizer.reset_input(backup);      // use time traval to resolve undetermined parsing state
-                getNextToken();
+                delete cur_tok;
+                cur_tok = new TokOp("(");
             }
         }
         catch (...)
         {               
             tokenizer.reset_input(backup);
-            getNextToken();
+            delete cur_tok;
+            cur_tok = new TokOp("(");
         }
     }
 
