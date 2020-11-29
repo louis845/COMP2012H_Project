@@ -178,20 +178,18 @@ binop       ::= + | - | * | ** | xx | // | / | ^ | %
 
 numberexpr      ::= number
 
-parenexpr       ::= '(' expression ( ',' expression )* ')'
-                ::= '[' expression ( ',' expression )* ']'
-                ::= '{' expression ( ',' expression )* '}'
+parenexpr       ::= '(' expression ')'
+                ::= '|' expression '|'
 
-absexpr         ::= '|' expression '|'
+bracketexpr     ::= '[' expression ( ',' expression )* ']'
 
 identifierexpr  ::= variable
                 ::= function ( number | variable )
                 ::= function '(' expression ( ',' expression )* ')'
                 ::= function matrixexpr
 
-matrixexpr      ::= '[' parenexpr ( ',' parenexpr )* ']'
-                ::= '(' parenexpr ( ',' parenexpr )* ')'
-                ::= '{' parenexpr ( ',' parenexpr )* '}'
+matrixexpr      ::= '[' bracketexpr ( ',' bracketexpr )* ']'
+                ::= '(' bracketexpr ( ',' bracketexpr )* ')' 
 
 primaryexpr ::= numberexpr
             ::= parenexpr
