@@ -19,6 +19,7 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
         parser.print();
         cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
         cout << "computation result: " << res.eval_result << endl << endl;
+        cout << "matrix num: " << res.mat_size.size() << endl << endl;
     }
     else
     {
@@ -36,11 +37,13 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
 
 int main()
 {
-    int engine = 2;
+    int engine = 1;
 
-    string debug_1{"[[3, 4], [5, 6]] + ([3, 4], [5, 6]) + sin(([3, 4], [5, 6])) + cos([[3, 4], [5, 6]]) + tan[[3, 4], [5, 6]]"};
+    string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
-    string debug_2{"({3, 4}, [5, 6])"};
+    string debug_2{"[[3, 4], [5, 6]] + ([3, 4], [5, 6]) + sin(([3, 4], [5, 6])) + cos([[3, 4], [5, 6]]) + tan[[3, 4], [5, 6]]"};
+
+    string debug_3{"[[3, 4], [5, 6]]"};
 
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 
@@ -58,6 +61,7 @@ int main()
 
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
+    test_parser(debug_3, "debug 3", engine);
 
     test_parser(test_1, "test 1", engine);
     test_parser(test_2, "test 2", engine);
@@ -98,6 +102,14 @@ int main()
 
     string arma_test_8{"solve([[1, 2i, 6], [3e, 4, 9pi]])"};
 
+    string decomp_1{"schur[[3, 4], [5, 6]]"};
+
+    string decomp_2{"qr[[3, 4], [5, 6]]"};
+
+    string decomp_3{"svd[[3, 4], [5, 6]]"};
+
+    string decomp_4{"eigen[[3, 4], [5, 6]]"};
+
     test_parser(arma_test_1, "arma test 1", engine);
     test_parser(arma_test_2, "arma test 2", engine);
     test_parser(arma_test_3, "arma test 3", engine);
@@ -106,6 +118,11 @@ int main()
     test_parser(arma_test_6, "arma test 6", engine);
     test_parser(arma_test_7, "arma test 7", engine);
     test_parser(arma_test_8, "arma test 8", engine);
+
+    test_parser(decomp_1, "decomposition test 1", engine);
+    test_parser(decomp_2, "decomposition test 2", engine);
+    test_parser(decomp_3, "decomposition test 3", engine);
+    test_parser(decomp_4, "decomposition test 4", engine);
 
     cin.get(); cin.get();
 }

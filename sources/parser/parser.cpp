@@ -297,13 +297,15 @@ ExprAst* Parser::parseId()
             else 
             {
                 tokenizer.reset_input(backup);      // use time traval to resolve undetermined parsing state
-                getNextToken();
+                delete cur_tok;
+                cur_tok = new TokOp("(");
             }
         }
         catch (...)
         {               
             tokenizer.reset_input(backup);
-            getNextToken();
+            delete cur_tok;
+            cur_tok = new TokOp("(");
         }
     }
 
@@ -468,6 +470,7 @@ ExprAst* Parser::parseExpr(bool inside_textbar)
         case TokName::SVD: case TokName:: SCHUR: case TokName::QR: case TokName::EIGEN:
         {
             FunctionExprAst* decomp = new FunctionExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
+            getNextToken();
             ExprAst* expr = parsePrimary(inside_textbar);
             decomp->args.emplace_back(expr);
             return decomp;          // all remaining expression will be dumped
@@ -624,6 +627,8 @@ void Parser::evalR()
     try
     {
         ROperand result = root->evalR(res);
+        if (typeid(*root) == typeid(MatrixExprAst)) 
+            res.addMat(result, TokName::NA);
         res.eval_result = result.genTex();
         return;
     }
@@ -738,7 +743,7 @@ void Parser::evalDecomp()
     {
         arma::cx_mat U, S;
         arma::schur(U, S, arg.mat);
-        res.eval_result = R"(Schur decomposition: \\ )";
+        res.eval_result = R"(Schur~decomposition: \\ )";
         res.eval_result += arg.genTex() + " = " + ArmaOperand(U).genTex() + ArmaOperand(S).genTex() 
                             + ArmaOperand(U).genTex() + R"(^*)";
         return;
@@ -748,7 +753,7 @@ void Parser::evalDecomp()
     {
         arma::cx_mat Q, R;
         arma::qr(Q, R, arg.mat);
-        res.eval_result = R"(QR decomposition: \\ )";
+        res.eval_result = R"(QR~decomposition: \\ )";
         res.eval_result += arg.genTex() + " = " + ArmaOperand(Q).genTex() + ArmaOperand(R).genTex();
         return;
     }
