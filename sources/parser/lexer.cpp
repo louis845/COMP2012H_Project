@@ -36,7 +36,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
 {
     while (input.length() > 0)
     {
-        if (regex_match(input, WHITESPACE_RE))   return nullptr;
+        if (regex_match(input, WHITESPACE_RE))   return new TokErr(TokName::TOKEOF, "");
 
         // each parser function will handle exceptions and return TokErr
         // if no pattern matches, the Token* returned will be a nullptr
@@ -61,7 +61,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
         }
         return temp;
     }
-    return nullptr;   
+    return new TokErr(TokName::TOKEOF, "");   
 }
 
 

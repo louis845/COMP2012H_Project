@@ -36,7 +36,9 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
 
 int main()
 {
-    int engine = 0;
+    int engine = 2;
+
+    string debug{"[[3,4], [5, 6]"};
 
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 
@@ -52,13 +54,14 @@ int main()
 
     string greek{"sin(alpha) - cos(-beta) / sqrt(omega) * root(phi, varphi)"};
 
-    test_parser(test_1, "test 1");
-    test_parser(test_2, "test 2");
-    test_parser(test_3, "test 3");
-    test_parser(poly, "poly");
-    test_parser(matrix, "matrix");
-    test_parser(func, "func");
-    test_parser(greek, "greek");
+    test_parser(debug, "debug", engine);
+    test_parser(test_1, "test 1", engine);
+    test_parser(test_2, "test 2", engine);
+    test_parser(test_3, "test 3", engine);
+    test_parser(poly, "poly", engine);
+    test_parser(matrix, "matrix", engine);
+    test_parser(func, "func", engine);
+    test_parser(greek, "greek", engine);
 
     // ------------------------- test evaluator for R below ------------------------
 

@@ -374,8 +374,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
         ExprAst* rhs = nullptr;
         try
         {
-            if (cur_tok->get_name() == TokName::PLUS)   getNextToken();
-            else if (cur_tok->get_name() == TokName::MINUS)
+            if (cur_tok->get_name() == TokName::MINUS)         // unitary minus
             {
                 FunctionExprAst* neg_rhs = new FunctionExprAst(TokName::NEG, cur_tok->get_raw_value());
                 getNextToken();
@@ -387,6 +386,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
             }
             else
             {
+                if (cur_tok->get_name() == TokName::PLUS)   getNextToken();     // unitary plus
                 rhs = parsePrimary(inside_textbar);
                 if (!rhs)   throw std::invalid_argument("Incomplete expression, missing right hand side operand.");
             }
@@ -423,6 +423,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
 //      ::= ( '+' | '-' )? primaryexpr binoprhs
 ExprAst* Parser::parseExpr(bool inside_textbar)
 {
+    if (cur_tok == nullptr) return nullptr;
     switch (cur_tok->get_name())
     {
         // decomposition needs special handling
@@ -531,6 +532,7 @@ const Info& Parser::parse(int engine_type)
     {
         delete root;
         root = parseExpr();
+        if (root == nullptr)    return res;
         res.interpreted_input = getAsciiMath();
     }
     catch (const std::invalid_argument& err)
@@ -538,12 +540,14 @@ const Info& Parser::parse(int engine_type)
         string err_msg = "Error: parsing failed, " + string(err.what());
         res.err = new std::invalid_argument(err_msg.c_str());
         // delete root;
+        res.success = false;
         return res;
     }
     catch (...)
     {
         res.err = new std::runtime_error("Fatal error: unexpected exception thrown during parsing");
         // delete root;
+        res.success = false;
         return res;
     }
 
@@ -808,4 +812,10 @@ void Parser::printAst(ExprAst* root) const
 void Parser::print() const
 {
     printAst(root);
+}
+
+string Parser::getAsciiMath() const
+{
+    if (root == nullptr)    return "";
+    return root->genAsciiMath();
 }
