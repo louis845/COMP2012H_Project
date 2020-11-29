@@ -155,6 +155,7 @@ void solution_widget::handle_ascii_update(){
         setNewSteps(steps);
 
         display_preview("`"+i.interpreted_input+"`");
+        display_answer(R"(\begin{align*} )" + i.eval_result + R"( \end{align*})");
     }
 }
 
@@ -213,9 +214,9 @@ void solution_widget::display_answer(string answer){
 }
 
 void solution_widget::display_preview(string preview){
-    QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}, asciimath: {delimiters: [['`','`']]} };</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
+    QString qs=R"(<html><head><script>MathJax = {loader: { load: ['input/asciimath', 'input/tex', 'output/svg', 'ui/menu'] }, tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}, svg: {fontCache: 'global'}, asciimath: {delimiters: [['`','`']]} };</script><script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js"></script></head><body>)";
     qs=qs+QString::fromStdString(preview);
-    qs=qs+"\n</body></html>";
+    qs=qs+R"(</body></html>)";
     intepretation_view->setHtml(qs);
     qDebug().noquote();
     qDebug()<<qs;
