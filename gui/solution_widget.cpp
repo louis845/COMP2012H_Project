@@ -35,6 +35,8 @@ void solution_widget::init_window(){
 
     connect(ui->next_btn,&QPushButton::pressed,this,&solution_widget::navigateNext);
 
+    connect(ui->next_btn2,&QPushButton::pressed,this,&solution_widget::handle_ascii_update);
+
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
     scrollarea_layout = new QVBoxLayout(this);
