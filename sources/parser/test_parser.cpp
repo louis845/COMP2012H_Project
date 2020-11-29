@@ -98,6 +98,14 @@ int main()
 
     string arma_test_8{"solve([[1, 2i, 6], [3e, 4, 9pi]])"};
 
+    string decomp_1{"schur[[3, 4], [5, 6]]"};
+
+    string decomp_2{"qr[[3, 4], [5, 6]]"};
+
+    string decomp_3{"svd[[3, 4], [5, 6]]"};
+
+    string decomp_4{"eigen[[3, 4], [5, 6]]"};
+
     test_parser(arma_test_1, "arma test 1", engine);
     test_parser(arma_test_2, "arma test 2", engine);
     test_parser(arma_test_3, "arma test 3", engine);
@@ -106,6 +114,11 @@ int main()
     test_parser(arma_test_6, "arma test 6", engine);
     test_parser(arma_test_7, "arma test 7", engine);
     test_parser(arma_test_8, "arma test 8", engine);
+
+    test_parser(decomp_1, "decomposition test 1", engine);
+    test_parser(decomp_2, "decomposition test 2", engine);
+    test_parser(decomp_3, "decomposition test 3", engine);
+    test_parser(decomp_4, "decomposition test 4", engine);
 
     cin.get(); cin.get();
 }

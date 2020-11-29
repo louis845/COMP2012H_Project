@@ -470,6 +470,7 @@ ExprAst* Parser::parseExpr(bool inside_textbar)
         case TokName::SVD: case TokName:: SCHUR: case TokName::QR: case TokName::EIGEN:
         {
             FunctionExprAst* decomp = new FunctionExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
+            getNextToken();
             ExprAst* expr = parsePrimary(inside_textbar);
             decomp->args.emplace_back(expr);
             return decomp;          // all remaining expression will be dumped
@@ -740,7 +741,7 @@ void Parser::evalDecomp()
     {
         arma::cx_mat U, S;
         arma::schur(U, S, arg.mat);
-        res.eval_result = R"(Schur decomposition: \\ )";
+        res.eval_result = R"(Schur~decomposition: \\ )";
         res.eval_result += arg.genTex() + " = " + ArmaOperand(U).genTex() + ArmaOperand(S).genTex() 
                             + ArmaOperand(U).genTex() + R"(^*)";
         return;
@@ -750,7 +751,7 @@ void Parser::evalDecomp()
     {
         arma::cx_mat Q, R;
         arma::qr(Q, R, arg.mat);
-        res.eval_result = R"(QR decomposition: \\ )";
+        res.eval_result = R"(QR~decomposition: \\ )";
         res.eval_result += arg.genTex() + " = " + ArmaOperand(Q).genTex() + ArmaOperand(R).genTex();
         return;
     }
