@@ -8,3 +8,4 @@
 * void invert(R** mat, int rows, int cols, StepsHistory* &steps);
 *
 * Give matrix as input, with the rows and cols (of the matrix). Allocates a new StepsHistory and puts it into the pointer.
+## Try using GUI - just GIT pull then run the gui QT program
