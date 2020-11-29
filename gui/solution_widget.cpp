@@ -85,11 +85,11 @@ void solution_widget::handle_ascii_update(){
     string std_text=text.toStdString();
     parser.reset_input(std_text);
     const Info& i=parser.parse();
-    qDebug()<<i.engine_used;
-    qDebug()<<i.success;
-    qDebug()<<QString::fromStdString(i.interpreted_input);
-    qDebug()<<i.mat_size.size();
-    qDebug()<<i.parsed_mat.size();
+    qDebug()<<"engine used: "<<i.engine_used;
+    qDebug()<<"success: "<<i.success;
+    qDebug()<<"intepreted: "<<QString::fromStdString(i.interpreted_input);
+    qDebug()<<"mat_size.size(): "<<i.mat_size.size();
+    qDebug()<<"parsed_mat.size(): "<<i.parsed_mat.size();
     qDebug()<<QString::fromStdString(i.eval_result);
     qDebug()<<"----------------------------------------------------\n";
 }
