@@ -187,11 +187,20 @@ const Ring* Polynomial::minusImpl(const Ring* r) const{
     }
 
     RF* minus_result=new RF[len1];
-    for(int i=0;i<len2;++i){
-        minus_result[i]=add1[i]-add2[i];
-    }
-    for(int i=len2;i<len1;++i){
-        minus_result[i]=add1[i];
+    if(length>=other->length){
+        for(int i=0;i<len2;++i){
+            minus_result[i]=add1[i]-add2[i];
+        }
+        for(int i=len2;i<len1;++i){
+            minus_result[i]=add1[i];
+        }
+    }else{
+        for(int i=0;i<len2;++i){
+            minus_result[i]=add2[i]-add1[i];
+        }
+        for(int i=len2;i<len1;++i){
+            minus_result[i]=-add1[i];
+        }
     }
 
     const Polynomial* newp=polynomial_no_check(minus_result,len1);
