@@ -221,7 +221,7 @@ string Fraction::to_signed_latex() const{
     if(under.is_one()){
         return over.to_signed_latex();
     }
-    return "\\frac{"+over.to_latex()+"}{"+under.to_latex()+"}";
+    return "+\\frac{"+over.to_latex()+"}{"+under.to_latex()+"}";
 }
 
 bool Fraction::needs_bracket() const{

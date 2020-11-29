@@ -29,6 +29,7 @@ public:
     void paintEvent(QPaintEvent *event);
     void method_dealer(int choice);
     void display_answer(string answer);
+    void display_preview(string preview);
     void captureMathExpression();
 
     void handle_plain_update();
@@ -55,6 +56,8 @@ private:
     StepsHistory *steps;
 
     begin_widget *input_window;
+
+    int selected_choice;
 signals:
     void finish_sig();
     void next_problem_sig();

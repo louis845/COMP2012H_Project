@@ -445,7 +445,9 @@ string Polynomial::to_latex() const{
                 str<<PY_CHAR;
             }else if(deg>1){
                 str<<PY_CHAR;
+                str<<"^{";
                 str<<deg;
+                str<<"}";
             }
         }
     }
@@ -473,6 +475,7 @@ string Polynomial::to_signed_latex() const{
                 str<<PY_CHAR;
             }else if(deg>1){
                 str<<PY_CHAR;
+                str<<"^";
                 str<<deg;
             }
         }
