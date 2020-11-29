@@ -22,6 +22,7 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("CINF");
     init_window();
+    selected_choice=0;
 }
 
 void solution_widget::init_window(){
@@ -42,25 +43,22 @@ void solution_widget::init_window(){
     scrollarea_layout = new QVBoxLayout(this);
 
     QMenu * method_menu = new QMenu(this);
-    QAction * method1_act = new QAction("method1",this);
-    QAction * method2_act = new QAction("method2",this);
-    QAction * method3_act = new QAction("method3",this);
-    method_menu->addAction(method1_act);
-    method_menu->addAction(method2_act);
-    method_menu->addAction(method3_act);
+    QString list[4]={
+        "RREF",
+        "RCEF",
+        "Solve equation",
+        "Inverse matrix"
+    };
+    for(int i=0;i<4;i++){
+        QAction *menu_action=new QAction(list[i],this);
+        method_menu->addAction(menu_action);
+        connect(menu_action,&QAction::triggered,[=](){
+            ui->methods_btn->setText(menu_action->text());
+            method_dealer(i);
+        });
+    }
+
     ui->methods_btn->setMenu(method_menu);
-
-    connect(method1_act,&QAction::triggered,[=](){
-        method_dealer(0);
-    });
-
-    connect(method2_act,&QAction::triggered,[=](){
-        method_dealer(1);
-    });
-
-    connect(method3_act,&QAction::triggered,[=](){
-        method_dealer(2);
-    });
 
     connect(ui->finish_btn,&QPushButton::clicked,[=](){emit finish_sig();});
 
@@ -68,6 +66,9 @@ void solution_widget::init_window(){
 
     solution_view=new QWebEngineView{ui->scrollArea};
     ui->scrollArea->setWidget(solution_view);
+
+    intepretation_view=new QWebEngineView{ui->scrollAreaIntepretation};
+    ui->scrollAreaIntepretation->setWidget(intepretation_view);
 
     steps=new StepsHistory;
     steps->add_step(new StepText{"<h1>This is just a test</h1>\n"
@@ -78,6 +79,21 @@ void solution_widget::init_window(){
     input_window=new begin_widget{username,password};
     input_window->setVisible(false);
     input_window->parent_window=this;
+}
+
+void write_matrix_to_html_latex(ostringstream& os, R** matrix, int rows, int cols){
+    os<<"\\begin{pmatrix}\n";
+    for(int i=0;i<rows;i++){
+        for(int j=0;j<cols;j++){
+            os<<matrix[i][j].to_latex();
+            if(j==cols-1){
+                os<<" \\\\\n";
+            }else{
+                os<<" & ";
+            }
+        }
+    }
+    os<<"\\end{pmatrix}\n";
 }
 
 void solution_widget::handle_ascii_update(){
@@ -92,6 +108,54 @@ void solution_widget::handle_ascii_update(){
     qDebug()<<"parsed_mat.size(): "<<i.parsed_mat.size();
     qDebug()<<QString::fromStdString(i.eval_result);
     qDebug()<<"----------------------------------------------------\n";
+
+    if(i.engine_used==1){
+        if(i.mat_size.size()>0){
+
+            const std::pair<int,int> &pr = i.mat_size.at(0);
+            R** matrix=i.parsed_mat.at(0).second;
+            TokNum::TokName t=i.parsed_mat.at(0).first;
+            qDebug()<<static_cast<int>(t);
+
+            ostringstream os;
+            os<<"$$";
+            const int rows=pr.first;
+            const int cols=pr.second;
+            write_matrix_to_html_latex(os, matrix,rows,cols);
+            os<<"$$";
+
+            display_preview(os.str());
+
+            StepsHistory *steps=nullptr;
+            switch(selected_choice){
+            case 0:{
+                LinearOperationsFunc::row_reduce(matrix, rows, cols, steps);
+                break;
+            }
+            case 1:{
+                LinearOperationsFunc::col_reduce(matrix, rows, cols, steps);
+                break;
+            }
+            case 2:{
+                LinearOperationsFunc::solve(matrix, rows, cols, steps);
+                break;
+            }
+            case 3:{
+                LinearOperationsFunc::invert(matrix, rows, cols, steps);
+                break;
+            }
+            }
+            if(steps!=nullptr){
+                setNewSteps(steps);
+            }
+        }
+    }else if(i.engine_used==2){
+        StepsHistory *steps=new StepsHistory;
+        steps->add_step(new StepText{i.eval_result});
+        setNewSteps(steps);
+
+        display_preview("`"+i.interpreted_input+"`");
+    }
 }
 
 void solution_widget::handle_plain_update(){
@@ -136,73 +200,7 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
 }
 
 void solution_widget::method_dealer(int choice){
-    bool valid_answer = false;
-    QString answer;
-    QPixmap answer_png;
-    switch (choice) {
-        case 0:{
-            //call method1 func
-            valid_answer = true;
-            answer = "$";
-            this->display_answer(answer.toStdString());
-
-            R **matrix=new R*[2];
-            for(int i=0;i<2;i++){
-                matrix[i]=new R[3];
-                for(int j=0;j<3;j++){
-                    matrix[i][j]=R{new Long{i+j}};
-                }
-            }
-            StepsHistory* step;
-            LinearOperationsFunc::invert(matrix,2,3,step);
-            setNewSteps(step);
-            for(int i=0;i<2;i++){
-                delete[] matrix[i];
-            }
-            delete[]matrix;
-
-            break;
-        }
-        case 1:{
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_int_distribution<> dis(-999, 999);
-
-            R **matrix=new R*[4];
-            for(int i=0;i<4;i++){
-                matrix[i]=new R[5];
-                for(int j=0;j<5;j++){
-                    matrix[i][j]=R{new Long{dis(gen)}};
-                }
-            }
-            StepsHistory* step;
-            LinearOperationsFunc::solve(matrix,4,5,step);
-            setNewSteps(step);
-            for(int i=0;i<4;i++){
-                delete[] matrix[i];
-            }
-            delete[]matrix;
-            break;
-        }
-        case 2:
-            //call method3 func
-            break;
-        default:
-            break;
-    }
-
-    /*if (!valid_answer){
-       QMessageBox::critical(this,"Error","Invalid Implementation: Please check your input!");
-    }
-    else{
-        QLabel* new_step = new QLabel;
-        new_step->setPixmap(answer_png);
-        //qDebug()<<"hhhh";
-        new_step->setAlignment(Qt::AlignLeft);
-        scrollarea_layout->addWidget(new_step);
-        update();
-    }*/
-
+    selected_choice=choice;
 }
 
 void solution_widget::display_answer(string answer){
@@ -214,6 +212,15 @@ void solution_widget::display_answer(string answer){
     qDebug()<<qs;
 }
 
+void solution_widget::display_preview(string preview){
+    QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}, asciimath: {delimiters: [['`','`']]} };</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
+    qs=qs+QString::fromStdString(preview);
+    qs=qs+"\n</body></html>";
+    intepretation_view->setHtml(qs);
+    qDebug().noquote();
+    qDebug()<<qs;
+}
+
 void solution_widget::paintEvent(QPaintEvent *event)
 {
     //Q_UNUSED(event);
@@ -221,7 +228,6 @@ void solution_widget::paintEvent(QPaintEvent *event)
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::white);
     painter.drawRect(rect());
-
 }
 
 solution_widget::~solution_widget()

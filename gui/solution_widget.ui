@@ -150,7 +150,7 @@
     <item>
      <widget class="QPushButton" name="next_btn2">
       <property name="text">
-       <string>Next Problem</string>
+       <string>Compute</string>
       </property>
      </widget>
     </item>

@@ -42,26 +42,26 @@ CoupledOperations::~CoupledOperations(){
 }
 
 void CoupledOperations::row_add(int from, int to, const RF& mult) {
-    LinearOperations::row_add(from, to, mult);
     for(int col=0;col<couple_cols;++col){
         A(to,col) = A(from,col)*mult+A(to,col);
     }
+    LinearOperations::row_add(from, to, mult); //since super row_add records the matrix, we need to do operations on here first.
 }
 
 void CoupledOperations::row_swap(int i, int j) {
-    LinearOperations::row_swap(i, j);
     for(int col=0;col<couple_cols;++col){
         RF temp=A(i,col);
         A(i,col)=A(j,col);
         A(j,col)=temp;
     }
+    LinearOperations::row_swap(i, j); //same reason
 }
 
 void CoupledOperations::row_multiply(int row, const RF& mult) {
-    LinearOperations::row_multiply(row, mult);
     for(int col=0;col<couple_cols;++col){
         A(row,col) = A(row,col)*mult;
     }
+    LinearOperations::row_multiply(row, mult); //same reason
 }
 
 RF& CoupledOperations::A(const int& row, const int& col) const{

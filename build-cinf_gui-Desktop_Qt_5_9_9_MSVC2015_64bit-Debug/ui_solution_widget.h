@@ -147,7 +147,7 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(plain_tab), QApplication::translate("solution_widget", "Plain", Q_NULLPTR));
         tabWidget->setTabText(tabWidget->indexOf(ascii_tab), QApplication::translate("solution_widget", "Asciimath", Q_NULLPTR));
         scan_btn->setText(QApplication::translate("solution_widget", "Scan", Q_NULLPTR));
-        next_btn2->setText(QApplication::translate("solution_widget", "Next Problem", Q_NULLPTR));
+        next_btn2->setText(QApplication::translate("solution_widget", "Compute", Q_NULLPTR));
         finish_btn->setText(QApplication::translate("solution_widget", "Finished", Q_NULLPTR));
         methods_btn->setText(QApplication::translate("solution_widget", "Methods", Q_NULLPTR));
         previous_btn->setText(QApplication::translate("solution_widget", "Previous", Q_NULLPTR));
