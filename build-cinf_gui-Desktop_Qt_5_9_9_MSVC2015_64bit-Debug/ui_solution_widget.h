@@ -15,12 +15,11 @@
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
-#include <QtWidgets/QLabel>
+#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QTabWidget>
-#include <QtWidgets/QTextEdit>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -31,22 +30,24 @@ public:
     QScrollArea *scrollArea;
     QWidget *steps_widget;
     QWidget *left_widget;
-    QLabel *image_label;
     QTabWidget *tabWidget;
-    QWidget *latex_tab;
-    QTextEdit *latex_textedit;
+    QWidget *plain_tab;
+    QPlainTextEdit *plain_textedit;
     QWidget *ascii_tab;
-    QTextEdit *ascii_textedit;
+    QPlainTextEdit *ascii_textedit;
+    QScrollArea *scrollAreaIntepretation;
+    QWidget *scrollAreaWidgetContents;
+    QPushButton *scan_btn;
     QWidget *finish_btn_widget;
     QHBoxLayout *horizontalLayout_2;
-    QPushButton *next_btn;
+    QPushButton *next_btn2;
     QPushButton *finish_btn;
     QWidget *widget;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *methods_btn;
     QSpacerItem *horizontalSpacer;
     QPushButton *previous_btn;
-    QPushButton *next_btn_2;
+    QPushButton *next_btn;
 
     void setupUi(QWidget *solution_widget)
     {
@@ -65,36 +66,42 @@ public:
         scrollArea->setWidget(steps_widget);
         left_widget = new QWidget(solution_widget);
         left_widget->setObjectName(QStringLiteral("left_widget"));
-        left_widget->setGeometry(QRect(30, 20, 381, 531));
-        image_label = new QLabel(left_widget);
-        image_label->setObjectName(QStringLiteral("image_label"));
-        image_label->setGeometry(QRect(20, 12, 351, 191));
-        image_label->setMinimumSize(QSize(0, 0));
-        image_label->setMaximumSize(QSize(800, 800));
+        left_widget->setGeometry(QRect(30, 20, 381, 541));
         tabWidget = new QTabWidget(left_widget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
         tabWidget->setGeometry(QRect(10, 220, 361, 311));
-        latex_tab = new QWidget();
-        latex_tab->setObjectName(QStringLiteral("latex_tab"));
-        latex_textedit = new QTextEdit(latex_tab);
-        latex_textedit->setObjectName(QStringLiteral("latex_textedit"));
-        latex_textedit->setGeometry(QRect(10, 10, 331, 271));
-        tabWidget->addTab(latex_tab, QString());
+        plain_tab = new QWidget();
+        plain_tab->setObjectName(QStringLiteral("plain_tab"));
+        plain_textedit = new QPlainTextEdit(plain_tab);
+        plain_textedit->setObjectName(QStringLiteral("plain_textedit"));
+        plain_textedit->setGeometry(QRect(10, 10, 331, 271));
+        tabWidget->addTab(plain_tab, QString());
         ascii_tab = new QWidget();
         ascii_tab->setObjectName(QStringLiteral("ascii_tab"));
-        ascii_textedit = new QTextEdit(ascii_tab);
+        ascii_textedit = new QPlainTextEdit(ascii_tab);
         ascii_textedit->setObjectName(QStringLiteral("ascii_textedit"));
         ascii_textedit->setGeometry(QRect(10, 10, 331, 271));
         tabWidget->addTab(ascii_tab, QString());
+        scrollAreaIntepretation = new QScrollArea(left_widget);
+        scrollAreaIntepretation->setObjectName(QStringLiteral("scrollAreaIntepretation"));
+        scrollAreaIntepretation->setGeometry(QRect(20, 50, 331, 161));
+        scrollAreaIntepretation->setWidgetResizable(true);
+        scrollAreaWidgetContents = new QWidget();
+        scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 329, 159));
+        scrollAreaIntepretation->setWidget(scrollAreaWidgetContents);
+        scan_btn = new QPushButton(left_widget);
+        scan_btn->setObjectName(QStringLiteral("scan_btn"));
+        scan_btn->setGeometry(QRect(20, 10, 331, 23));
         finish_btn_widget = new QWidget(solution_widget);
         finish_btn_widget->setObjectName(QStringLiteral("finish_btn_widget"));
         finish_btn_widget->setGeometry(QRect(420, 520, 381, 41));
         horizontalLayout_2 = new QHBoxLayout(finish_btn_widget);
         horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        next_btn = new QPushButton(finish_btn_widget);
-        next_btn->setObjectName(QStringLiteral("next_btn"));
+        next_btn2 = new QPushButton(finish_btn_widget);
+        next_btn2->setObjectName(QStringLiteral("next_btn2"));
 
-        horizontalLayout_2->addWidget(next_btn);
+        horizontalLayout_2->addWidget(next_btn2);
 
         finish_btn = new QPushButton(finish_btn_widget);
         finish_btn->setObjectName(QStringLiteral("finish_btn"));
@@ -120,10 +127,10 @@ public:
 
         horizontalLayout_3->addWidget(previous_btn);
 
-        next_btn_2 = new QPushButton(widget);
-        next_btn_2->setObjectName(QStringLiteral("next_btn_2"));
+        next_btn = new QPushButton(widget);
+        next_btn->setObjectName(QStringLiteral("next_btn"));
 
-        horizontalLayout_3->addWidget(next_btn_2);
+        horizontalLayout_3->addWidget(next_btn);
 
 
         retranslateUi(solution_widget);
@@ -137,14 +144,14 @@ public:
     void retranslateUi(QWidget *solution_widget)
     {
         solution_widget->setWindowTitle(QApplication::translate("solution_widget", "Form", Q_NULLPTR));
-        image_label->setText(QApplication::translate("solution_widget", "Image_input", Q_NULLPTR));
-        tabWidget->setTabText(tabWidget->indexOf(latex_tab), QApplication::translate("solution_widget", "Latex", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(plain_tab), QApplication::translate("solution_widget", "Plain", Q_NULLPTR));
         tabWidget->setTabText(tabWidget->indexOf(ascii_tab), QApplication::translate("solution_widget", "Asciimath", Q_NULLPTR));
-        next_btn->setText(QApplication::translate("solution_widget", "Next Problem", Q_NULLPTR));
+        scan_btn->setText(QApplication::translate("solution_widget", "Scan", Q_NULLPTR));
+        next_btn2->setText(QApplication::translate("solution_widget", "Next Problem", Q_NULLPTR));
         finish_btn->setText(QApplication::translate("solution_widget", "Finished", Q_NULLPTR));
         methods_btn->setText(QApplication::translate("solution_widget", "Methods", Q_NULLPTR));
         previous_btn->setText(QApplication::translate("solution_widget", "Previous", Q_NULLPTR));
-        next_btn_2->setText(QApplication::translate("solution_widget", "Next", Q_NULLPTR));
+        next_btn->setText(QApplication::translate("solution_widget", "Next", Q_NULLPTR));
     } // retranslateUi
 
 };

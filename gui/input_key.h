@@ -22,6 +22,7 @@ private:
     Ui::input_key *ui;
     string user;
     string password;
+    void on_ok_button_clicked();
 
 signals:
     void user_input(string user,string password);

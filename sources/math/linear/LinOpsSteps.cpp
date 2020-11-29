@@ -78,7 +78,7 @@ void write_matrix_to_html_latex(ostringstream& os, RF** matrix, int rows, int co
     os<<"\\begin{pmatrix}\n";
     for(int i=0;i<rows;i++){
         for(int j=0;j<cols;j++){
-            os<<matrix[rows][cols].to_latex();
+            os<<matrix[i][j].to_latex();
             if(j==cols-1){
                 os<<" \\\\\n";
             }else{

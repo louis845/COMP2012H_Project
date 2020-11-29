@@ -1,6 +1,7 @@
 #include "tokens.h"
 #include <algorithm>
 #include <stdexcept>
+#include <cctype> //Possible header to use std::tolower?
 
 
 TokDelim::TokDelim(const std::string& value): Token(TokType::DELIM)

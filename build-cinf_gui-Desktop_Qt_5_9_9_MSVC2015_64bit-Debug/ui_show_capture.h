@@ -26,6 +26,7 @@ class Ui_show_capture
 public:
     QVBoxLayout *verticalLayout_2;
     QLabel *show_pic;
+    QPushButton *again;
     QPushButton *ok;
 
     void setupUi(QWidget *show_capture)
@@ -42,6 +43,11 @@ public:
 
         verticalLayout_2->addWidget(show_pic);
 
+        again = new QPushButton(show_capture);
+        again->setObjectName(QStringLiteral("again"));
+
+        verticalLayout_2->addWidget(again);
+
         ok = new QPushButton(show_capture);
         ok->setObjectName(QStringLiteral("ok"));
 
@@ -57,6 +63,7 @@ public:
     {
         show_capture->setWindowTitle(QApplication::translate("show_capture", "Form", Q_NULLPTR));
         show_pic->setText(QApplication::translate("show_capture", "<html><head/><body><p><br/></p></body></html>", Q_NULLPTR));
+        again->setText(QApplication::translate("show_capture", "Capture Again", Q_NULLPTR));
         ok->setText(QApplication::translate("show_capture", "OK", Q_NULLPTR));
     } // retranslateUi
 

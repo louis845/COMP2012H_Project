@@ -1,7 +1,21 @@
 # Parser
-1. If expression is of type double - use other packages
-2. If expression is integer type (or fraction or polynomial etc..), convert expression into RF**
-
+## Handle some 'strange' inputs
+Our program lets users modify the input if the input is undesired (for the user), therefore we have to 'manage' the bad inputs that might be typed in by the user. Maybe if an input is bad, just return the boolean value Info::success=false.
+### Strange input crashes GUI program directly, for example:
+ * Empty string - now crashes the program
+ * Syntax error in ascii math - e.g. "{", unclosed braces
+ * Syntax error - unexpected operations e.g. "3++4"
+ * Trying out "rref([[3,4],[5,6]])" crashes.
+ * Trying out "rref[[3,4],[5,6]]" crashes also.
+ * Etc.....
+### Other input
+ * Accept rounded braces input as matrix input - e.g. "((1,2,3),(4,5,6),(7,8,9))".
+ * Now rounded braces gives interpreted_input as empty string
+ * Parser accepts "sin([[3,4],[5,6]])", but not rref
+ * Should be able to retreive a single matrix in the std::vector. For example, a user wants to input a matrix
+ "[[3,4],[5,6]]" and then wants to choose the operation manually by clicking on a button. 
+ * Now "[[3,4],[5,6]]" gives engine_used=1, but Info::mat_size.size()=0.
+ * For OCR test example, a single matrix is scanned as "([1,2,3],[2,3,4])" by the API, but there are no R matrix stored.
 ## Create integer (long)
 <pre>
 R val=R{ new Long{value} };

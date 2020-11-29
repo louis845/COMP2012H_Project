@@ -50,11 +50,11 @@ void LinearOperations::row_add(int from, int to, const RF& mult) {
     }
     if(recording){
         string* console=new string[1]{row_col+to_string(to+1)+mult.to_coeff()+row_col+to_string(from+1)};
-        string* latex=new string[1]{row_col+"_{"+to_string(to+1)+"}"+mult.to_latex_coeff()+row_col+"_{"+to_string(from+1)+"}"};
+        string* latex=new string[1]{row_col+string{"_{"}+to_string(to+1)+"}"+mult.to_latex_coeff()+row_col+string{"_{"}+to_string(from+1)+"}"};
         recorder->capture_instance(console,latex,1);
     }else{
         recorded_ops_in_pause[record_index]=string{row_col+to_string(to+1)+mult.to_coeff()+row_col+to_string(from+1)};
-        recorded_latex_ops_in_pause[record_index]=string{row_col+"_{"+to_string(to+1)+"}"+mult.to_latex_coeff()+row_col+"_{"+to_string(from+1)+"}"};
+        recorded_latex_ops_in_pause[record_index]=string{row_col+string{"_{"}+to_string(to+1)+"}"+mult.to_latex_coeff()+row_col+string{"_{"}+to_string(from+1)+"}"};
         ++record_index;
     }
 }
@@ -67,11 +67,11 @@ void LinearOperations::row_swap(int i, int j) {
     }
     if(recording){
         string* console=new string[1]{row_col+to_string(i+1)+"<->"+row_col+to_string(j+1)};
-        string* latex=new string[1]{row_col+"_{"+to_string(i+1)+"} \\Leftrightarrow "+row_col+"_{"+to_string(j+1)+"}"};
+        string* latex=new string[1]{row_col+string{"_{"}+to_string(i+1)+"} \\Leftrightarrow "+string{row_col}+"_{"+to_string(j+1)+"}"};;
         recorder->capture_instance(console,latex,1);
     }else{
         recorded_ops_in_pause[record_index]=string{row_col+to_string(i+1)+"<->"+row_col+to_string(j+1)};
-        recorded_latex_ops_in_pause[record_index]=string{row_col+"_{"+to_string(i+1)+"} \\Leftrightarrow "+row_col+"_{"+to_string(j+1)+"}"};
+        recorded_latex_ops_in_pause[record_index]=string{row_col+string{"_{"}+to_string(i+1)+"} \\Leftrightarrow "+string{row_col}+"_{"+to_string(j+1)+"}"};
         ++record_index;
     }
 }

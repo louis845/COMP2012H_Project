@@ -28,6 +28,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QPushButton" name="again">
+     <property name="text">
+      <string>Capture Again</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QPushButton" name="ok">
      <property name="text">
       <string>OK</string>
