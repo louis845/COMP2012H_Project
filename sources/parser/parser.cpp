@@ -627,6 +627,8 @@ void Parser::evalR()
     try
     {
         ROperand result = root->evalR(res);
+        if (typeid(*root) == typeid(MatrixExprAst)) 
+            res.addMat(result, TokName::NA);
         res.eval_result = result.genTex();
         return;
     }

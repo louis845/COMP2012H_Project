@@ -49,7 +49,7 @@ void Info::clear()
 
 void Info::addMat(ROperand operand, TokName op)
 {
-    if (operand.type != ROperand::Type::NOR)   return;
+    if (operand.type != ROperand::Type::MAT)   return;
     auto &mat = operand.mat;
     auto n_rows = mat.size(), n_cols = mat[0].size();
 

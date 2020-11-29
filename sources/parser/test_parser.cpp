@@ -19,6 +19,7 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
         parser.print();
         cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
         cout << "computation result: " << res.eval_result << endl << endl;
+        cout << "matrix num: " << res.mat_size.size() << endl << endl;
     }
     else
     {
@@ -36,11 +37,13 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
 
 int main()
 {
-    int engine = 2;
+    int engine = 1;
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
     string debug_2{"[[3, 4], [5, 6]] + ([3, 4], [5, 6]) + sin(([3, 4], [5, 6])) + cos([[3, 4], [5, 6]]) + tan[[3, 4], [5, 6]]"};
+
+    string debug_3{"[[3, 4], [5, 6]]"};
 
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 
@@ -58,6 +61,7 @@ int main()
 
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
+    test_parser(debug_3, "debug 3", engine);
 
     test_parser(test_1, "test 1", engine);
     test_parser(test_2, "test 2", engine);
