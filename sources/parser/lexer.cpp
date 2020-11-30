@@ -7,7 +7,7 @@ using std::smatch;
 
 std::unordered_map<std::string, int> Token::tok_map = 
 {
-    {",", 100}, 
+    {",", 100}, {R"(\\)", 101},
     {"**", 200}, {"*", 201}, {"xx", 202}, {"//", 203}, {"/", 204}, {"%", 205}, {"+", 206}, {"-", 207},
     {"^", 208}, {"_", 209}, {"|", 210}, {"(", 211}, {")", 212}, {"[", 213}, {"]", 214}, {"{", 213}, {"}", 214}, {"=", 217},
     {"sin", 218}, {"cos", 219}, {"tan", 220}, {"sec", 221}, {"csc", 222}, {"cot", 223}, {"arcsin", 224}, {"arccos", 225}, 
@@ -21,7 +21,7 @@ std::unordered_map<std::string, int> Token::tok_map =
 
 
 std::regex Lexer::WHITESPACE_RE = std::regex((R"(\s+)"));
-std::regex Lexer::DELIM_RE = std::regex((R"(^\s*,)"));
+std::regex Lexer::DELIM_RE = std::regex((R"(^\s*(,|\\\\))"));
 std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr|charpoly))"));
 std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|((\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?)))"));
 std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z]))"));
@@ -71,7 +71,7 @@ Token* Lexer::parseDelim()
     regex_search(input, result, DELIM_RE);
     if (result.empty()) return nullptr;
 
-    Token* temp = new TokDelim();
+    Token* temp = new TokDelim(result[1]);
     input = std::move(result.suffix().str());
     return temp;
 }

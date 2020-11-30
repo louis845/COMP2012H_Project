@@ -91,9 +91,16 @@ pair<string, string>Ocr::parseJson(const QByteArray& response) const
     {
         QJsonValue value = array.at(i).toObject().value("value");
         if (array.at(i).toObject().value("type") == "latex")
+        {
+            if (i != 0) latex_output += R"( \\ )";
             latex_output += value.toString();
+        }
+            
         else
+        {
+            if (i != 0) asciimath_output += R"( \ )";
             asciimath_output += value.toString();
+        }
     }
     
     return {latex_output.toStdString(), asciimath_output.toStdString()};
