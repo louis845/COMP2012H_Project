@@ -591,6 +591,17 @@ bool RF::ensure_types_equal(RF* const* const arr, int rows, int cols){
     return true;
 }
 
+RF** RF::copy_matrix(const RF* const* const mat, int rows, int cols){
+    RF **new_mat=new RF*[rows];
+    for(int i=0;i<rows;i++){
+        new_mat[i]=new RF[cols];
+        for(int j=0;j<cols;j++){
+            new_mat[i][j]=mat[i][j];
+        }
+    }
+    return new_mat;
+}
+
 RF** RF::copy_and_promote_if_compatible(const R* const* const mat, int rows, int cols){
     RF **new_mat=new RF*[rows];
     for(int i=0;i<rows;i++){
