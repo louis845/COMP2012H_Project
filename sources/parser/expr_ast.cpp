@@ -340,7 +340,8 @@ ROperand FunctionExprAst::evalR(Info& res)
     {
         case TokName::NEG:  return -(args[0]->evalR(res));
 
-        case TokName::RREF: case TokName::SOLVE: case TokName::INV:
+        case TokName::RREF: case TokName::SOLVE: case TokName::INV: 
+        case TokName::DET: case TokName::CHAR_POLY:
             break;
 
         default: throw std::invalid_argument("function " + raw + " is not supported in R yet");
@@ -356,24 +357,47 @@ ROperand FunctionExprAst::evalR(Info& res)
         case TokName::RREF:
             LinearOperationsFunc::row_reduce(res.parsed_mat.back().second, res.mat_size.back().first, 
                                             res.mat_size.back().second, steps);
+            break;
+
         case TokName::SOLVE:
             LinearOperationsFunc::solve(res.parsed_mat.back().second, res.mat_size.back().first,
                                         res.mat_size.back().second, steps);
+            break;
 
         case TokName::INV:
             LinearOperationsFunc::invert(res.parsed_mat.back().second, res.mat_size.back().first,
                                         res.mat_size.back().second, steps);
+            break;
+
+        case TokName::DET:
+            LinearOperationsFunc::determinant(res.parsed_mat.back().second, res.mat_size.back().first,
+                                            res.mat_size.back().second, steps);
+            break;
+
+        case TokName::CHAR_POLY:
+            LinearOperationsFunc::char_poly(res.parsed_mat.back().second, res.mat_size.back().first,
+                                            res.mat_size.back().second, steps);
+            break;
     }
 
     if (steps == nullptr)   throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
 
     R** matR{nullptr};
     int row, col;
-    steps->getResult(matR, row, col);
+    steps->getAnswer(matR, row, col);
     if (matR == nullptr)    
     {
         delete steps;
         throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
+    }
+
+    if (row == 1 && col == 1)
+    {
+        ROperand result(matR[0][0]);
+        delete [] matR[0];
+        delete [] matR;
+        delete steps;
+        return result;
     }
 
     ROperand result(row);
