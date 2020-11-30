@@ -70,7 +70,7 @@ public:
 
 private:
     static constexpr long double PI = 3.141592653589793;        // obsoleted
-    static constexpr long double E = 2.718281828459045;         // replaced by arma::datum::pi
+    static constexpr long double E = 2.718281828459045;         // replaced by arma::datum::e
 
     Token::TokName name{Token::TokName::INTEGRAL};
     std::string raw{""};
@@ -116,7 +116,7 @@ public:
     ArmaOperand eval() override;
     std::string genAsciiMath() const override { return name; }
 
-private:
+protected:
     std::string name;
     std::string tex{""};
 };

@@ -1,4 +1,5 @@
 #include "expr_ast.h"
+#include "math/linear/LinearOperations.h"
 using std::vector;
 using std::string;
 
@@ -97,11 +98,14 @@ ROperand NumberExprAst::evalR(Info& res)
             else return ROperand(newInt(raw));
         }
         
-        case TokName::FLOAT:    // not really recommended, use Armadillo for approximated solutions               
+        case TokName::FLOAT: case TokName::E: case TokName::PI:    // not really recommended, use Armadillo for approximated solutions               
         {
             try 
             { 
-                double value = stod(raw);
+                double value = arma::datum::e;
+                if (name == TokName::FLOAT) value = stod(raw);
+                else if (name == TokName::PI) value = arma::datum::pi;
+
                 long int_part = static_cast<long>(value);
                 long float_part = static_cast<long>((value - int_part) * 1e6);    // naive implementation, avoid to use it
                 return ROperand(newFrac(newInt(int_part), newInt(1L)) + newFrac(newInt(float_part), newInt(1e6L))); 
@@ -116,17 +120,14 @@ ROperand NumberExprAst::evalR(Info& res)
             }
         }
 
-        case TokName::E:
-            return ROperand(newInt(E));
-
-        case TokName::PI:
-            return ROperand(newInt(PI));
-
         case TokName::I:
             return ROperand(newComplex(0L, 1L));
 
         case TokName::IDENTITY_MATRIX:
             return ROperand();
+
+        case TokName::ANSWER:
+            return ROperand(newInt(42));
 
         default:
             throw std::runtime_error("unknown numerical value.");
@@ -163,6 +164,9 @@ ArmaOperand NumberExprAst::eval()
 
         case TokName::IDENTITY_MATRIX:
             return ArmaOperand();
+
+        case TokName::ANSWER:
+            return ArmaOperand(42.0);
 
         default:
             throw std::runtime_error("unknown numerical value.");
@@ -336,16 +340,53 @@ ROperand FunctionExprAst::evalR(Info& res)
     {
         case TokName::NEG:  return -(args[0]->evalR(res));
 
-        case TokName::RREF: case TokName::SOLVE: case TokName::DET: case TokName::INV: case TokName::ORTH:
+        case TokName::RREF: case TokName::SOLVE: case TokName::INV:
             break;
 
-        default: throw std::invalid_argument("function " + raw + " is not supported yet");
+        default: throw std::invalid_argument("function " + raw + " is not supported in R yet");
     }
 
     ROperand operand = args[0]->evalR(res);
     if (operand.type == ROperand::Type::MAT) res.addMat(operand, op);
+    else throw std::invalid_argument(raw + " operation only accept a matrix as argument");
+    
+    StepsHistory* steps{nullptr};
+    switch (op)
+    {
+        case TokName::RREF:
+            LinearOperationsFunc::row_reduce(res.parsed_mat.back().second, res.mat_size.back().first, 
+                                            res.mat_size.back().second, steps);
+        case TokName::SOLVE:
+            LinearOperationsFunc::solve(res.parsed_mat.back().second, res.mat_size.back().first,
+                                        res.mat_size.back().second, steps);
 
-    // TODO: do the evaluation
+        case TokName::INV:
+            LinearOperationsFunc::invert(res.parsed_mat.back().second, res.mat_size.back().first,
+                                        res.mat_size.back().second, steps);
+    }
+
+    if (steps == nullptr)   throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
+
+    R** matR{nullptr};
+    int row, col;
+    steps->getResult(matR, row, col);
+    if (matR == nullptr)    
+    {
+        delete steps;
+        throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
+    }
+
+    ROperand result(row);
+    for (int i = 0; i < row; ++i)
+    {
+        for (int j = 0; j < col; ++j)
+            result.mat[i].emplace_back(matR[i][j]);
+        delete [] matR[i];
+    }
+    delete [] matR;
+    delete steps;
+
+    return result;
 }
 
 
@@ -505,7 +546,28 @@ ArmaOperand FunctionExprAst::eval()
 
 string FunctionExprAst::genAsciiMath() const
 {
-    string result = raw + "(";
+    string result;
+    switch (op) 
+    {
+        case TokName::ORTH: result = "text(orth)"; break;
+
+        case TokName::ROOT:
+            result = "root(" + args[1]->genAsciiMath() + ")(" + args[0]->genAsciiMath() + ")";
+            return result;
+
+        case TokName::NEG:  result = "-"; break;
+
+        case TokName::INV:  result = "text(inv)"; break;
+
+        case TokName::PINV: result = "text(pinv)"; break;
+
+        case TokName::EIGEN:    result = "text(eigen)"; break;
+
+        case TokName::ROOTS:    result = "text(roots)"; break;
+
+        default: result = raw + "("; break;
+    }   
+
     for (auto it = args.begin(); it != args.end() - 1; ++it)
         result += (*it)->genAsciiMath() + ", ";
     return result + (*(args.end() - 1))->genAsciiMath() + ")";

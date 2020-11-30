@@ -5,6 +5,7 @@
 /build
 /cmake-build-debug
 /cmake-build-debug-visual-studio
+/build-cinf_gui-Desktop_Qt_5_14_2_MSVC2017_64bit-Debug
 # /sources/utils/test_ocr.cpp
 /sources/utils/test_arma.cpp
 # CMakeLists.txt

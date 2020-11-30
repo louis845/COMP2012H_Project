@@ -7,6 +7,7 @@ using std::smatch;
 
 std::unordered_map<std::string, int> Token::tok_map = 
 {
+    {"answer", 42},
     {",", 100}, {R"(\\)", 101},
     {"**", 200}, {"*", 201}, {"xx", 202}, {"//", 203}, {"/", 204}, {"%", 205}, {"+", 206}, {"-", 207},
     {"^", 208}, {"_", 209}, {"|", 210}, {"(", 211}, {")", 212}, {"[", 213}, {"]", 214}, {"{", 213}, {"}", 214}, {"=", 217},
@@ -22,7 +23,7 @@ std::unordered_map<std::string, int> Token::tok_map =
 
 std::regex Lexer::WHITESPACE_RE = std::regex((R"(\s+)"));
 std::regex Lexer::DELIM_RE = std::regex((R"(^\s*(,|\\\\))"));
-std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr|charpoly))"));
+std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr|charpoly|answer))"));
 std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|((\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?)))"));
 std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z]))"));
 
