@@ -3,6 +3,7 @@
 #include "math/fraction/Fraction.h"
 #include "math/polynomial/Polynomial.h"
 #include <string>
+#include <algorithm>
 using namespace std;
 
 LinearOperations::LinearOperations(RF** mat, const int& rows, const int& cols, bool transpose, LinOpsRecorder* recorder){
