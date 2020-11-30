@@ -2,7 +2,7 @@ QT       += core gui webengine webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++14
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -79,7 +79,6 @@ FORMS += \
 
 INCLUDEPATH += \
     ../sources/ \
-    ../libraries/gmp_621_msvc_x64 \
     ../libraries/Armadillo/include \
     ../libraries/Armadillo/include/armadillo_bits \
 
@@ -95,15 +94,27 @@ RESOURCES += \
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libraries/gmp_621_msvc_x64/ -llibgmp
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libraries/gmp_621_msvc_x64/ -llibgmp
 
-DEPENDPATH += ../libraries/gmp_621_msvc_x64
+win32:DEPENDPATH += ../libraries/gmp_621_msvc_x64
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libraries/ -llibopenblas
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libraries/ -llibopenblas
 
-INCLUDEPATH += $$PWD/../libraries
+win32:INCLUDEPATH += $$PWD/../libraries
 DEPENDPATH += $$PWD/../libraries
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/liblibopenblas.a
 else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/liblibopenblas.a
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/libopenblas.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/libopenblas.lib
+
+macx: LIBS += -L$$PWD/../libraries/gmp_621_macosx/ -lgmp
+
+INCLUDEPATH += $$PWD/../libraries/gmp_621_macosx
+DEPENDPATH += $$PWD/../libraries/gmp_621_macosx
+
+macx: PRE_TARGETDEPS += $$PWD/../libraries/gmp_621_macosx/libgmp.a
+
+
+
+
+macx: LIBS += -lopenblasp-r0.3.12
