@@ -505,8 +505,7 @@ namespace LinearOperationsFunc{
 
             o.toRREF();
 
-            RF::deallocate_matrix(mat,rows);
-
+            steps->setAnswer(mat,rows,cols);
         }else{
             steps=nullptr;
         }
@@ -525,8 +524,7 @@ namespace LinearOperationsFunc{
 
             o.toRREF();
 
-            RF::deallocate_matrix(mat,rows);
-
+            steps->setAnswer(mat,rows,cols);
         }else{
             steps=nullptr;
         }
@@ -551,8 +549,16 @@ namespace LinearOperationsFunc{
 
             o.toRREF();
 
+            //Now last col really represents a column matrix by itself, not referencing the addresses of mat.
+            for(int i=0;i<rows;i++){
+                last_col[i]=new RF[1]{last_col[i][0]};
+                //last_col[i][0] originally refers to the value of the mat in the lasts column (last_col[i] points to it)
+                //now do a value copy and last_col will be decoupled with mat.
+            }
+
             RF::deallocate_matrix(mat,rows);
-            delete[] last_col; //No need to deep delete last_col since last_col is only stores the pointers that point to the same values as mat.
+
+            steps->setAnswer(last_col,rows,1);
         }else{
             steps=nullptr;
         }
@@ -645,12 +651,14 @@ namespace LinearOperationsFunc{
                 o.toRREF();
                 if(o.is_diagonally_one()){
                     if(rows==cols){
-                        steps->add_step(new MatrixSpaceStep{cpl, rows, rows, -1, true, "The inverse of the matrix is:"});
+                        MatrixSpaceStep *m=new MatrixSpaceStep{cpl, rows, rows, -1, true, "The inverse of the matrix is:"};
+                        steps->add_step(m);
+                        steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
                     }else{
-                        cout<<"bf_add_step\n";
                         string text="General left inverse is A+XB, for arbitrary matrix X (with size "+to_string(cols)+"x"+to_string(rows-cols)+" ).\n This is such that (A+XB)*input=I";
-                        steps->add_step(new MatrixSpaceStep{cpl, rows, rows, cols, true, text});
-                        cout<<"af_add_step\n";
+                        MatrixSpaceStep *m=new MatrixSpaceStep{cpl, rows, rows, cols, true, text};
+                        steps->add_step(m);
+                        steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
                     }
                 }else{
                     steps->add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
@@ -661,7 +669,9 @@ namespace LinearOperationsFunc{
                 o.toRREF();
                 if(o.is_diagonally_one()){
                     string text="General right inverse is A+BX, for arbitrary matrix X (with size "+to_string(cols-rows)+"x"+to_string(rows)+" ).\n This is such that input*(A+BX)=I";
-                    steps->add_step(new MatrixSpaceStep{cpl, cols, cols, rows, false, text});
+                    MatrixSpaceStep *m=new MatrixSpaceStep{cpl, cols, cols, rows, false, text};
+                    steps->add_step(m);
+                    steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
                 }else{
                     steps->add_step(new StepText{"The row echelon form is not diagonal, so the inverse does not exist!"});
                 }
@@ -697,6 +707,10 @@ namespace LinearOperationsFunc{
             steps->add_step(new StepText{val.to_string()});
 
             RF::deallocate_matrix(mat,rows);
+
+            RF** answer=new RF*[1];
+            answer[0]=new RF[1]{val};
+            steps->setAnswer(answer,1,1);
         }else{
             steps=nullptr;
         }
@@ -756,6 +770,10 @@ namespace LinearOperationsFunc{
                 steps->add_step(new StepText{val.to_string()});
 
                 RF::deallocate_matrix(mat,rows);
+
+                RF** answer=new RF*[1];
+                answer[0]=new RF[1]{val};
+                steps->setAnswer(answer,1,1);
             }
         }
     }

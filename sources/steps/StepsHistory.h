@@ -32,6 +32,10 @@ private:
      * Current denotes the viewing node.
     */
     int length;
+
+    RF** answer;
+    int ans_rows;
+    int ans_cols;
 public:
     StepsHistory();
 
@@ -67,8 +71,13 @@ public:
     void previous_node();
 
     /**
+     * Directly saves the pointer internally to StepsHistory. Does not perform copy. The previous answer, if exists, will be deallocated.
+    */
+    void setAnswer(RF** ans, int rows, int cols);
+
+    /**
      * Allocates and returns a new R** matrix respresenting the result, and passes the rows and cols onto the references.
-     * result would be nullptr if there is none
+     * result would be nullptr if there is none. For example linear equations with no solution.
     */
     void getAnswer(R** &result, int& rows, int& cols);
 };

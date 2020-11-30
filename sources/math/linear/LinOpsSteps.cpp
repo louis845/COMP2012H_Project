@@ -220,3 +220,15 @@ string MatrixSpaceStep::get_html_latex() const{
     }
     return os.str();
 }
+
+RF** MatrixSpaceStep::get_matrix_copy(){
+    return RF::copy_matrix(matrix,rows,cols);
+}
+
+const int& MatrixSpaceStep::get_matrix_rows(){
+    return rows;
+}
+
+const int& MatrixSpaceStep::get_matrix_cols(){
+    return cols;
+}

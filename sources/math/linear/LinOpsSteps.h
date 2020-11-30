@@ -73,6 +73,11 @@ public:
     virtual void print_to_console() const override;
 
     virtual std::string get_html_latex() const override;
+
+    RF** get_matrix_copy();
+
+    const int& get_matrix_rows();
+    const int& get_matrix_cols();
 };
 
 #endif
