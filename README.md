@@ -4,7 +4,7 @@
 * Make it dynamic, when the above display area is not visible (setVisible(false)) the GUI won't be bugged/ugly.
 * Add another list area of labels (can add or remove) to let user select previous computation results/steps
 * Add loading bar/spinner for computation.
-
+* Support resizing window
 
 ## Less important
 * Create a new window UI to display user manual.
