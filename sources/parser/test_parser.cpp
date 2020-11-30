@@ -37,13 +37,13 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
 
 int main()
 {
-    int engine = 1;
+    int engine = 0;
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
     string debug_2{"[[3, 4], [5, 6]] + ([3, 4], [5, 6]) + sin(([3, 4], [5, 6])) + cos([[3, 4], [5, 6]]) + tan[[3, 4], [5, 6]]"};
 
-    string debug_3{"[[3, 4], [5, 6]]"};
+    string debug_3{"solve[[1, 0, 1], [0, 2, 4]]"};
 
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 

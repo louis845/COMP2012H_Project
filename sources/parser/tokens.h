@@ -14,6 +14,7 @@ public:
 
     enum class TokName
     {
+        ANSWER = 42,        // you know, 42 is the Answer to the Ultimate Question of Life, the Universe, and Everything ;)
         COMMA = 100, ENDL,  // DELIM
         AST = 200, CDOT, CROSS, DIV, FRAC, PERCENT, PLUS, MINUS,
         SUP, SUB, TEXTBAR, LP, RP, LSB, RSB, LCB, RCB, EQUAL, 

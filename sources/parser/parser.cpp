@@ -545,7 +545,7 @@ void Parser::autoDetect(ExprAst* root)
         switch (temp->op)
         {
             case TokName::RREF: case TokName::SOLVE: case TokName::DET: 
-            case TokName::INV: case TokName::ORTH: case TokName::NEG:
+            case TokName::INV: case TokName::CHAR_POLY: case TokName::NEG:
                 break;
             
             default:
