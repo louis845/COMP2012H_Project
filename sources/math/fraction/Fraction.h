@@ -64,6 +64,11 @@ protected:
 
     const Ring* complexify() const override;
 
+    /**
+     * Conjugates both over and under. Mathematically correct as conjugation is an automorphism.
+    */
+    const Ring* conjugate() const override;
+
     bool is_unit() const override;
 
     bool is_one() const override;

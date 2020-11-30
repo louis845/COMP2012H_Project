@@ -302,3 +302,9 @@ const Ring* Fraction::complexify() const{
     RF ud=under.complexify();
     return fraction_no_check(ov,ud);
 }
+
+const Ring* Fraction::conjugate() const{
+    RF ov=over.conjugate();
+    RF ud=under.conjugate();
+    return new Fraction{ov,ud};
+}

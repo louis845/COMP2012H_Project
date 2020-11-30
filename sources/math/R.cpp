@@ -267,6 +267,10 @@ R R::invert() const{
     return R{impl->invert()};
 }
 
+R R::conjugate() const{
+    return R{impl->conjugate()};
+}
+
 bool R::is_zero() const{
     return impl->is_zero();
 }
@@ -634,4 +638,9 @@ void RF::promote_to_field(RF* const* const mat, int rows, int cols){
             }
         }
     }
+}
+
+std::ostream& operator<< (std::ostream& out, const RF& val){
+    out<<val.to_string();
+    return out;
 }

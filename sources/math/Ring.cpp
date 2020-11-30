@@ -335,6 +335,10 @@ bool Ring::is_complex() const{
     return get_type().complex();
 }
 
+const Ring* Ring::conjugate() const{
+    return copy();
+}
+
 /**
  * Implementation of ZeroElmt. The return values are straightforward (operations by 0 and 1). Notice that a copy (new allocation) has to be returned for the functions,
  * since the functions are used internally by the R class, and a new R object (no matter statically or dynamically allocated) is created with

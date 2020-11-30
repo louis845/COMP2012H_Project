@@ -19,6 +19,7 @@ public:
     virtual void col_swap(int i, int j) override;
     virtual void col_multiply(int col, const RF& mult) override;
     virtual void diagonalize_no_mult() override;
+    virtual void diagonalize_no_mult_no_div() override;
 public:
     /**
      *  When no transpose the matrices are placed in order (matrix, couple). When transpose it is placed

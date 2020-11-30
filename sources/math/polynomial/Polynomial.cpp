@@ -564,6 +564,22 @@ const Ring* Polynomial::complexify() const{
     return n;
 }
 
+const Ring* Polynomial::conjugate() const{
+    Polynomial *n=new Polynomial{}; //No need to check and promote, just copy
+    n->length=length;
+    n->coeff=RF::array_copy(coeff,length,0);
+    const NestedRingType* sub_type_new; //we copy it
+    for(int i=0;i<length;i++){
+        RF& elem=(n->coeff)[i];
+        elem = elem.conjugate();
+        sub_type_new=&elem.get_type();
+    }
+    n->type->set_sub_type(sub_type_new); //copy here
+    n->display_terms=display_terms;
+
+    return n;
+}
+
 bool Polynomial::is_one() const{
     return length==1 && coeff[0].is_one();
 }

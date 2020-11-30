@@ -340,6 +340,41 @@ void console_char_poly(){
     }
 }
 
+void console_orthogonalize(){
+    cout<<"Input matrix row:  ";
+    int rows=input_integer();
+    while(rows<2 || rows>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        rows=input_integer();
+    }
+    cout<<"Input matrix columns:  ";
+    int cols=input_integer();
+    while(cols<2 || cols>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        cols=input_integer();
+    }
+    
+    cout<<"Input matrix:\n";
+    // use integer for now
+    bool aborted=false;
+    R** mat_slow=input_matrix(rows,cols,aborted);
+    if(aborted){
+        for(int i=0;i<rows;i++){
+            delete[] mat_slow[i];
+        }
+        delete[] mat_slow;
+        return;
+    }
+    StepsHistory *steps;
+    LinearOperationsFunc::orthogonalize(mat_slow,rows,cols,steps);
+    if(steps!=nullptr){
+        display_steps(*steps);
+        delete steps;
+    }else{
+        cout<<"Error: Orthogonalization only works on non polynomial type !\n";
+    }
+}
+
 void to_lower_case(string& str){
     transform(str.begin(), str.end(), str.begin(), [](unsigned char ch){ return tolower(ch);});
 }
@@ -348,7 +383,7 @@ void console_main_loop(){
     while(true){
         string s;
         cout<<"Enter desired computation. Available types are:\n";
-        cout<<"COMPUTE, SOLVE, REDUCE, INVERT, DETERMINANT, CHAR_POLY\n";
+        cout<<"COMPUTE, SOLVE, REDUCE, INVERT, DETERMINANT, CHAR_POLY, ORTHOGONALIZE\n";
         getline(cin, s);
         to_lower_case(s);
         
@@ -383,6 +418,8 @@ void console_main_loop(){
             console_determinant();
         }else if(s.rfind("char_poly",0)==0){
             console_char_poly();
+        }else if(s.rfind("orthogonalize",0)==0){
+            console_orthogonalize();
         }
     }
 }
