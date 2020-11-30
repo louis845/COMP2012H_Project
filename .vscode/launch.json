@@ -27,7 +27,32 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "C/C++: GNU make file"
+            "preLaunchTask": "C/C++: GNU make file (Windows x64)"
+        },
+        {
+            "name": "g++.exe - Build and debug active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/compile/run",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/sources",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "text": "catch throw",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: GNU make file (macosx)"
         }
     ]
 }
