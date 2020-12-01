@@ -16,6 +16,13 @@ private:
     static Fraction* fraction_no_check(const RF&, const RF&); 
 
     /**
+     * Suppose over,under are polynomials over fractions. By default, under would be stored as a monic polynomial.
+     * It should be better to display the polynomials in the numerator and denominator as non-fractional polynomials,
+     * hence this function changes the internal representation whenever this scenario occurs.
+    */
+    void accomodate_polynomial_pretty_print();
+
+    /**
      * Creates a fraction with uninitialized over and under. Used internally to skip the GCD operation. Use fraction_no_check and fraction_no_gcd
     */
     Fraction();

@@ -398,6 +398,10 @@ R R::complexify() const{
     return R{impl->complexify()};
 }
 
+const Ring& R::getImpl() const{
+    return *impl;
+}
+
 bool R::complexify_if_needed(R& a, R& b){
     if(a.is_type_compatible(b)){
         return true;

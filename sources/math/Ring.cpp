@@ -4,6 +4,11 @@
 using namespace std;
 
 /**
+ * RING TYPE STATIC VARS
+*/
+NestedRingType NestedRingType::FRACTION_COMPLEX_LONG=NestedRingType{RingType::FRACTION,new NestedRingType{RingType::COMPLEXIFY,new NestedRingType{RingType::LONG}}};
+
+/**
  * RING TYPE FUNCTIONS
 */
 

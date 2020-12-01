@@ -197,6 +197,11 @@ public:
     */
     void split(R& morph, R& unit) const;
 
+    /**
+     * Dangerous, used internally for Fractions and Polynomials. DO NOT delete or modify any members or attributes of impl.
+    */
+    const Ring& getImpl() const;
+
     friend class RF;
 };
 

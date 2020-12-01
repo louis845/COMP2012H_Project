@@ -32,6 +32,8 @@ private:
 
     NestedRingType* deep_copy() const;
 public:
+    static NestedRingType FRACTION_COMPLEX_LONG;
+
     /**
      * Initializes sub_type to nullptr, this means that this type does not 'contain' any subrings.
     */

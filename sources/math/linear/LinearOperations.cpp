@@ -756,20 +756,12 @@ namespace LinearOperationsFunc{
         steps=nullptr;
         RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
         if(mat!=nullptr){
-            NestedRingType *type=new NestedRingType{RingType::FRACTION};
-            NestedRingType *inside=new NestedRingType{RingType::COMPLEXIFY};
-            type->set_sub_type_no_copy(inside);
-            inside->set_sub_type_no_copy(new NestedRingType{RingType::LONG});
 
             //Only FRACTION COMPLEXIFY LONG, which means polynomials and rational polynomials are excluded.
-
-            if(!Ring::is_type_subset(*type,mat[0][0].get_type())){
+            if(!Ring::is_type_subset(NestedRingType::FRACTION_COMPLEX_LONG,mat[0][0].get_type())){
                 //Not subset of FRACTION COMPLEXIFY LONG, dealloc and remove
-                delete type; //NestedRingType deletes it's children nodes, so no need to del inside
                 RF::deallocate_matrix(mat,rows);
             }else{
-                delete type;
-
                 //Form Char Poly tI-A
                 RF::promote_to_field(mat,rows,cols);
                 for(int row=0;row<rows;row++){
@@ -818,20 +810,11 @@ namespace LinearOperationsFunc{
         steps=nullptr;
         RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
         if(mat!=nullptr){
-            NestedRingType *type=new NestedRingType{RingType::FRACTION};
-            NestedRingType *inside=new NestedRingType{RingType::COMPLEXIFY};
-            type->set_sub_type_no_copy(inside);
-            inside->set_sub_type_no_copy(new NestedRingType{RingType::LONG});
-
             //Only FRACTION COMPLEXIFY LONG, which means polynomials and rational polynomials are excluded.
-
-            if(!Ring::is_type_subset(*type,mat[0][0].get_type())){
+            if(!Ring::is_type_subset(NestedRingType::FRACTION_COMPLEX_LONG,mat[0][0].get_type())){
                 //Not subset of FRACTION COMPLEXIFY LONG, dealloc and remove
-                delete type; //NestedRingType deletes it's children nodes, so no need to del inside
                 RF::deallocate_matrix(mat,rows);
             }else{
-                delete type;
-
                 RF::promote_to_field(mat,rows,cols);
 
                 steps=new StepsHistory;

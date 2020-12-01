@@ -87,5 +87,7 @@ protected:
     bool is_zero() const override;
 
     void split_canonical(const Ring*&, const Ring*&) const override;
+
+    friend class Fraction;
 };
 #endif

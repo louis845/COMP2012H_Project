@@ -1,4 +1,5 @@
 #include "math/fraction/Fraction.h"
+#include "math/polynomial/Polynomial.h"
 #include "math/tools.h"
 #include <iostream>
 
@@ -45,6 +46,8 @@ Fraction::Fraction(const R& over,const R& under) : Field(RingType::FRACTION){
 
     this->under=morph;
     this->over = this->over * unit;
+
+    accomodate_polynomial_pretty_print();
 }
 
 Fraction::Fraction(): Field(RingType::FRACTION){}
@@ -62,6 +65,7 @@ Fraction* Fraction::fraction_no_gcd(const RF& over, const RF& under){
     f->under=morph;
     f->over = f->over * unit;
 
+    f->accomodate_polynomial_pretty_print();
     return f;
 }
 
@@ -83,7 +87,35 @@ Fraction* Fraction::fraction_no_check(const RF& over, const RF& under){
     f->under=morph;
     f->over = f->over * unit;
 
+    f->accomodate_polynomial_pretty_print();
     return f;
+}
+
+void Fraction::accomodate_polynomial_pretty_print(){
+    const NestedRingType &t=over.get_type(); //Checks whether 'this' fraction is a fraction over polynomials over fraction
+    if(t.get_current_type()==RingType::POLYNOMIAL && t.get_sub_type().get_current_type()==RingType::FRACTION){
+        //Notice that POLYNOMIALS must be over some field, hence it does always have a subtype.
+        if( (!under.is_unit()) && (!over.is_zero()) ){
+            const Polynomial& overp=dynamic_cast<const Polynomial&>(over.getImpl());
+            const Polynomial& underp=dynamic_cast<const Polynomial&>(under.getImpl());
+
+            //Now find the LCM of all elements in the denominator of the coefficients of the polynomial
+            RF lcm=dynamic_cast<const Fraction&>( overp.coeff[0].getImpl() ).under;
+            for(int i=1;i<overp.length;i++){
+                const RF& new_val=dynamic_cast<const Fraction&>( overp.coeff[i].getImpl() ).under;
+                lcm=lcm*(new_val/gcd_fast(lcm,new_val));
+            }
+
+            for(int i=0;i<underp.length;i++){
+                const RF& new_val=dynamic_cast<const Fraction&>( underp.coeff[i].getImpl() ).under;
+                lcm=lcm*(new_val/gcd_fast(lcm,new_val));
+            }
+
+            //do calculations in R class, since type not same, requires type promotion
+            over=over.R::operator*(lcm);
+            under=under.R::operator*(lcm);
+        }
+    }
 }
 
 const Ring* Fraction::addImpl(const Ring* r) const{
