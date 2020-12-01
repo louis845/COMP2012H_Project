@@ -228,6 +228,7 @@ string MatrixExprAst::genAsciiMath() const
 
 ROperand VariableExprAst::evalR(Info& res)
 {   
+    if (res.engine_used == 3 && name != "t")   return ROperand(newInt(1L));   
     return ROperand(newTerm(1));
 }
 
@@ -376,6 +377,11 @@ ROperand FunctionExprAst::evalR(Info& res)
 
         case TokName::CHAR_POLY:
             LinearOperationsFunc::char_poly(res.parsed_mat.back().second, res.mat_size.back().first,
+                                            res.mat_size.back().second, steps);
+            break;
+
+        case TokName::ORTH:
+            LinearOperationsFunc::orthogonal(res.parsed_mat.back().second, res.mat_size.back().first,
                                             res.mat_size.back().second, steps);
             break;
     }
@@ -579,7 +585,7 @@ string FunctionExprAst::genAsciiMath() const
             result = "root(" + args[1]->genAsciiMath() + ")(" + args[0]->genAsciiMath() + ")";
             return result;
 
-        case TokName::NEG:  result = "-"; break;
+        case TokName::NEG:  result = "-("; break;
 
         case TokName::INV:  result = "text(inv)"; break;
 
@@ -594,5 +600,6 @@ string FunctionExprAst::genAsciiMath() const
 
     for (auto it = args.begin(); it != args.end() - 1; ++it)
         result += (*it)->genAsciiMath() + ", ";
+        
     return result + (*(args.end() - 1))->genAsciiMath() + ")";
 }

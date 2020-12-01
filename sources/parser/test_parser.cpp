@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <iomanip>
 #include "parser.h"
 #include "lexer.h"
 #include "tokens.h"
@@ -20,6 +21,17 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
         cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
         cout << "computation result: " << res.eval_result << endl << endl;
         cout << "matrix num: " << res.mat_size.size() << endl << endl;
+
+        if (type == 3)
+        {
+            cout << "mat: " << endl;
+            for (size_t i = 0; i < res.mat_size[0].first; ++i)
+            {
+                for (size_t j = 0; j < res.mat_size[0].second; ++j)
+                    cout << setw(14) << res.parsed_mat[0].second[i][j].to_latex() << " ";
+                cout << endl;
+            }
+        }
     }
     else
     {
@@ -39,11 +51,13 @@ int main()
 {
     int engine = 0;
 
+    string linear{R"(4*5tx_2 + (5+2i)/t y_1 - 6z_4 + 2 = 0 \\ (t^2 - 6) x_2 - 4y_1 = 3 + z_4 \\ 5t^4z_4 = 3 + 5/6 y_1)"};
+
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
     string debug_2{"[[3, 4], [5, 6]] + ([3, 4], [5, 6]) + sin(([3, 4], [5, 6])) + cos([[3, 4], [5, 6]]) + tan[[3, 4], [5, 6]]"};
 
-    string debug_3{"solve[[1, 0, 1], [0, 2, 4]]"};
+    string debug_3{"inv(inv(inv[[1, 0], [0, 2]]))"};
 
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 
@@ -58,6 +72,8 @@ int main()
     string func{"sin(cos(tan(exp(ln(min(3, 4, 5, 6) + x) - y) * pi) / 42) ** i)"};
 
     string greek{"sin(alpha) - cos(-beta) / sqrt(omega) * root(phi, varphi)"};
+
+    // test_parser(linear, "linear system: ", 3);
 
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
@@ -123,6 +139,14 @@ int main()
     test_parser(decomp_2, "decomposition test 2", engine);
     test_parser(decomp_3, "decomposition test 3", engine);
     test_parser(decomp_4, "decomposition test 4", engine);
+
+
+    stringstream ss;
+    ss.precision(4);
+    ss.setf(std::ios::fixed, std::ios::floatfield);
+
+    ss << arma::cx_double(4.4, 3.4);
+    cout << ss.str();
 
     cin.get(); cin.get();
 }
