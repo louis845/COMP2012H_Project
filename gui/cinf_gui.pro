@@ -2,7 +2,7 @@ QT       += core gui webengine webenginewidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++14
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -34,6 +34,7 @@ SOURCES += \
     input_key.cpp \
     main.cpp \
     begin_widget.cpp \
+    manual_window.cpp \
     show_capture.cpp \
     solution_widget.cpp \
     window_capture.cpp
@@ -67,6 +68,7 @@ HEADERS += \
     ../sources/utils/ocr_api.h \
     begin_widget.h \
     input_key.h \
+    manual_window.h \
     show_capture.h \
     solution_widget.h \
     window_capture.h \
@@ -74,12 +76,12 @@ HEADERS += \
 FORMS += \
     begin_widget.ui \
     input_key.ui \
+    manual_window.ui \
     show_capture.ui \
     solution_widget.ui
 
 INCLUDEPATH += \
     ../sources/ \
-    ../libraries/gmp_621_msvc_x64 \
     ../libraries/Armadillo/include \
     ../libraries/Armadillo/include/armadillo_bits \
 
@@ -95,15 +97,28 @@ RESOURCES += \
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libraries/gmp_621_msvc_x64/ -llibgmp
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libraries/gmp_621_msvc_x64/ -llibgmp
 
-DEPENDPATH += ../libraries/gmp_621_msvc_x64
+win32:DEPENDPATH += ../libraries/gmp_621_msvc_x64
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../libraries/ -llibopenblas
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../libraries/ -llibopenblas
 
-INCLUDEPATH += $$PWD/../libraries
+win32:INCLUDEPATH += $$PWD/../libraries
 DEPENDPATH += $$PWD/../libraries
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/liblibopenblas.a
 else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/liblibopenblas.a
 else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/libopenblas.lib
 else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../libraries/libopenblas.lib
+
+macx: LIBS += -L$$PWD/../libraries/gmp_621_macosx/ -lgmp
+
+macx:INCLUDEPATH += $$PWD/../libraries/gmp_621_macosx
+macx:DEPENDPATH += $$PWD/../libraries/gmp_621_macosx
+
+macx: PRE_TARGETDEPS += $$PWD/../libraries/gmp_621_macosx/libgmp.a
+
+
+macx: LIBS += -L$$PWD/../libraries/openblas_macosx/ -lopenblasp-r0.3.12
+
+INCLUDEPATH += $$PWD/../libraries/openblas_macosx
+DEPENDPATH += $$PWD/../libraries/openblas_macosx

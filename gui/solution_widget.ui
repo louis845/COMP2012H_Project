@@ -18,197 +18,256 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>830</width>
-    <height>580</height>
+    <width>3000</width>
+    <height>3000</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QScrollArea" name="scrollArea">
-   <property name="geometry">
-    <rect>
-     <x>430</x>
-     <y>70</y>
-     <width>361</width>
-     <height>441</height>
-    </rect>
-   </property>
-   <property name="widgetResizable">
-    <bool>true</bool>
-   </property>
-   <widget class="QWidget" name="steps_widget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>359</width>
-      <height>439</height>
-     </rect>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QWidget" name="left_widget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>20</y>
-     <width>381</width>
-     <height>541</height>
-    </rect>
-   </property>
-   <widget class="QTabWidget" name="tabWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>220</y>
-      <width>361</width>
-      <height>311</height>
-     </rect>
-    </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="plain_tab">
-     <attribute name="title">
-      <string>Plain</string>
-     </attribute>
-     <widget class="QPlainTextEdit" name="plain_textedit">
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QWidget" name="left_widget" native="true">
+     <widget class="QTabWidget" name="tabWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
-        <width>331</width>
-        <height>271</height>
+        <y>220</y>
+        <width>361</width>
+        <height>311</height>
        </rect>
       </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="plain_tab">
+       <attribute name="title">
+        <string>Plain</string>
+       </attribute>
+       <widget class="QPlainTextEdit" name="plain_textedit">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>331</width>
+          <height>271</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="ascii_tab">
+       <attribute name="title">
+        <string>Asciimath</string>
+       </attribute>
+       <widget class="QPlainTextEdit" name="ascii_textedit">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>331</width>
+          <height>271</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
      </widget>
-    </widget>
-    <widget class="QWidget" name="ascii_tab">
-     <attribute name="title">
-      <string>Asciimath</string>
-     </attribute>
-     <widget class="QPlainTextEdit" name="ascii_textedit">
+     <widget class="QPushButton" name="scan_btn">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>331</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Scan</string>
+      </property>
+     </widget>
+     <widget class="QTabWidget" name="tabWidget_2">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>10</y>
-        <width>331</width>
-        <height>271</height>
+        <y>40</y>
+        <width>361</width>
+        <height>181</height>
        </rect>
       </property>
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Intepretation</string>
+       </attribute>
+       <widget class="QScrollArea" name="scrollAreaIntepretation">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>351</width>
+          <height>151</height>
+         </rect>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>349</width>
+           <height>149</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Original Image</string>
+       </attribute>
+       <widget class="QScrollArea" name="scrollAreaOriginal">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>351</width>
+          <height>151</height>
+         </rect>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="scrollAreaWidgetContents_2">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>349</width>
+           <height>149</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
      </widget>
     </widget>
-   </widget>
-   <widget class="QScrollArea" name="scrollAreaIntepretation">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>331</width>
-      <height>161</height>
-     </rect>
-    </property>
-    <property name="widgetResizable">
-     <bool>true</bool>
-    </property>
-    <widget class="QWidget" name="scrollAreaWidgetContents">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>329</width>
-       <height>159</height>
-      </rect>
-     </property>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget_2" native="true">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>381</width>
+        <height>44</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QPushButton" name="methods_btn">
+         <property name="text">
+          <string>Methods</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="previous_btn">
+         <property name="text">
+          <string>Previous</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="next_btn">
+         <property name="text">
+          <string>Next</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>371</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="steps_widget">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>369</width>
+         <height>439</height>
+        </rect>
+       </property>
+       <widget class="QProgressBar" name="disp_prog">
+        <property name="geometry">
+         <rect>
+          <x>130</x>
+          <y>140</y>
+          <width>118</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="value">
+         <number>24</number>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="finish_btn_widget" native="true">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>500</y>
+        <width>381</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="next_btn2">
+         <property name="text">
+          <string>Compute</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="finish_btn">
+         <property name="text">
+          <string>Finished</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </widget>
-   <widget class="QPushButton" name="scan_btn">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>331</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Scan</string>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QWidget" name="finish_btn_widget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>520</y>
-     <width>381</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <item>
-     <widget class="QPushButton" name="next_btn2">
-      <property name="text">
-       <string>Compute</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="finish_btn">
-      <property name="text">
-       <string>Finished</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="widget" native="true">
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>20</y>
-     <width>381</width>
-     <height>44</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
-    <item>
-     <widget class="QPushButton" name="methods_btn">
-      <property name="text">
-       <string>Methods</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <spacer name="horizontalSpacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <widget class="QPushButton" name="previous_btn">
-      <property name="text">
-       <string>Previous</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="next_btn">
-      <property name="text">
-       <string>Next</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

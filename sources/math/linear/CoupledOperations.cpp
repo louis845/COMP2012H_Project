@@ -80,6 +80,10 @@ void CoupledOperations::diagonalize_no_mult(){
     throw "Does not support diagonalize_no_mult on coupled operations!";
 }
 
+void CoupledOperations::diagonalize_no_mult_no_div(){
+    throw "Does not support diagonalize_no_mult_no_div on coupled operations!";
+}
+
 RF& CoupledOperations::A(const int& row, const int& col) const{
     return *(couple[row][col]);
 }

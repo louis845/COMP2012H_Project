@@ -300,6 +300,10 @@ const Ring* LongComplex::complexify() const{
     return copy();
 }
 
+const Ring* LongComplex::conjugate() const{
+    return new LongComplex{re,-im};
+}
+
 bool LongComplex::is_one() const{
     return re==1 && im==0;
 }

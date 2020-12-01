@@ -2,11 +2,30 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "C/C++: GNU make file",
+            "label": "C/C++: GNU make file (Windows x64)",
             "command": "make",
             "args": [
                 "-f",
                 "${workspaceFolder}/sources/makefile"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/sources"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "C/C++: GNU make file (macosx)",
+            "command": "make",
+            "args": [
+                "-f",
+                "${workspaceFolder}/sources/makefile_osx"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/sources"

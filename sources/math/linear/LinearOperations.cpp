@@ -2,6 +2,7 @@
 #include "math/linear/CoupledOperations.h"
 #include "math/fraction/Fraction.h"
 #include "math/polynomial/Polynomial.h"
+#include "math/R.h"
 #include <string>
 #include <algorithm>
 using namespace std;
@@ -471,6 +472,40 @@ void LinearOperations::commit_recording_and_continue(){
     recorded_latex_ops_in_pause=nullptr; //no need to delete, the strings gets passed onto recorder.
 }
 
+RF projection_coeff(RF** from,RF** project_onto, int length){
+    RF onto_norm=project_onto[0][0].promote(R::ZERO);
+    RF inner_prod=project_onto[0][0].promote(R::ZERO);
+    for(int i=0;i<length;i++){
+        const RF &onto_val=*project_onto[i];
+        const RF &from_val=*from[i];
+
+        cout<<onto_val<<" "<<onto_val.conjugate()<<"\n";
+        cout<<from_val<<" "<<from_val.conjugate()<<"\n";
+
+        onto_norm = onto_norm + onto_val * onto_val.conjugate();
+        inner_prod = inner_prod + from_val * onto_val.conjugate();
+    }
+    std::cout<<inner_prod<<"\n";
+    std::cout<<onto_norm<<"\n";
+    return -inner_prod/onto_norm;
+}
+
+void LinearOperations::orthogonalize_rows(){
+    for(int row=1;row<rows;++row){
+        //Minus the projection of the previous orthogonalized rows.
+        pause_recording(row);
+        RF* projs=new RF[row];
+        for(int ortho_row=0;ortho_row<row;++ortho_row){
+            projs[ortho_row]=projection_coeff(matrix[row],matrix[ortho_row],cols);
+        }
+        for(int ortho_row=0;ortho_row<row;++ortho_row){
+            row_add(ortho_row, row, projs[ortho_row]);
+        }
+        delete[] projs;
+        commit_recording_and_continue();
+    }
+}
+
 RF& LinearOperations::A(const int& row, const int& col) const{
     return *(matrix[row][col]);
 }
@@ -775,6 +810,39 @@ namespace LinearOperationsFunc{
                 RF** answer=new RF*[1];
                 answer[0]=new RF[1]{val};
                 steps->setAnswer(answer,1,1);
+            }
+        }
+    }
+
+    void orthogonalize(R** mat_slow,int rows,int cols,StepsHistory*& steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            NestedRingType *type=new NestedRingType{RingType::FRACTION};
+            NestedRingType *inside=new NestedRingType{RingType::COMPLEXIFY};
+            type->set_sub_type_no_copy(inside);
+            inside->set_sub_type_no_copy(new NestedRingType{RingType::LONG});
+
+            //Only FRACTION COMPLEXIFY LONG, which means polynomials and rational polynomials are excluded.
+
+            if(!Ring::is_type_subset(*type,mat[0][0].get_type())){
+                //Not subset of FRACTION COMPLEXIFY LONG, dealloc and remove
+                delete type; //NestedRingType deletes it's children nodes, so no need to del inside
+                RF::deallocate_matrix(mat,rows);
+            }else{
+                delete type;
+
+                RF::promote_to_field(mat,rows,cols);
+
+                steps=new StepsHistory;
+                LinOpsRecorder rc{steps, mat, rows, cols};
+                rc.capture_initial();
+
+                LinearOperations o{mat, rows, cols, false, &rc};
+
+                o.orthogonalize_rows();
+
+                steps->setAnswer(mat, rows, cols);
             }
         }
     }

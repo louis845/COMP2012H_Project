@@ -168,6 +168,12 @@ public:
     R complexify() const;
 
     /**
+     * Returns the complex conjugate of the number. If the number does not belong to a complex field,
+     * returns itself.
+    */
+    R conjugate() const;
+
+    /**
      * Promotes other to match the type of this.
     */
     R promote(const R& other) const;

@@ -57,6 +57,11 @@ public:
     virtual void diagonalize_no_mult_no_div();
 
     /**
+     * Do Gram-Schmidt process on the rows of the matrix, starting from the first row.
+    */
+    void orthogonalize_rows();
+
+    /**
      * Checks whether the matrix now is diagonal, with entries equal to one.
     */
     bool is_diagonally_one() const;
@@ -128,5 +133,7 @@ namespace LinearOperationsFunc{
     void determinant(R** mat,int rows,int cols,StepsHistory*& steps);
 
     void char_poly(R** mat,int rows,int cols,StepsHistory*& steps);
+
+    void orthogonalize(R** mat,int rows,int cols,StepsHistory*& steps);
 }
 #endif

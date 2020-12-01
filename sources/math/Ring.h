@@ -290,6 +290,13 @@ protected:
     virtual const Ring* complexify() const = 0;
 
     /**
+     * Returns the a newly allocated complex conjugate of this. Returns a newly allocated copy() of itself if 
+     * it does not belong to a complex field. In default implementation returns itself. For subclasses override
+     * this function to handle possible complex scenarios.
+    */
+    virtual const Ring* conjugate() const;
+
+    /**
      * Splits the element into a product this*unit=morph, where unit is invertible. Dynamically allocates to the references to the pointers.
     */
     virtual void split_canonical(const Ring*& morph, const Ring*& unit) const=0;
