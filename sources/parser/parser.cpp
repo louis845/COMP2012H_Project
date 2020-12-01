@@ -39,10 +39,11 @@ void Parser::reset_input(const std::string& input)
     root = nullptr;
     cur_tok = nullptr;
     
+    
     for (auto iter = var_table.begin(); iter != var_table.end(); ++iter)
         if (!iter->second)
             var_table.erase(iter);
-
+    
     this->input = input;
     tokenizer.reset_input(input);
     getNextToken();
@@ -664,6 +665,11 @@ const Info& Parser::parse(int engine_type, bool save, const string& var_name)
         // delete root;
         return res;
     }
+}
+
+const Info& Parser::getInfo() const
+{
+    return res;
 }
 
 

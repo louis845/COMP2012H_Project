@@ -26,6 +26,8 @@ public:
     // is specified by var_name
     const Info& parse(int engine_type=0, bool save=false, const std::string& var_name="Ans");
 
+    const Info& getInfo() const;
+
     bool assignVar(const std::string& var_name, const std::string& raw, int type);
     bool assignVar(const std::string& var_name, const ROperand& value);
     bool modifyName(const std::string& ori_name, const std::string& new_name);
