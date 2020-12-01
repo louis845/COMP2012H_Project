@@ -2,7 +2,8 @@
 ## Parser modified
 * I added the function getInfo(), which returns the internal info of the parser.
 * To get previous parse result
-* getInfo() will not be called before some parse()
+* Returns const Info&, and it is a const function.
+* getInfo() will not be called before some parse(), in the GUI code
 ## Strange bug
 <pre>
     Parser p{""};
