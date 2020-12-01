@@ -22,15 +22,35 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     ui->setupUi(this);
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("CINF");
-    init_window();
+    this->init_window();
     selected_choice=0;
 }
 
 void solution_widget::init_window(){
-    ui->disp_prog->setVisible(false);
-    connect(ui->plain_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_plain_update);
 
-    //connect(ui->ascii_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
+    void(QTreeWidget:: *tree_item_clicked)(QTreeWidgetItem*,int) = &QTreeWidget::itemClicked;
+    void(solution_widget:: *deal_item_pressed)(QTreeWidgetItem*) = &solution_widget::on_treeWidget_itemPressed;
+
+    connect(ui->treeWidget,tree_item_clicked,this,deal_item_pressed);
+
+    ui->disp_prog->setVisible(true);
+    ui->disp_prog->setMinimum(0);
+    ui->disp_prog->setMaximum(100);
+    ui->disp_prog->setValue(0);
+    progress_timer = new QTimer;
+    connect(progress_timer,&QTimer::timeout,[=](){
+        //if (ui->disp_prog != nullptr){
+            currentValue++;
+            if( currentValue == 100 ) currentValue = 0;
+            ui->disp_prog->setValue(currentValue);
+            update();
+        //}
+    });
+    progress_timer->start(100);
+
+    //connect(ui->plain_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_plain_update);
+
+    connect(ui->ascii_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
 
     connect(ui->scan_btn,&QPushButton::pressed,this,&solution_widget::captureMathExpression);
 
@@ -72,9 +92,8 @@ void solution_widget::init_window(){
     intepretation_view=new QWebEngineView{ui->scrollAreaIntepretation};
     ui->scrollAreaIntepretation->setWidget(intepretation_view);
 
-
-    steps=new StepsHistory;
-    steps->add_step(new StepText{"<h1>This is just a test</h1>\n"
+    current_viewing_steps=new StepsHistory;
+    current_viewing_steps->add_step(new StepText{"<h1>This is just a test</h1>\n"
                                  "The solutions of the quadratic equation should be displayed if an internet connection is correctly established.<br>\n"
                                  "$$x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}$$\n"
                                  "<h1>Type something or scan a picture to start</h1>"});
@@ -128,6 +147,9 @@ void solution_widget::handle_ascii_update(){
             os<<"$$";
 
             display_preview(os.str());
+            //question_num++;
+            //QTreeWidgetItem* new_question = new QTreeWidgetItem(QStringList(QString::fromStdString("Question"+to_string(question_num)+":")));
+            //ui->treeWidget->addTopLevelItem(new_question);
 
             StepsHistory *steps=nullptr;
             switch(selected_choice){
@@ -160,6 +182,7 @@ void solution_widget::handle_ascii_update(){
         display_preview("`"+i.interpreted_input+"`");
         display_answer(R"(\begin{align*} )" + i.eval_result + R"( \end{align*})");
     }
+
 }
 
 void solution_widget::handle_plain_update(){
@@ -188,23 +211,31 @@ void solution_widget::receiveImage(QPixmap p){
 }
 
 void solution_widget::updateAnsDisp(){
-    display_answer(steps->get_current_node().get_html_latex());
+    display_answer(current_viewing_steps->get_current_node().get_html_latex());
 }
 
 void solution_widget::navigateNext(){
-    steps->next_node();
+    current_viewing_steps->next_node();
     updateAnsDisp();
 }
 
 void solution_widget::navigatePrev(){
-    steps->previous_node();
+    current_viewing_steps->previous_node();
     updateAnsDisp();
 }
 
 void solution_widget::setNewSteps(StepsHistory *new_step){
-    delete steps;
-    steps=new_step;
+
+    all_steps_list.push_back(new_step);
+    current_viewing_steps=new_step;
     updateAnsDisp();
+    //QDateTime current_date_time =QDateTime::currentDateTime();
+    //QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
+    QTime current_time =QTime::currentTime();
+    QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList("History at "+current_time.toString()));
+    ui->treeWidget->addTopLevelItem(ply_item);
+
+    //total_history.
 }
 
 void solution_widget::method_dealer(int choice){
@@ -213,33 +244,12 @@ void solution_widget::method_dealer(int choice){
 
 void solution_widget::display_answer(string answer){
 
-    //QProgressBar* disp_prog = new QProgressBar(ui->steps_widget);
-    QTimer* timer = new QTimer();
-    int currentValue = 0;
-    ui->disp_prog->setValue(currentValue);
-    ui->disp_prog->setVisible(true);
-    connect(timer,&QTimer::timeout,[=,&currentValue](){
-        if (ui->disp_prog != nullptr){
-            currentValue++;
-            if( currentValue == 100 ) currentValue = 0;
-            ui->disp_prog->setValue(currentValue);
-            update();
-        }
-    });
-    timer->start(100);
-
     QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
     qs=qs+QString::fromStdString(answer);
     qs=qs+"</body></html>";
     solution_view->setHtml(qs);
     qDebug().noquote();
     qDebug()<<qs;
-
-    timer->stop();
-    if(currentValue != 100) currentValue = 100;
-    ui->disp_prog->setValue(currentValue);
-    update();
-    ui->disp_prog->setVisible(false);
 
 }
 
@@ -250,6 +260,13 @@ void solution_widget::display_preview(string preview){
     intepretation_view->setHtml(qs);
     qDebug().noquote();
     qDebug()<<qs;
+}
+
+void solution_widget::on_treeWidget_itemPressed(QTreeWidgetItem *item){
+    //int total_steps_num = all_steps_list.size();
+    int chosen_steps = ui->treeWidget->indexOfTopLevelItem(item);
+    current_viewing_steps = all_steps_list.at(chosen_steps);
+    updateAnsDisp();
 }
 
 void solution_widget::paintEvent(QPaintEvent *event)
@@ -265,6 +282,9 @@ solution_widget::~solution_widget()
 {
     input_window->close();
     delete ui;
-    delete steps;
+    //delete steps;
+    delete progress_timer;
 }
+
+
 
