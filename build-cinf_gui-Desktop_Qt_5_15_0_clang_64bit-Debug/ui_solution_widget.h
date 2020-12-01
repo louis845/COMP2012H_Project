@@ -13,6 +13,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QPlainTextEdit>
+#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QSpacerItem>
@@ -24,27 +25,35 @@ QT_BEGIN_NAMESPACE
 class Ui_solution_widget
 {
 public:
-    QScrollArea *scrollArea;
-    QWidget *steps_widget;
+    QHBoxLayout *horizontalLayout;
     QWidget *left_widget;
     QTabWidget *tabWidget;
     QWidget *plain_tab;
     QPlainTextEdit *plain_textedit;
     QWidget *ascii_tab;
     QPlainTextEdit *ascii_textedit;
+    QPushButton *scan_btn;
+    QTabWidget *tabWidget_2;
+    QWidget *tab;
     QScrollArea *scrollAreaIntepretation;
     QWidget *scrollAreaWidgetContents;
-    QPushButton *scan_btn;
-    QWidget *finish_btn_widget;
-    QHBoxLayout *horizontalLayout_2;
-    QPushButton *next_btn2;
-    QPushButton *finish_btn;
+    QWidget *tab_2;
+    QScrollArea *scrollAreaOriginal;
+    QWidget *scrollAreaWidgetContents_2;
+    QWidget *widget_2;
     QWidget *widget;
     QHBoxLayout *horizontalLayout_3;
     QPushButton *methods_btn;
     QSpacerItem *horizontalSpacer;
     QPushButton *previous_btn;
     QPushButton *next_btn;
+    QScrollArea *scrollArea;
+    QWidget *steps_widget;
+    QProgressBar *disp_prog;
+    QWidget *finish_btn_widget;
+    QHBoxLayout *horizontalLayout_2;
+    QPushButton *next_btn2;
+    QPushButton *finish_btn;
 
     void setupUi(QWidget *solution_widget)
     {
@@ -52,18 +61,11 @@ public:
             solution_widget->setObjectName(QString::fromUtf8("solution_widget"));
         solution_widget->resize(830, 580);
         solution_widget->setMinimumSize(QSize(830, 580));
-        solution_widget->setMaximumSize(QSize(830, 580));
-        scrollArea = new QScrollArea(solution_widget);
-        scrollArea->setObjectName(QString::fromUtf8("scrollArea"));
-        scrollArea->setGeometry(QRect(430, 70, 361, 441));
-        scrollArea->setWidgetResizable(true);
-        steps_widget = new QWidget();
-        steps_widget->setObjectName(QString::fromUtf8("steps_widget"));
-        steps_widget->setGeometry(QRect(0, 0, 359, 439));
-        scrollArea->setWidget(steps_widget);
+        solution_widget->setMaximumSize(QSize(3000, 3000));
+        horizontalLayout = new QHBoxLayout(solution_widget);
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         left_widget = new QWidget(solution_widget);
         left_widget->setObjectName(QString::fromUtf8("left_widget"));
-        left_widget->setGeometry(QRect(30, 20, 381, 541));
         tabWidget = new QTabWidget(left_widget);
         tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
         tabWidget->setGeometry(QRect(10, 220, 361, 311));
@@ -79,35 +81,42 @@ public:
         ascii_textedit->setObjectName(QString::fromUtf8("ascii_textedit"));
         ascii_textedit->setGeometry(QRect(10, 10, 331, 271));
         tabWidget->addTab(ascii_tab, QString());
-        scrollAreaIntepretation = new QScrollArea(left_widget);
-        scrollAreaIntepretation->setObjectName(QString::fromUtf8("scrollAreaIntepretation"));
-        scrollAreaIntepretation->setGeometry(QRect(20, 50, 331, 161));
-        scrollAreaIntepretation->setWidgetResizable(true);
-        scrollAreaWidgetContents = new QWidget();
-        scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 329, 159));
-        scrollAreaIntepretation->setWidget(scrollAreaWidgetContents);
         scan_btn = new QPushButton(left_widget);
         scan_btn->setObjectName(QString::fromUtf8("scan_btn"));
         scan_btn->setGeometry(QRect(20, 10, 331, 23));
-        finish_btn_widget = new QWidget(solution_widget);
-        finish_btn_widget->setObjectName(QString::fromUtf8("finish_btn_widget"));
-        finish_btn_widget->setGeometry(QRect(420, 520, 381, 41));
-        horizontalLayout_2 = new QHBoxLayout(finish_btn_widget);
-        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
-        next_btn2 = new QPushButton(finish_btn_widget);
-        next_btn2->setObjectName(QString::fromUtf8("next_btn2"));
+        tabWidget_2 = new QTabWidget(left_widget);
+        tabWidget_2->setObjectName(QString::fromUtf8("tabWidget_2"));
+        tabWidget_2->setGeometry(QRect(10, 40, 361, 181));
+        tab = new QWidget();
+        tab->setObjectName(QString::fromUtf8("tab"));
+        scrollAreaIntepretation = new QScrollArea(tab);
+        scrollAreaIntepretation->setObjectName(QString::fromUtf8("scrollAreaIntepretation"));
+        scrollAreaIntepretation->setGeometry(QRect(0, 0, 351, 151));
+        scrollAreaIntepretation->setWidgetResizable(true);
+        scrollAreaWidgetContents = new QWidget();
+        scrollAreaWidgetContents->setObjectName(QString::fromUtf8("scrollAreaWidgetContents"));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 349, 149));
+        scrollAreaIntepretation->setWidget(scrollAreaWidgetContents);
+        tabWidget_2->addTab(tab, QString());
+        tab_2 = new QWidget();
+        tab_2->setObjectName(QString::fromUtf8("tab_2"));
+        scrollAreaOriginal = new QScrollArea(tab_2);
+        scrollAreaOriginal->setObjectName(QString::fromUtf8("scrollAreaOriginal"));
+        scrollAreaOriginal->setGeometry(QRect(0, 0, 351, 151));
+        scrollAreaOriginal->setWidgetResizable(true);
+        scrollAreaWidgetContents_2 = new QWidget();
+        scrollAreaWidgetContents_2->setObjectName(QString::fromUtf8("scrollAreaWidgetContents_2"));
+        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 349, 149));
+        scrollAreaOriginal->setWidget(scrollAreaWidgetContents_2);
+        tabWidget_2->addTab(tab_2, QString());
 
-        horizontalLayout_2->addWidget(next_btn2);
+        horizontalLayout->addWidget(left_widget);
 
-        finish_btn = new QPushButton(finish_btn_widget);
-        finish_btn->setObjectName(QString::fromUtf8("finish_btn"));
-
-        horizontalLayout_2->addWidget(finish_btn);
-
-        widget = new QWidget(solution_widget);
+        widget_2 = new QWidget(solution_widget);
+        widget_2->setObjectName(QString::fromUtf8("widget_2"));
+        widget = new QWidget(widget_2);
         widget->setObjectName(QString::fromUtf8("widget"));
-        widget->setGeometry(QRect(420, 20, 381, 44));
+        widget->setGeometry(QRect(0, 0, 381, 44));
         horizontalLayout_3 = new QHBoxLayout(widget);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         methods_btn = new QPushButton(widget);
@@ -129,10 +138,41 @@ public:
 
         horizontalLayout_3->addWidget(next_btn);
 
+        scrollArea = new QScrollArea(widget_2);
+        scrollArea->setObjectName(QString::fromUtf8("scrollArea"));
+        scrollArea->setGeometry(QRect(10, 50, 371, 441));
+        scrollArea->setWidgetResizable(true);
+        steps_widget = new QWidget();
+        steps_widget->setObjectName(QString::fromUtf8("steps_widget"));
+        steps_widget->setGeometry(QRect(0, 0, 369, 439));
+        disp_prog = new QProgressBar(steps_widget);
+        disp_prog->setObjectName(QString::fromUtf8("disp_prog"));
+        disp_prog->setGeometry(QRect(130, 140, 118, 23));
+        disp_prog->setValue(24);
+        scrollArea->setWidget(steps_widget);
+        finish_btn_widget = new QWidget(widget_2);
+        finish_btn_widget->setObjectName(QString::fromUtf8("finish_btn_widget"));
+        finish_btn_widget->setGeometry(QRect(0, 500, 381, 41));
+        horizontalLayout_2 = new QHBoxLayout(finish_btn_widget);
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
+        next_btn2 = new QPushButton(finish_btn_widget);
+        next_btn2->setObjectName(QString::fromUtf8("next_btn2"));
+
+        horizontalLayout_2->addWidget(next_btn2);
+
+        finish_btn = new QPushButton(finish_btn_widget);
+        finish_btn->setObjectName(QString::fromUtf8("finish_btn"));
+
+        horizontalLayout_2->addWidget(finish_btn);
+
+
+        horizontalLayout->addWidget(widget_2);
+
 
         retranslateUi(solution_widget);
 
         tabWidget->setCurrentIndex(0);
+        tabWidget_2->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(solution_widget);
@@ -144,11 +184,13 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(plain_tab), QCoreApplication::translate("solution_widget", "Plain", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(ascii_tab), QCoreApplication::translate("solution_widget", "Asciimath", nullptr));
         scan_btn->setText(QCoreApplication::translate("solution_widget", "Scan", nullptr));
-        next_btn2->setText(QCoreApplication::translate("solution_widget", "Compute", nullptr));
-        finish_btn->setText(QCoreApplication::translate("solution_widget", "Finished", nullptr));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab), QCoreApplication::translate("solution_widget", "Intepretation", nullptr));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab_2), QCoreApplication::translate("solution_widget", "Original Image", nullptr));
         methods_btn->setText(QCoreApplication::translate("solution_widget", "Methods", nullptr));
         previous_btn->setText(QCoreApplication::translate("solution_widget", "Previous", nullptr));
         next_btn->setText(QCoreApplication::translate("solution_widget", "Next", nullptr));
+        next_btn2->setText(QCoreApplication::translate("solution_widget", "Compute", nullptr));
+        finish_btn->setText(QCoreApplication::translate("solution_widget", "Finished", nullptr));
     } // retranslateUi
 
 };

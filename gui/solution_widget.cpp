@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QApplication>
 #include <QWebEngineView>
+#include <QProgressBar>
 
 #include "math/linear/LinearOperations.h"
 
@@ -26,6 +27,7 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
 }
 
 void solution_widget::init_window(){
+    ui->disp_prog->setVisible(false);
     connect(ui->plain_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_plain_update);
 
     //connect(ui->ascii_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
@@ -69,6 +71,7 @@ void solution_widget::init_window(){
 
     intepretation_view=new QWebEngineView{ui->scrollAreaIntepretation};
     ui->scrollAreaIntepretation->setWidget(intepretation_view);
+
 
     steps=new StepsHistory;
     steps->add_step(new StepText{"<h1>This is just a test</h1>\n"
@@ -174,10 +177,14 @@ void solution_widget::captureMathExpression(){
 
 void solution_widget::receiveImage(QPixmap p){
     this->setVisible(true);
+    QLabel* original_image;
+    original_image->setPixmap(p);
+    ui->scrollAreaOriginal->setWidget(original_image);
     std::pair<string, string> result=Ocr::getInstance().request(p);
     string asciimath=result.second;
     ui->ascii_textedit->setPlainText(QString::fromStdString(asciimath));
     handle_ascii_update();
+
 }
 
 void solution_widget::updateAnsDisp(){
@@ -205,12 +212,35 @@ void solution_widget::method_dealer(int choice){
 }
 
 void solution_widget::display_answer(string answer){
+
+    //QProgressBar* disp_prog = new QProgressBar(ui->steps_widget);
+    QTimer* timer = new QTimer();
+    int currentValue = 0;
+    ui->disp_prog->setValue(currentValue);
+    ui->disp_prog->setVisible(true);
+    connect(timer,&QTimer::timeout,[=,&currentValue](){
+        if (ui->disp_prog != nullptr){
+            currentValue++;
+            if( currentValue == 100 ) currentValue = 0;
+            ui->disp_prog->setValue(currentValue);
+            update();
+        }
+    });
+    timer->start(100);
+
     QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
     qs=qs+QString::fromStdString(answer);
     qs=qs+"</body></html>";
     solution_view->setHtml(qs);
     qDebug().noquote();
     qDebug()<<qs;
+
+    timer->stop();
+    if(currentValue != 100) currentValue = 100;
+    ui->disp_prog->setValue(currentValue);
+    update();
+    ui->disp_prog->setVisible(false);
+
 }
 
 void solution_widget::display_preview(string preview){
@@ -237,3 +267,4 @@ solution_widget::~solution_widget()
     delete ui;
     delete steps;
 }
+
