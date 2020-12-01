@@ -49,7 +49,7 @@ public:
     {
         if (input_key->objectName().isEmpty())
             input_key->setObjectName(QString::fromUtf8("input_key"));
-        input_key->resize(702, 220);
+        input_key->resize(544, 220);
         verticalLayout = new QVBoxLayout(input_key);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         widget = new QWidget(input_key);

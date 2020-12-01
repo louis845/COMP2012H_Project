@@ -1,6 +1,9 @@
 #include "parser.h"
+#include "math/linear/LinearOperations.h"
 using std::cout;
 using std::endl;
+using std::string;
+using std::make_pair;
 
 typedef Token::TokName TokName;
 typedef Token::TokType TokType;
@@ -15,7 +18,6 @@ typedef Token::TokType TokType;
  */
 
 
-// TODO: add support for intermediate expressions with super/subscripts
 std::unordered_map<TokName, int> Parser::bin_op_precedence = 
 {
     {TokName::PLUS, 100}, {TokName::MINUS, 100}, 
@@ -34,9 +36,13 @@ void Parser::reset_input(const std::string& input)
 {
     delete root;
     delete cur_tok;
-    var_table.clear();
     root = nullptr;
     cur_tok = nullptr;
+    
+    for (auto iter = var_table.begin(); iter != var_table.end(); ++iter)
+        if (!iter->second)
+            var_table.erase(iter);
+
     this->input = input;
     tokenizer.reset_input(input);
     getNextToken();
@@ -68,6 +74,14 @@ void Parser::getNextToken()
 {
     delete cur_tok;
     cur_tok = tokenizer.getNextToken();        // caller will check whether cur_tok is a nullptr
+    while (cur_tok && cur_tok->get_name() == TokName::ENDL)
+    {
+        delete cur_tok;
+        cur_tok = tokenizer.getNextToken();
+    }
+
+    if (cur_tok && cur_tok->get_name() == TokName::EQUAL)
+        throw std::invalid_argument("expression contains invalid symbol '='");
 }
 
 
@@ -234,8 +248,12 @@ ExprAst* Parser::parseId()
     if (cur_tok == nullptr)     return nullptr;
     if (cur_tok->get_type() == TokType::ID)
     {
-        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value());
-        var_table.emplace(cur_tok->get_raw_value());
+        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value(), &r_table, &arma_table);
+        
+        auto iter = var_table.find(cur_tok->get_raw_value());
+        if (iter == var_table.end()) var_table[cur_tok->get_raw_value()] = 0;
+        else if (iter->second == 2) iter->second = 1;
+
         getNextToken();
         return var;
     }
@@ -259,8 +277,12 @@ ExprAst* Parser::parseId()
 
     if (cur_tok->get_type() == TokType::ID)
     {
-        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value());
-        var_table.emplace(cur_tok->get_raw_value());
+        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value(), &r_table, &arma_table);
+        
+        auto iter = var_table.find(cur_tok->get_raw_value());
+        if (iter == var_table.end()) var_table[cur_tok->get_raw_value()] = 0;
+        else if (iter->second == 2) iter->second = 1;
+
         func->args.emplace_back(var);
         getNextToken();
         return func;
@@ -387,7 +409,7 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
         if (!cur_tok)   return lhs;
         int cur_precedence = getTokPrecedence();
         TokName cur_op{TokName::CDOT};              // if not a binary op, presume to be multiplication
-        std::string cur_raw_str{""};
+        std::string cur_raw_str;
 
         switch (cur_precedence)
         {
@@ -546,6 +568,7 @@ void Parser::autoDetect(ExprAst* root)
         {
             case TokName::RREF: case TokName::SOLVE: case TokName::DET: 
             case TokName::INV: case TokName::CHAR_POLY: case TokName::NEG:
+            case TokName::ORTH:
                 break;
             
             default:
@@ -568,10 +591,42 @@ void Parser::autoDetect(ExprAst* root)
 
 
 // main driver function, handles all exceptions
-const Info& Parser::parse(int engine_type)
+const Info& Parser::parse(int engine_type, bool save, const string& var_name)
 {
     res.clear();
     res.engine_chosen = engine_type;
+
+    if (save && var_table.count(var_name))
+    {
+        res.success = false;
+        res.err_msg = "Error: variable name already exists, please choose another name";
+        return res;
+    }
+
+    if (engine_type == 3 || input.find('=') != std::string::npos)
+    {
+        res.engine_used = 3;
+        try
+        {
+            evalLinearSystem(parseLinearSystem());
+            return res;
+        }
+        catch (const std::exception& err)
+        {
+            res.success = false;
+            res.err_msg = "Error: " + string(err.what());
+            return res;
+        }
+    }
+
+    /*
+    if (input.find('=') != std::string::npos)
+    {
+        res.success = false;
+        res.err = new std::invalid_argument("Error: equal sign detected but computational engine is not on linear system mode \n you may want to manually select the correct engine");
+        return res;
+    }
+    */
 
     try
     {
@@ -582,15 +637,14 @@ const Info& Parser::parse(int engine_type)
     }
     catch (const std::invalid_argument& err)
     {
-        string err_msg = "Error: parsing failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
+        res.err_msg = "Error: parsing failed, " + string(err.what());
         // delete root;
         res.success = false;
         return res;
     }
     catch (...)
     {
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during parsing");
+        res.err_msg = "Fatal error: unexpected exception thrown during parsing";
         // delete root;
         res.success = false;
         return res;
@@ -600,27 +654,27 @@ const Info& Parser::parse(int engine_type)
     if (res.success)
     {
         res.engine_used = res.engine_chosen ? res.engine_chosen : res.engine_used;
-        if (res.engine_used == 1) evalR();
-        if (res.engine_used == 2) eval();
+        if (res.engine_used == 1) evalR(save, var_name);
+        if (res.engine_used == 2) eval(save, var_name);
         return res;
     }
     else
     {
-        res.err = new std::domain_error("Error: auto detection failed, please specify engine type");
+        res.err_msg = "Error: auto detection failed, please specify engine type";
         // delete root;
         return res;
     }
 }
 
 
-void Parser::evalR()
+void Parser::evalR(bool save, const string& var_name)
 {
-    if (var_table.size() > 1)
+    if (getNumUnknown() > 1)
     {  
         res.var_exists = true;
         res.success = false;
-        res.warning += "Warning: more than one variable with unknown value in the expression.\n";
-        res.warning += "You may want to assign values to some of the variables.\n";
+        res.err_msg = "Error: more than one variable with unknown value in the expression.\n";
+        res.err_msg += "You may want to assign values to some of the variables.\n";
         return;
     }
 
@@ -630,19 +684,25 @@ void Parser::evalR()
         if (typeid(*root) == typeid(MatrixExprAst)) 
             res.addMat(result, TokName::NA);
         res.eval_result = result.genTex();
+
+        if (save) 
+        {
+            var_table.insert(make_pair(var_name, 2));
+            r_table.insert(make_pair(var_name, result));
+        }
+
         return;
     }
     catch (const std::invalid_argument& err)
     {
         res.success = false;
-        string err_msg = "Error: evaluation failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
+        res.err_msg = "Error: evaluation failed, " + string(err.what());
         return;
     }
     catch (...)
     {
         res.success = false;
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        res.err_msg = "Fatal error: unexpected exception thrown during evaluation";
         return;
     }
 
@@ -664,14 +724,14 @@ void Parser::evalR()
 }
 
 
-void Parser::eval()
+void Parser::eval(bool save, const string& var_name)
 {
-    if (var_table.size() > 0)
+    if (getNumUnknown() > 0)
     {
         res.var_exists = true;
         res.success = false;
-        res.err = new std::invalid_argument("Warning: variables with unknown values are not supported in Armadillo.\n");
-        res.warning += "You may want to assign values to the variables.\n";
+        res.err_msg = "Error: variables with unknown values are not supported in Armadillo.\n";
+        res.err_msg += "You may want to assign values to the variables.";
         return;
     }
 
@@ -694,26 +754,31 @@ void Parser::eval()
         // else if (result.type == ArmaOperand::Type::MAT) cout << result.mat;
         // else cout << "(" << result.value << ")" << "I";
         res.eval_result = result.genTex();
+        
+        if (save) 
+        {
+            var_table.insert(make_pair(var_name, 2));
+            arma_table.insert(make_pair(var_name, result));
+        }
+
         return;
     }
     catch (const std::logic_error& err)     // both evaluator and Armadillo's exception will be caught here
     {
-        string err_msg = "Error: evaluation failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
+        res.err_msg = "Error: evaluation failed, " + string(err.what());
         res.success = false;
         return;
     }
     catch (const std::runtime_error& err)   // part of Armadillo's exception and some fatal error
     {
-        string err_msg = "Fatal error: " + string(err.what());
-        res.err = new std::runtime_error(err_msg.c_str());
+        res.err_msg = "Fatal error: " + string(err.what());
         res.success = false;
         return;
     }
     catch (...)
     {
         res.success = false;
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        res.err_msg = "Fatal error: unexpected exception thrown during evaluation";
         return;
     }
 }
@@ -856,13 +921,389 @@ void Parser::printAst(ExprAst* root) const
 }
 
 
+void Parser::modifyCoeffs(const std::string& name, size_t row, bool neg,
+                        std::map<std::string, std::map<int, ROperand*>>& coeffs, ROperand delta)
+{
+    if (neg) delta = -delta;
+    if (coeffs[name].count(row))
+        *coeffs[name][row] += delta;
+    else
+        coeffs[name][row] = new ROperand(delta);
+}
+
+
+
+// EXPERIMENTAL: dedicated parser for parsing linear systems
+// it is a feature added at the very end of the development
+// therefore no major grammar modification on the main parser can be adopted for compatibility
+// EXTREMELY UNRELIABLE, I myself do not believe this will work
+
+// it works, how come??
+std::vector<std::string> Parser::parseLinearSystem()
+{
+    string lines = input;
+    size_t pos = lines.find(R"(\\)"), row_cnt = 0;
+    std::map<string, std::map<int, ROperand*>> coeffs;
+    while (true)
+    {
+        pos = pos == string::npos ? lines.size() : pos;
+        string line = lines.substr(0, pos);
+        size_t eq_pos = line.find('=');
+        if (eq_pos == string::npos) 
+            throw std::invalid_argument("invalid linear equation, missing '='");
+        
+        try
+        {
+            parseLine(line.substr(0, eq_pos), row_cnt, false, coeffs);
+            parseLine(line.substr(eq_pos + 1), row_cnt++, true, coeffs);
+        }
+        catch (...)
+        {
+            for (auto var : coeffs)
+                for (auto row : var.second)
+                    delete row.second;
+            throw;
+        }
+
+        if (pos == lines.size()) break;
+        lines = lines.substr(pos + 2);
+        pos = lines.find(R"(\\)");
+    }
+
+    vector<string> var_names;
+    for (auto var : coeffs)
+    {
+        if (var.first == "constant") continue;
+        var_names.emplace_back(var.first);
+    }
+    var_names.emplace_back("constant");
+
+    R** matR = new R* [row_cnt];
+    for (size_t i = 0; i < row_cnt; ++i)
+    {
+        matR[i] = new R [coeffs.size()];
+        for (size_t j = 0; j < var_names.size() - 1; ++j)
+        {
+            if (coeffs[var_names[j]].count(i))    
+                matR[i][j] = coeffs[var_names[j]].at(i)->value;
+            else matR[i][j] = newInt(0L);
+        }
+        if (coeffs["constant"].at(i))
+            matR[i][var_names.size() - 1] = -coeffs["constant"].at(i)->value;
+        else
+            matR[i][var_names.size() - 1] = newInt(0L);
+    }
+
+    res.parsed_mat.emplace_back(TokName::SOLVE, matR);
+    res.mat_size.emplace_back(std::make_pair(row_cnt, var_names.size()));
+
+    for (auto var : coeffs)
+        for (auto row : var.second)
+            delete row.second;
+
+    return var_names;
+}
+
+
+// I assert that all the nodes containing variables will be in the right subtree
+// except for the left-most leaf, if the input is well formatted
+void Parser::parseLine(std::string line, size_t row, bool neg, 
+                        std::map<std::string, std::map<int, ROperand*>>& coeffs)
+{
+    Parser parser(line);
+    ExprAst* ast_root = parser.parseExpr(), *cur_root = ast_root;
+    if (ast_root == nullptr)    throw std::invalid_argument("invalid linear system");
+    Info dummy_info;
+    dummy_info.engine_used = 3;
+    while (true)
+    {
+        if (cur_root == nullptr)    
+        {
+            delete ast_root;
+            throw std::invalid_argument("the equation is not linear or not in valid form");
+        }
+        if (typeid(*cur_root) == typeid(NumberExprAst))
+        {
+            modifyCoeffs("constant", row, neg, coeffs, ROperand(cur_root->evalR(dummy_info)));
+            break;
+        }
+        else if (typeid(*cur_root) == typeid(VariableExprAst))
+        {
+            VariableExprAst* temp = dynamic_cast<VariableExprAst*>(cur_root);
+            if (temp->name != "t")
+                modifyCoeffs(temp->name, row, neg, coeffs, ROperand(newInt(1L)));
+            else
+                modifyCoeffs("constant", row, neg, coeffs, ROperand(newTerm(1)));
+
+            break;
+        }
+        else if (typeid(*cur_root) == typeid(BinaryExprAst))
+        {
+            BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(cur_root);
+            if (temp->op != TokName::PLUS && temp->op != TokName::MINUS)
+            {
+                try
+                {
+                    string lhs = findVar(temp->lhs), rhs = findVar(temp->rhs);
+                    if (lhs.empty() && rhs.empty())
+                    {
+                        modifyCoeffs("constant", row, neg, coeffs, ROperand(temp->evalR(dummy_info)));
+                        break;
+                    }
+                    if (!lhs.empty() && !rhs.empty())
+                    {
+                        delete ast_root;
+                        throw std::invalid_argument("the equation is not linear or not in valid form");
+                    }
+                    if (lhs.empty()) swap(lhs, rhs);
+                    modifyCoeffs(lhs, row, neg, coeffs, ROperand(temp->evalR(dummy_info)));
+                    break;
+                }
+                catch (...)
+                {
+                    delete ast_root;
+                    throw;
+                }
+            }
+            
+            bool local_neg = neg == (temp->op == TokName::PLUS);
+            ExprAst* lhs = temp->lhs, *rhs = temp->rhs;
+            string var_name = findVar(rhs);
+
+            if (var_name.empty())   
+                modifyCoeffs("constant", row, local_neg, coeffs, ROperand(rhs->evalR(dummy_info)));
+            else
+                modifyCoeffs(var_name, row, local_neg, coeffs, ROperand(rhs->evalR(dummy_info)));
+
+            cur_root = lhs;
+        }
+        else if (typeid(*cur_root) == typeid(FunctionExprAst))
+        {
+            FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(cur_root);
+            if (temp->op != TokName::NEG)
+            { 
+                delete ast_root;
+                throw std::invalid_argument("the equation is not linear or not in valid form");
+            }
+            cur_root = temp->args[0];
+            neg = !neg;
+        }
+        else
+        {
+            delete ast_root;
+            throw std::invalid_argument("the equation is not linear or not in valid form");
+        }
+    }
+    delete ast_root;
+}
+
+
+string Parser::findVar(ExprAst* root)
+{
+    if (typeid(*root) == typeid(BinaryExprAst))
+    {
+        BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(root);
+        string lhs = findVar(temp->lhs), rhs = findVar(temp->rhs);
+        if (lhs != rhs && !lhs.empty() && !rhs.empty())
+            throw std::invalid_argument("the equation is not linear or not in valid form, e.g. group two unknowns with parentheses");
+        if (!lhs.empty())  return lhs;
+        return rhs;
+    }
+    
+    if (typeid(*root) == typeid(FunctionExprAst))
+    {
+        FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(root);
+        if (temp->op == TokName::NEG)   return findVar(temp->args[0]);
+        for (auto arg : temp->args)
+            if (!findVar(arg).empty())
+                throw std::invalid_argument("the equation is not linear or not in valid form");
+    }
+
+    if (typeid(*root) == typeid(VariableExprAst))
+    {
+        VariableExprAst* temp = dynamic_cast<VariableExprAst*>(root);
+        return temp->name == "t" ? "" : temp->name;
+    }
+
+    return "";
+}
+
+
+void Parser::evalLinearSystem(vector<string> var_names)
+{
+    StepsHistory* steps{nullptr};
+    LinearOperationsFunc::solve(res.parsed_mat.back().second, res.mat_size.back().first,
+                                res.mat_size.back().second, steps);
+    if (steps == nullptr)
+        throw std::invalid_argument("fail to solve the linear system, please check the input");
+    R** matR{nullptr};
+    int row, col;
+    steps->getAnswer(matR, row, col);
+    if (matR == nullptr)
+    {
+        delete steps;
+        throw std::invalid_argument("fail to solve the linear system, the input may be invalid or it has not solution");
+    }
+    
+    res.eval_result = "&";
+    for (int i = 0; i < row; ++i)
+    {
+        string var = var_names[i];
+        auto pos = var.find('_');
+        if (pos != string::npos)
+            var = var.substr(0, pos + 1) + "{" + var.substr(pos + 1) + "}";
+
+        res.eval_result += var + " = " + matR[i][0].to_latex() + R"( \quad )";
+        if (i != 0 && i % 3 == 0 && i != row - 1) res.eval_result += R"( \\ &)";
+    }
+
+    res.interpreted_input = R"(text(Please check the step-by-step section for the interpreted augmented matrix. ))";
+    res.interpreted_input += R"(text(The columns, from left to right, correspond to ))";
+    for (size_t i = 0; i < var_names.size() - 1; ++i)
+    {
+        res.interpreted_input += var_names[i];
+        if (i != var_names.size() - 2) res.interpreted_input += ", ";
+    }
+            
+    for (int i = 0; i < row; ++i)
+        delete [] matR[i];
+    delete [] matR;
+    delete steps;
+}
+
+
 void Parser::print() const
 {
     printAst(root);
 }
 
+
 string Parser::getAsciiMath() const
 {
     if (root == nullptr)    return "";
     return root->genAsciiMath();
+}
+
+
+bool Parser::assignVar(const string& var_name, const string& raw, int type)
+{
+    Parser parser(raw);
+    const Info& result = parser.parse(type);
+    Info dummy_info;
+    if (!res.success)
+    {
+        res.err_msg = result.err_msg;
+        return false;
+    }
+
+    if (type == 1)
+    {
+        ROperand value;
+        try { value = parser.root->evalR(dummy_info); }
+        catch (const std::exception& err)
+        {
+            res.err_msg = err.what();
+            return false;
+        }
+        auto iter = arma_table.find(var_name);
+        if (iter != arma_table.end())   arma_table.erase(iter);
+        r_table[var_name] = value;
+        
+        auto var_iter = var_table.find(var_name);
+        if (var_iter != var_table.end() && !var_iter->second) 
+            var_iter->second = 1;
+        return true;
+    }
+
+    ArmaOperand value;
+    try { value = parser.root->eval(); }
+    catch (const std::exception& err)
+    {
+        res.err_msg = err.what();
+        return false;
+    }
+    auto iter = r_table.find(var_name);
+    if (iter != r_table.end())  r_table.erase(iter);
+    arma_table[var_name] = value;
+    
+    auto var_iter = var_table.find(var_name);
+    if (var_iter != var_table.end() && !var_iter->second) 
+        var_iter->second = 1;
+
+    return true;
+}
+
+
+bool Parser::assignVar(const string& var_name, const ROperand& value)
+{
+    auto iter = arma_table.find(var_name);
+    if (iter != arma_table.end())   arma_table.erase(iter);
+    r_table[var_name] = value;
+    
+    auto var_iter = var_table.find(var_name);
+    if (var_iter != var_table.end() && !var_iter->second) 
+        var_iter->second = 1;
+
+    return true;
+}
+
+
+bool Parser::modifyName(const string& ori_name, const string& new_name)
+{
+    if (!var_table.count(ori_name) || var_table.count(new_name)) return false;
+    if (var_table[ori_name] < 2) return false;
+
+    auto r_iter = r_table.find(ori_name);
+    if (r_iter != r_table.end())
+    {
+        ROperand value = r_iter->second;
+        r_table.erase(r_iter);
+        r_table[new_name] = value;
+        return true;
+    }
+
+    auto arma_iter = arma_table.find(ori_name);
+    if (arma_iter != arma_table.end())
+    {
+        ArmaOperand value = arma_iter->second;
+        arma_table.erase(arma_iter);
+        arma_table[new_name] = value;
+        return true;
+    }
+
+    var_table.erase(ori_name);
+    var_table.insert(make_pair(new_name, 2));
+    return false;
+}
+
+
+bool Parser::eraseVar(const string& var_name)
+{
+    if (!var_table.count(var_name) || var_table[var_name] < 2) return false;
+    if (arma_table.count(var_name)) arma_table.erase(var_name);
+    if (r_table.count(var_name)) r_table.erase(var_name);
+    var_table.erase(var_name);
+    return true;
+}
+
+
+map<string, string> Parser::retrieve_var() const
+{
+    map<string, string> table;
+    for (const auto& item : r_table)
+        table.insert(make_pair(item.first, item.second.genTex()));
+    for (const auto& item : arma_table)
+        table.insert(make_pair(item.first, item.second.genTex()));
+    for (const auto& item : var_table)
+        table.insert(make_pair(item.first, ""));
+    return table;
+}
+
+
+int Parser::getNumUnknown() const
+{
+    int cnt = 0;
+    for (auto item : var_table)
+        if (!item.second)   ++cnt;
+    return cnt;
 }

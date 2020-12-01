@@ -34,6 +34,7 @@ SOURCES += \
     input_key.cpp \
     main.cpp \
     begin_widget.cpp \
+    manual_window.cpp \
     show_capture.cpp \
     solution_widget.cpp \
     window_capture.cpp
@@ -67,6 +68,7 @@ HEADERS += \
     ../sources/utils/ocr_api.h \
     begin_widget.h \
     input_key.h \
+    manual_window.h \
     show_capture.h \
     solution_widget.h \
     window_capture.h \
@@ -74,6 +76,7 @@ HEADERS += \
 FORMS += \
     begin_widget.ui \
     input_key.ui \
+    manual_window.ui \
     show_capture.ui \
     solution_widget.ui
 
@@ -109,12 +112,13 @@ else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../l
 
 macx: LIBS += -L$$PWD/../libraries/gmp_621_macosx/ -lgmp
 
-INCLUDEPATH += $$PWD/../libraries/gmp_621_macosx
-DEPENDPATH += $$PWD/../libraries/gmp_621_macosx
+macx:INCLUDEPATH += $$PWD/../libraries/gmp_621_macosx
+macx:DEPENDPATH += $$PWD/../libraries/gmp_621_macosx
 
 macx: PRE_TARGETDEPS += $$PWD/../libraries/gmp_621_macosx/libgmp.a
 
 
+macx: LIBS += -L$$PWD/../libraries/openblas_macosx/ -lopenblasp-r0.3.12
 
-
-macx: LIBS += -lopenblasp-r0.3.12
+INCLUDEPATH += $$PWD/../libraries/openblas_macosx
+DEPENDPATH += $$PWD/../libraries/openblas_macosx

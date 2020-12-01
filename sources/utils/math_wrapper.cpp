@@ -3,6 +3,15 @@
 using std::string;
 using std::stringstream;
 
+
+ROperand::ROperand(R** matR, int row_num, int col_num): type(Type::MAT), mat(row_num)
+{
+    for (int i = 0; i < row_num; ++i)
+        for (int j = 0; j < col_num; ++j)
+            mat[i].emplace_back(matR[i][j]);
+}
+
+
 ROperand ROperand::operator-()
 {
     if (type == Type::MAT)
@@ -23,7 +32,7 @@ ROperand ROperand::operator+(ROperand rhs)             // use PBV here since com
     {
         if (mat.size() != rhs.mat.size() || mat[0].size() != rhs.mat[0].size())
             throw std::runtime_error("Error: attempting to add two matrices with different sizes.");
-        ROperand result(std::move(rhs));            // use synthesized move constructor
+        ROperand result(rhs);            // use synthesized move constructor
         for (size_t i = 0; i < mat.size(); ++i)
             for (size_t j = 0; j < mat[i].size(); ++j)
             {
@@ -36,7 +45,7 @@ ROperand ROperand::operator+(ROperand rhs)             // use PBV here since com
 
     if (rhs.type == Type::MAT)      // scalar + matrix
     {
-        ROperand result(std::move(rhs));
+        ROperand result(rhs);
         for (size_t i = 0; i < result.mat.size(); ++i)
             for (size_t j = 0; j < result.mat[i].size(); ++j)
             {
@@ -52,7 +61,7 @@ ROperand ROperand::operator+(ROperand rhs)             // use PBV here since com
         return rhs * (*this);       // huge time & space complexity here
     }
 
-    ROperand result(std::move(rhs));
+    ROperand result(rhs);
     if (R::complexify_if_needed(result.value, value))
         result.value = result.value + value;
     else throw std::runtime_error("Error: unsupported addition due to type mismatch.");
@@ -67,12 +76,16 @@ ROperand ROperand::operator*(ROperand rhs)
         if (mat[0].size() != rhs.mat.size())
             throw std::runtime_error("Error: attempting to multiply two matrices with different sizes.");
         ROperand result(mat.size());
+        for (size_t i = 0; i < mat.size(); ++i)
+            for (size_t j = 0; j < rhs.mat[0].size(); ++j)
+                result.mat[i].emplace_back(newInt(0L));
+
         for (size_t i = 0; i < mat.size(); ++i)         // primitive implementation, use Armadillo if handle large matrices
             for (size_t j = 0; j < rhs.mat[0].size(); ++j)
                 for (size_t k = 0; k < rhs.mat.size(); ++k)
                 {
                     if (R::complexify_if_needed(mat[i][k], rhs.mat[k][j]))
-                        mat[i].push_back(mat[i][k] * rhs.mat[k][j]);
+                        result.mat[i][j] = result.mat[i][j] + (mat[i][k] * rhs.mat[k][j]);
                     else throw std::runtime_error("Error: unsupported matrix multiplication due to type mismatch.");
                 }
         return result;
@@ -85,7 +98,7 @@ ROperand ROperand::operator*(ROperand rhs)
 
     if (rhs.type == Type::MAT)      // scalar * matrix
     {
-        ROperand result(std::move(rhs));
+        ROperand result(rhs);
         for (size_t i = 0; i < result.mat.size(); ++i)
             for (size_t j = 0; j < result.mat[i].size(); ++j)
             {
@@ -96,7 +109,7 @@ ROperand ROperand::operator*(ROperand rhs)
         return result;
     }
 
-    ROperand result(std::move(rhs));        // scalar * scalar
+    ROperand result(rhs);        // scalar * scalar
     if (R::complexify_if_needed(result.value, value))
         result.value = result.value * value;
     else throw std::runtime_error("Error: unsupported multiplication due to type mismatch.");
@@ -138,6 +151,20 @@ ROperand ROperand::operator^(int rhs)           // fast exponentiation
 }
 
 
+ROperand ROperand::operator+=(ROperand rhs)
+{
+    *this = *this + rhs;
+    return *this;
+}
+
+
+ROperand ROperand::operator-=(ROperand rhs)
+{
+    *this = *this - rhs;
+    return *this;
+}
+
+
 string ROperand::genTex() const
 {
     switch (type)
@@ -149,7 +176,7 @@ string ROperand::genTex() const
         {
             string coeff = value.to_latex();
             for (unsigned char c : coeff)
-                if (c < '0' && c > '9' && c != '.') return "(" + coeff + ")I";
+                if ((c < '0' || c > '9') && c != '.') return "(" + coeff + ")I";
             return coeff + "I";
         }
 
@@ -302,7 +329,9 @@ string ArmaOperand::genTex() const
     stringstream ss;
     ss.flags(cout.flags());
     ss.imbue(cout.getloc());
-    ss.precision(cout.precision());
+    // ss.precision(cout.precision());
+    ss.precision(4);
+    ss.setf(std::ios::fixed, std::ios::floatfield);
 
     switch (type)
     {

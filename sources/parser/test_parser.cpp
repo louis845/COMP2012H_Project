@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <iomanip>
 #include "parser.h"
 #include "lexer.h"
 #include "tokens.h"
@@ -20,6 +21,17 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
         cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
         cout << "computation result: " << res.eval_result << endl << endl;
         cout << "matrix num: " << res.mat_size.size() << endl << endl;
+
+        if (type == 3)
+        {
+            cout << "mat: " << endl;
+            for (size_t i = 0; i < res.mat_size[0].first; ++i)
+            {
+                for (size_t j = 0; j < res.mat_size[0].second; ++j)
+                    cout << setw(14) << res.parsed_mat[0].second[i][j].to_latex() << " ";
+                cout << endl;
+            }
+        }
     }
     else
     {
@@ -28,7 +40,7 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
         cout << "infix notation: " << endl;
         parser.print();
         cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
-        cout << res.err->what() << endl << endl;
+        cout << res.err_msg << endl << endl;
     }
 
     cout << endl << endl << string(80, '-') << endl << endl;
@@ -39,11 +51,13 @@ int main()
 {
     int engine = 0;
 
+    string linear{R"(4*5t x_alpha + (5+2i)/t y_1 - 6z_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_1 = 3 + z_1 \\ 5t^4z_1 = 3 + 5/6 y_1)"};
+
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
     string debug_2{"[[3, 4], [5, 6]] + ([3, 4], [5, 6]) + sin(([3, 4], [5, 6])) + cos([[3, 4], [5, 6]]) + tan[[3, 4], [5, 6]]"};
 
-    string debug_3{"solve[[1, 0, 1], [0, 2, 4]]"};
+    string debug_3{"inv(inv(inv[[1, 0], [0, 2]]))"};
 
     string test_1{"1 + 2 * 3 - 4 % 5 / 6 + 7 ^ 8"};
 
@@ -58,6 +72,8 @@ int main()
     string func{"sin(cos(tan(exp(ln(min(3, 4, 5, 6) + x) - y) * pi) / 42) ** i)"};
 
     string greek{"sin(alpha) - cos(-beta) / sqrt(omega) * root(phi, varphi)"};
+
+    test_parser(linear, "linear system: ", 3);
 
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
@@ -79,9 +95,15 @@ int main()
 
     string eval_test_3{"(-2 (2601 + 5598 x - 61921 x^2 - 10126 x^3 + 6848 x^4 + 1056 x^5)) / (x + 3)"};
 
+    string r_test_4{"orth[[3, 4], [5, 6]] + rref[[3, 4], [5, 6]]"};
+
+    string r_test_5{"charpoly[[3, 4], [5, 6]] + inv[[3, 4], [5, 6]]"};
+
     test_parser(eval_test_1, "R test 1", engine);
     test_parser(eval_test_2, "R test 2", engine);
     test_parser(eval_test_3, "R test 3", engine);
+    test_parser(r_test_4, "R test 4", engine);
+    test_parser(r_test_5, "R test 5", engine);
 
 
     // ------------------------- test Armadillo below ------------------------------
@@ -123,6 +145,14 @@ int main()
     test_parser(decomp_2, "decomposition test 2", engine);
     test_parser(decomp_3, "decomposition test 3", engine);
     test_parser(decomp_4, "decomposition test 4", engine);
+
+
+    stringstream ss;
+    ss.precision(4);
+    ss.setf(std::ios::fixed, std::ios::floatfield);
+
+    ss << arma::cx_double(4.4, 3.4);
+    cout << ss.str();
 
     cin.get(); cin.get();
 }
