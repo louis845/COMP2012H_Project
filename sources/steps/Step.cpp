@@ -10,8 +10,12 @@ Step::~Step(){
 
 }
 
-StepText::StepText(const string& s) : text(s){
+StepText::StepText(const string& s, const string& ls) : text(s), latex_text(ls){
 
+}
+
+StepText::StepText(const string& s) : StepText(s,s){
+    
 }
 
 void StepText::print_to_console() const{
@@ -22,5 +26,5 @@ void StepText::print_to_console() const{
 }
 
 string StepText::get_html_latex() const{
-    return text;
+    return latex_text;
 }

@@ -59,7 +59,7 @@ private:
     RF** space_matrix;
     int rows,rows_space;
     int cols,cols_space;
-    std::string text;
+    std::string text, latex;
 public:
 
     /**
@@ -67,7 +67,10 @@ public:
      * i.e. the matrix does not contain the row/col cutoff. row_or_col=true indicates it is row. Pass cutoff=-1 for no cutoff. Here row_or_col will
      * be ignored.
     */
+    MatrixSpaceStep(RF** matrix,int rows,int cols,int cutoff,bool row_or_col,const std::string& text, const std::string& latex);
+
     MatrixSpaceStep(RF** matrix,int rows,int cols,int cutoff,bool row_or_col,const std::string& text);
+
     ~MatrixSpaceStep();
 
     virtual void print_to_console() const override;

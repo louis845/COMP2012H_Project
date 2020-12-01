@@ -40,6 +40,8 @@ LinearOperations::LinearOperations(RF** mat, const int& rows, const int& cols, b
         row_col='R';
         row_col_T='C';
     }
+
+    num_swaps=0;
 }
 
 LinearOperations::~LinearOperations(){
@@ -79,6 +81,7 @@ void LinearOperations::row_swap(int i, int j) {
         recorded_latex_ops_in_pause[record_index]=string{row_col+string{"_{"}+to_string(i+1)+"} \\Leftrightarrow "+string{row_col}+"_{"+to_string(j+1)+"}"};
         ++record_index;
     }
+    ++num_swaps;
 }
 
 void LinearOperations::row_multiply(int row, const RF& mult) {
@@ -126,6 +129,8 @@ void LinearOperations::col_swap(int i, int j) {
         recorded_latex_ops_in_pause[record_index]=string{row_col_T+string{"_{"}+to_string(i+1)+"} \\Leftrightarrow "+string{row_col_T}+"_{"+to_string(j+1)+"}"};
         ++record_index;
     }
+
+    ++num_swaps;
 }
 
 void LinearOperations::col_multiply(int col, const RF& mult) {
@@ -149,6 +154,10 @@ const int& LinearOperations::get_rows() const{
 
 const int& LinearOperations::get_cols() const{
     return cols;
+}
+
+const int& LinearOperations::get_num_swaps() const{
+    return num_swaps;
 }
 
 /**
@@ -262,11 +271,11 @@ void LinearOperations::complete_reduce(int cur_row, int cur_col){
     }
 }
 
-void LinearOperations::diagonalize_no_mult(){
-    diagonalize_submat(0,0);
+void LinearOperations::diagonalize_no_mult(bool fully){
+    diagonalize_submat(0,0,fully);
 }
 
-void LinearOperations::diagonalize_submat(int cur_row,int cur_col){
+void LinearOperations::diagonalize_submat(int cur_row,int cur_col,bool fully){
     if(cur_row==cols || cur_row==rows){
         return;
     }
@@ -282,7 +291,7 @@ void LinearOperations::diagonalize_submat(int cur_row,int cur_col){
             break;
         }
     }
-    if(is_all_zero){
+    if(is_all_zero && fully){ //We need to check the row is zero only if fully is enabled.
         for(int col=cur_col+1;col<cols;++col){
             if(!A(cur_row,col).is_zero()){
                 is_all_zero=false;
@@ -325,30 +334,32 @@ void LinearOperations::diagonalize_submat(int cur_row,int cur_col){
             commit_recording_and_continue();
         }
 
-        num_non_zero=0;
-        //Now zero the whole row.
-        for(int col=cur_col+1;col<cols;++col){
-            if(!A(cur_row,col).is_zero()){
-                ++num_non_zero;
-            }
-        }
-
-        if(num_non_zero>0){
-            pause_recording(num_non_zero);
+        //Now zero the whole row, only if required to reduce fully to diagonal
+        if(fully){
+            num_non_zero=0;
             for(int col=cur_col+1;col<cols;++col){
                 if(!A(cur_row,col).is_zero()){
-                    RF mult=-A(cur_row,col)/A(cur_row,cur_col);
-                    col_add(cur_col,col,mult);
+                    ++num_non_zero;
                 }
             }
-            commit_recording_and_continue();
+
+            if(num_non_zero>0){
+                pause_recording(num_non_zero);
+                for(int col=cur_col+1;col<cols;++col){
+                    if(!A(cur_row,col).is_zero()){
+                        RF mult=-A(cur_row,col)/A(cur_row,cur_col);
+                        col_add(cur_col,col,mult);
+                    }
+                }
+                commit_recording_and_continue();
+            }
         }
     }
-    diagonalize_submat(cur_row+1,cur_col+1);
+    diagonalize_submat(cur_row+1,cur_col+1,fully);
 }
 
-void LinearOperations::diagonalize_no_mult_no_div(){
-    diagonalize_nmd_submat(0,0);
+void LinearOperations::diagonalize_no_mult_no_div(bool fully){
+    diagonalize_nmd_submat(0,0,fully);
 }
 
 void LinearOperations::findSmallestEuclideanFunc(int cur_row,int cur_col,int& non_zero_row, int& non_zero_col){
@@ -389,7 +400,7 @@ void LinearOperations::findSmallestEuclideanFunc(int cur_row,int cur_col,int& no
     }
 }
 
-void LinearOperations::diagonalize_nmd_submat(const int cur_row,const int cur_col){
+void LinearOperations::diagonalize_nmd_submat(const int cur_row,const int cur_col,bool fully){
     if(cur_row==cols || cur_row==rows){
         return;
     }
@@ -398,10 +409,25 @@ void LinearOperations::diagonalize_nmd_submat(const int cur_row,const int cur_co
         int non_zero_row=-1;
         int non_zero_col=-1; //The location (row,col), of a non-zero element with the smallest euclidean func.
 
+        bool required_zero=false; //Whether or not the requirement of zeroing the elements are satisfied.
+
         findSmallestEuclideanFunc(cur_row,cur_col,non_zero_row,non_zero_col);
 
+        if(fully){
+            required_zero = non_zero_row==-1; //For full reduction, we need to zero all the elements in the row and col.
+        }else{
+            //We only need to zero the column.
+            required_zero=true;
+            for(int row=cur_row+1;row<rows;++row){
+                if(!A(row,cur_col).is_zero()){
+                    required_zero=false;
+                    break;
+                }
+            }
+        }
+
         //If not all zero, we need to do operations.
-        if(non_zero_row!=-1){
+        if(!required_zero){
             if(A(cur_row,cur_col).is_zero() || (A(non_zero_row,non_zero_col)<A(cur_row,cur_col))){
                 //now we swap
                 if(cur_row==non_zero_row){
@@ -431,30 +457,31 @@ void LinearOperations::diagonalize_nmd_submat(const int cur_row,const int cur_co
                 }
                 commit_recording_and_continue();
             }
-
-            num_non_zero=0;
-            //Now zero the whole row.
-            for(int col=cur_col+1;col<cols;++col){
-                if(!A(cur_row,col).is_zero()){
-                    ++num_non_zero;
-                }
-            }
-
-            if(num_non_zero>0){
-                pause_recording(num_non_zero);
+            if(fully){
+                num_non_zero=0;
+                //Now zero the whole row.
                 for(int col=cur_col+1;col<cols;++col){
                     if(!A(cur_row,col).is_zero()){
-                        RF mult=-A(cur_row,col)/A(cur_row,cur_col);
-                        col_add(cur_col,col,mult);
+                        ++num_non_zero;
                     }
                 }
-                commit_recording_and_continue();
+
+                if(num_non_zero>0){
+                    pause_recording(num_non_zero);
+                    for(int col=cur_col+1;col<cols;++col){
+                        if(!A(cur_row,col).is_zero()){
+                            RF mult=-A(cur_row,col)/A(cur_row,cur_col);
+                            col_add(cur_col,col,mult);
+                        }
+                    }
+                    commit_recording_and_continue();
+                }
             }
         }else{
             not_all_zeroed=false;
         }
     }
-    diagonalize_nmd_submat(cur_row+1,cur_col+1);
+    diagonalize_nmd_submat(cur_row+1,cur_col+1,fully);
 }
 
 void LinearOperations::pause_recording(int length){
@@ -692,7 +719,8 @@ namespace LinearOperationsFunc{
                         steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
                     }else{
                         string text="General left inverse is A+XB, for arbitrary matrix X (with size "+to_string(cols)+"x"+to_string(rows-cols)+" ).\n This is such that (A+XB)*input=I";
-                        MatrixSpaceStep *m=new MatrixSpaceStep{cpl, rows, rows, cols, true, text};
+                        string latex="General left inverse is $A+XB$, for arbitrary matrix $X$ (with size $"+to_string(cols)+" \\times "+to_string(rows-cols)+"$ ). This is such that $(A+XB) \\cdot \\text{input}=I$.";
+                        MatrixSpaceStep *m=new MatrixSpaceStep{cpl, rows, rows, cols, true, text, latex};
                         steps->add_step(m);
                         steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
                     }
@@ -705,7 +733,8 @@ namespace LinearOperationsFunc{
                 o.toRREF();
                 if(o.is_diagonally_one()){
                     string text="General right inverse is A+BX, for arbitrary matrix X (with size "+to_string(cols-rows)+"x"+to_string(rows)+" ).\n This is such that input*(A+BX)=I";
-                    MatrixSpaceStep *m=new MatrixSpaceStep{cpl, cols, cols, rows, false, text};
+                    string latex="General right inverse is $A+BX$, for arbitrary matrix $X$ (with size $"+to_string(cols-rows)+" \\times "+to_string(rows)+"$ ). This is such that $\\text{input} \\cdot (A+BX)=I$. ";
+                    MatrixSpaceStep *m=new MatrixSpaceStep{cpl, cols, cols, rows, false, text, latex};
                     steps->add_step(m);
                     steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
                 }else{
@@ -740,7 +769,17 @@ namespace LinearOperationsFunc{
             for(int i=0;i<std::min(rows,cols);i++){
                 val=val*mat[i][i];
             }
-            steps->add_step(new StepText{val.to_string()});
+            if(o.get_num_swaps()%2 == 1){
+                val = -val;
+            }
+
+            string text="Number of row/col swaps: "+to_string(o.get_num_swaps())+"\nMultiplying (-1)^"+to_string(o.get_num_swaps())
+                +" by the diagonals of the matrix, the result is:\n"+val.to_string();
+            string latex="$$\\text{Number of row/col swaps }= "+to_string(o.get_num_swaps())+"$$\n "
+                "\\begin{align}\\text{Result }&=(-1)^{"+to_string(o.get_num_swaps())+"} \\cdot \\text{ Product of diagonals} \\\\\n"
+                "&="+val.to_latex();
+                "\\end{align}";
+            steps->add_step(new StepText{text,latex});
 
             RF::deallocate_matrix(mat,rows);
 
@@ -795,7 +834,18 @@ namespace LinearOperationsFunc{
                 for(int i=0;i<std::min(rows,cols);i++){
                     val=val*mat[i][i];
                 }
-                steps->add_step(new StepText{val.to_string()});
+                
+                if(o.get_num_swaps()%2 == 1){
+                val = -val;
+                }
+
+                string text="Number of row/col swaps: "+to_string(o.get_num_swaps())+"\nMultiplying (-1)^"+to_string(o.get_num_swaps())
+                    +" by the diagonals of the matrix, the result is:\n"+val.to_string();
+                string latex="$$\\text{Number of row/col swaps }= "+to_string(o.get_num_swaps())+"$$\n "
+                    "\\begin{align}\\text{Result }&=(-1)^{"+to_string(o.get_num_swaps())+"} \\cdot \\text{ Product of diagonals} \\\\\n"
+                    "&="+val.to_latex();
+                    "\\end{align}";
+                steps->add_step(new StepText{text,latex});
 
                 RF::deallocate_matrix(mat,rows);
 

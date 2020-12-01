@@ -38,6 +38,7 @@ public:
     
     const int& get_rows() const;
     const int& get_cols() const;
+    const int& get_num_swaps() const;
 
     /**
      * Does row operations on the matrix, recording the steps to recorder. Reduces the matrix to reduced row echelon form.
@@ -48,13 +49,13 @@ public:
      * Diagonalizes the matrix without doing row/col multiplication operations. Virtual to let subclasses that disallow col operations to 'disable' this function
      * by throwing an error.
     */
-    virtual void diagonalize_no_mult();
+    virtual void diagonalize_no_mult(bool fully=false);
 
     /**
      * Diagonalizes the matrix without doing row/col multiplication operations, and also works for all Ring classes.
      * Virtual to let subclasses that disallow col operations to 'disable' this function by throwing an error.
     */
-    virtual void diagonalize_no_mult_no_div();
+    virtual void diagonalize_no_mult_no_div(bool fully=false);
 
     /**
      * Do Gram-Schmidt process on the rows of the matrix, starting from the first row.
@@ -75,9 +76,9 @@ private:
     */
     void complete_reduce(int cur_row, int cur_col);
 
-    void diagonalize_submat(int cur_row,int cur_col);
+    void diagonalize_submat(int cur_row,int cur_col, bool fully);
 
-    void diagonalize_nmd_submat(int cur_row,int cur_col);
+    void diagonalize_nmd_submat(int cur_row,int cur_col, bool fully);
 
     void findSmallestEuclideanFunc(int cur_row,int cur_col,int& non_zero_row, int& non_zero_col);
 
@@ -102,6 +103,8 @@ private:
     RF*** matrix;
     int rows;
     int cols;
+
+    int num_swaps;
 };
 
 /**

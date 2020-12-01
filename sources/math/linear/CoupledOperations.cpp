@@ -76,12 +76,12 @@ void CoupledOperations::col_multiply(int row, const RF& mult){
     throw "Does not support col_multiply on coupled operations!";
 }
 
-void CoupledOperations::diagonalize_no_mult(){
-    throw "Does not support diagonalize_no_mult on coupled operations!";
+void CoupledOperations::diagonalize_no_mult(bool){
+    LinearOperations::diagonalize_no_mult(false);
 }
 
-void CoupledOperations::diagonalize_no_mult_no_div(){
-    throw "Does not support diagonalize_no_mult_no_div on coupled operations!";
+void CoupledOperations::diagonalize_no_mult_no_div(bool){
+    LinearOperations::diagonalize_no_mult_no_div(false);
 }
 
 RF& CoupledOperations::A(const int& row, const int& col) const{

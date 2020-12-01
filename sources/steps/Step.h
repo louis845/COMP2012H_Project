@@ -24,7 +24,10 @@ public:
 */
 class StepText : public Step{
 public:
-    const std::string text;
+    const std::string text,latex_text;
+
+    StepText(const std::string& text, const std::string& latex_text);
+
     StepText(const std::string& text);
 
     void print_to_console() const override;

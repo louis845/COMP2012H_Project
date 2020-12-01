@@ -105,8 +105,9 @@ string LinOpsSteps::get_html_latex() const{
     return os.str();
 }
 
-MatrixSpaceStep::MatrixSpaceStep(RF** mat,int rows,int cols,int cutoff,bool row_or_col,const std::string& text){
+MatrixSpaceStep::MatrixSpaceStep(RF** mat,int rows,int cols,int cutoff,bool row_or_col,const std::string& text, const std::string& latex){
     this->text=text;
+    this->latex=latex;
     if(cutoff<0){
         matrix=new RF*[rows];
         space_matrix=nullptr;
