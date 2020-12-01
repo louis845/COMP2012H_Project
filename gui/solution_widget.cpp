@@ -6,11 +6,13 @@
 #include <QMenu>
 #include <fstream>
 #include <iostream>
+#include <thread>
 #include <QProcess>
 #include <QDebug>
 #include <QDir>
 #include <QApplication>
 #include <QWebEngineView>
+#include <QWebEngineSettings>
 #include <QProgressBar>
 
 #include "math/linear/LinearOperations.h"
@@ -24,6 +26,12 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     this->setWindowTitle("CINF");
     this->init_window();
     selected_choice=0;
+
+    running=false;
+    running_parser=false;
+    running_handled=true;
+    new_step_ptr=nullptr;
+    new_intepret_ptr=nullptr;
 }
 
 void solution_widget::init_window(){
@@ -38,17 +46,7 @@ void solution_widget::init_window(){
     ui->disp_prog->setMaximum(100);
     ui->disp_prog->setValue(0);
     progress_timer = new QTimer;
-    connect(progress_timer,&QTimer::timeout,[=](){
-        //if (ui->disp_prog != nullptr){
-            currentValue++;
-            if( currentValue == 100 ) currentValue = 0;
-            ui->disp_prog->setValue(currentValue);
-            update();
-        //}
-    });
-    progress_timer->start(100);
-
-    //connect(ui->plain_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_plain_update);
+    connect(progress_timer,&QTimer::timeout,this,&solution_widget::fetch_async_loop);
 
     connect(ui->ascii_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
 
@@ -58,20 +56,23 @@ void solution_widget::init_window(){
 
     connect(ui->next_btn,&QPushButton::pressed,this,&solution_widget::navigateNext);
 
-    connect(ui->next_btn2,&QPushButton::pressed,this,&solution_widget::handle_ascii_update);
+    connect(ui->next_btn2,&QPushButton::pressed,this,&solution_widget::run_solver);
 
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
     scrollarea_layout = new QVBoxLayout(this);
 
     QMenu * method_menu = new QMenu(this);
-    QString list[4]={
+    QString list[7]={
         "RREF",
         "RCEF",
         "Solve equation",
-        "Inverse matrix"
+        "Inverse matrix",
+        "Determinant",
+        "Characteristc polynomial",
+        "Orthogonalization"
     };
-    for(int i=0;i<4;i++){
+    for(int i=0;i<7;i++){
         QAction *menu_action=new QAction(list[i],this);
         method_menu->addAction(menu_action);
         connect(menu_action,&QAction::triggered,[=](){
@@ -87,9 +88,11 @@ void solution_widget::init_window(){
     connect(ui->next_btn,&QPushButton::clicked,[=](){emit next_problem_sig();});
 
     solution_view=new QWebEngineView{ui->scrollArea};
+    solution_view->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
     ui->scrollArea->setWidget(solution_view);
 
     intepretation_view=new QWebEngineView{ui->scrollAreaIntepretation};
+    intepretation_view->settings()->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
     ui->scrollAreaIntepretation->setWidget(intepretation_view);
 
     current_viewing_steps=new StepsHistory;
@@ -101,6 +104,8 @@ void solution_widget::init_window(){
     input_window=new begin_widget{username,password};
     input_window->setVisible(false);
     input_window->parent_window=this;
+
+
 }
 
 void write_matrix_to_html_latex(ostringstream& os, R** matrix, int rows, int cols){
@@ -119,79 +124,159 @@ void write_matrix_to_html_latex(ostringstream& os, R** matrix, int rows, int col
 }
 
 void solution_widget::handle_ascii_update(){
-    QString text=ui->ascii_textedit->toPlainText();
-    string std_text=text.toStdString();
-    parser.reset_input(std_text);
+    if(running_handled){
+        running_handled=false;
+        running_parser=true;
+        progress_timer->start(20);
+
+        QString text=ui->ascii_textedit->toPlainText();
+        std::string std_text=text.toStdString();
+        std::thread thrd(&solution_widget::handle_ascii_update_async, this, std_text);
+        thrd.detach();
+    }
+}
+
+void solution_widget::handle_ascii_update_async(string text){
+    parser.reset_input(text);
     const Info& i=parser.parse();
-    qDebug()<<"engine used: "<<i.engine_used;
+    /*qDebug()<<"engine used: "<<i.engine_used;
     qDebug()<<"success: "<<i.success;
     qDebug()<<"intepreted: "<<QString::fromStdString(i.interpreted_input);
     qDebug()<<"mat_size.size(): "<<i.mat_size.size();
     qDebug()<<"parsed_mat.size(): "<<i.parsed_mat.size();
     qDebug()<<QString::fromStdString(i.eval_result);
-    qDebug()<<"----------------------------------------------------\n";
+    qDebug()<<"----------------------------------------------------\n";*/
+    //probably cannot use Q functions in async
 
-    if(i.engine_used==1){
-        if(i.mat_size.size()>0){
+    string* ns_addr=nullptr;
+    if(i.success){
+        if(i.engine_used==1 || i.engine_used==3){
+            if(i.mat_size.size()>0){
+                const std::pair<int,int> &pr = i.mat_size.at(0);
+                R** matrix=i.parsed_mat.at(0).second;
+                TokNum::TokName t=i.parsed_mat.at(0).first;
+                qDebug()<<static_cast<int>(t);
 
-            const std::pair<int,int> &pr = i.mat_size.at(0);
-            R** matrix=i.parsed_mat.at(0).second;
-            TokNum::TokName t=i.parsed_mat.at(0).first;
-            qDebug()<<static_cast<int>(t);
-
-            ostringstream os;
-            os<<"$$";
-            const int rows=pr.first;
-            const int cols=pr.second;
-            write_matrix_to_html_latex(os, matrix,rows,cols);
-            os<<"$$";
-
-            display_preview(os.str());
-            //question_num++;
-            //QTreeWidgetItem* new_question = new QTreeWidgetItem(QStringList(QString::fromStdString("Question"+to_string(question_num)+":")));
-            //ui->treeWidget->addTopLevelItem(new_question);
-
-            StepsHistory *steps=nullptr;
-            switch(selected_choice){
-            case 0:{
-                LinearOperationsFunc::row_reduce(matrix, rows, cols, steps);
-                break;
+                ostringstream os;
+                os<<"$$";
+                const int rows=pr.first;
+                const int cols=pr.second;
+                write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
+                os<<"$$";
+                ns_addr=new string{os.str()};
             }
-            case 1:{
-                LinearOperationsFunc::col_reduce(matrix, rows, cols, steps);
-                break;
-            }
-            case 2:{
-                LinearOperationsFunc::solve(matrix, rows, cols, steps);
-                break;
-            }
-            case 3:{
-                LinearOperationsFunc::invert(matrix, rows, cols, steps);
-                break;
-            }
-            }
-            if(steps!=nullptr){
-                setNewSteps(steps);
-            }
+        }else{
+            ns_addr=new string{i.interpreted_input};
         }
-    }else if(i.engine_used==2){
-        StepsHistory *steps=new StepsHistory;
-        steps->add_step(new StepText{i.eval_result});
-        setNewSteps(steps);
-
-        display_preview("`"+i.interpreted_input+"`");
-        display_answer(R"(\begin{align*} )" + i.eval_result + R"( \end{align*})");
     }
-
+    new_intepret_ptr=ns_addr;
+    running_parser=false;
 }
 
-void solution_widget::handle_plain_update(){
+void solution_widget::run_solver(){
+    if(running_handled){
+        running_handled=false;
+        running=true;
+        progress_timer->start(20);
 
+        std::thread thrd{&solution_widget::run_solver_async, this};
+        thrd.detach();
+    }
+}
+
+void solution_widget::run_solver_async(){
+    const Info& i=parser.getInfo();
+    StepsHistory *steps=nullptr;
+    if(i.success){
+        if(i.engine_used==1){
+            if(i.mat_size.size()>0){
+
+                const std::pair<int,int> &pr = i.mat_size.at(0);
+                R** matrix=i.parsed_mat.at(0).second;
+                TokNum::TokName t=i.parsed_mat.at(0).first;
+
+                const int rows=pr.first;
+                const int cols=pr.second;
+
+                switch(selected_choice){
+                case 0:{
+                    LinearOperationsFunc::row_reduce(matrix, rows, cols, steps);
+                    break;
+                }
+                case 1:{
+                    LinearOperationsFunc::col_reduce(matrix, rows, cols, steps);
+                    break;
+                }
+                case 2:{
+                    LinearOperationsFunc::solve(matrix, rows, cols, steps);
+                    break;
+                }
+                case 3:{
+                    LinearOperationsFunc::invert(matrix, rows, cols, steps);
+                    break;
+                }
+                case 4:{
+                    LinearOperationsFunc::determinant(matrix, rows, cols, steps);
+                    break;
+                }
+                case 5:{
+                    LinearOperationsFunc::char_poly(matrix, rows, cols, steps);
+                    break;
+                }
+                case 6:{
+                    LinearOperationsFunc::orthogonalize(matrix, rows, cols, steps);
+                    break;
+                }
+                }
+            }
+        }else if(i.engine_used==2){
+            steps=new StepsHistory;
+            steps->add_step(new StepText{i.eval_result});
+            setNewSteps(steps);
+
+            display_preview("`"+i.interpreted_input+"`");
+            display_answer(R"(\begin{align*} )" + i.eval_result + R"( \end{align*})");
+        }
+    }
+
+    new_step_ptr=steps;
+    running=false;
+}
+
+void solution_widget::fetch_async_loop(){
+    if((!running) && (!running_parser)){
+        string *s=new_intepret_ptr;
+        StepsHistory *hist=new_step_ptr;
+
+        new_intepret_ptr=nullptr;
+        new_step_ptr=nullptr;
+        if(s!=nullptr){
+            display_preview(*s);
+            delete s;
+        }
+        if(hist!=nullptr){
+            setNewSteps(hist);
+        }
+        progress_timer->stop();
+        running_handled=true;
+
+        currentValue=0;
+        ui->disp_prog->setValue(currentValue);
+        ui->disp_prog->update();
+    }else{
+        currentValue = (currentValue+1)%100;
+        ui->disp_prog->setValue(currentValue);
+        ui->disp_prog->update();
+    }
 }
 
 void solution_widget::captureMathExpression(){
-    if(username==""){
+    /*if(username==""){
+        QMessageBox::information(this,"Error","OCR is not enabled.",QMessageBox::Ok);
         return;
+    }*/
+    if(!running_handled){
+        QMessageBox::information(this,"Error","Sorry, cannot do OCR with ongoing computation.",QMessageBox::Ok);
     }
 
     input_window->show();
@@ -200,9 +285,10 @@ void solution_widget::captureMathExpression(){
 
 void solution_widget::receiveImage(QPixmap p){
     this->setVisible(true);
-    QLabel* original_image;
-    original_image->setPixmap(p);
-    ui->scrollAreaOriginal->setWidget(original_image);
+    ui->original_image_display->setPixmap(p);
+    ui->original_image_display->resize(p.width(),p.height());
+    dynamic_cast<QWidget*>(ui->original_image_display->parent())->resize(p.width(),p.height());
+    return;
     std::pair<string, string> result=Ocr::getInstance().request(p);
     string asciimath=result.second;
     ui->ascii_textedit->setPlainText(QString::fromStdString(asciimath));
@@ -234,8 +320,7 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
     QTime current_time =QTime::currentTime();
     QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList("History at "+current_time.toString()));
     ui->treeWidget->addTopLevelItem(ply_item);
-
-    //total_history.
+    ui->treeWidget->setCurrentItem(ply_item);
 }
 
 void solution_widget::method_dealer(int choice){
@@ -282,9 +367,18 @@ solution_widget::~solution_widget()
 {
     input_window->close();
     delete ui;
-    //delete steps;
     delete progress_timer;
+
+    for(int i=0;i<all_steps_list.size();++i){
+        delete all_steps_list.at(i);
+    }
 }
 
+void solution_widget::closeEvent(QCloseEvent *event){
+    if(!running_handled){
+        event->ignore();
+        QMessageBox::information(this,"Error","Sorry, cannot close window with ongoing computation!",QMessageBox::Ok);
+    }
+}
 
 

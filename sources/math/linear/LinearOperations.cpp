@@ -777,7 +777,7 @@ namespace LinearOperationsFunc{
                 +" by the diagonals of the matrix, the result is:\n"+val.to_string();
             string latex="$$\\text{Number of row/col swaps }= "+to_string(o.get_num_swaps())+"$$\n "
                 "\\begin{align}\\text{Result }&=(-1)^{"+to_string(o.get_num_swaps())+"} \\cdot \\text{ Product of diagonals} \\\\\n"
-                "&="+val.to_latex();
+                "&="+val.to_latex()+
                 "\\end{align}";
             steps->add_step(new StepText{text,latex});
 
@@ -843,7 +843,7 @@ namespace LinearOperationsFunc{
                     +" by the diagonals of the matrix, the result is:\n"+val.to_string();
                 string latex="$$\\text{Number of row/col swaps }= "+to_string(o.get_num_swaps())+"$$\n "
                     "\\begin{align}\\text{Result }&=(-1)^{"+to_string(o.get_num_swaps())+"} \\cdot \\text{ Product of diagonals} \\\\\n"
-                    "&="+val.to_latex();
+                    "&="+val.to_latex()+
                     "\\end{align}";
                 steps->add_step(new StepText{text,latex});
 

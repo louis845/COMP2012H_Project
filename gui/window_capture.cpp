@@ -21,6 +21,8 @@ void window_capture::initWindow(){
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setWindowState(Qt::WindowActive | Qt::WindowFullScreen);
     this->show();
+
+    mouse_is_pressed=false;
 }
 
 void window_capture::loadBackgroundPixmap(){

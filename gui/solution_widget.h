@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <string>
 #include <QWebEngineView>
+#include <atomic>
 
 #include "steps/StepsHistory.h"
 #include "utils/ocr_api.h"
@@ -33,8 +34,13 @@ public:
     void display_preview(string preview);
     void captureMathExpression();
 
-    void handle_plain_update();
     void handle_ascii_update();
+    void handle_ascii_update_async(string ascii_text);
+
+    void run_solver();
+    void run_solver_async();
+
+    void fetch_async_loop();
 
     void navigatePrev();
     void navigateNext();
@@ -43,6 +49,8 @@ public:
 
     void receiveImage(QPixmap p);
     void on_treeWidget_itemPressed(QTreeWidgetItem *item);
+
+    void closeEvent(QCloseEvent *event) override;
 private:
     Ui::solution_widget *ui;
 
@@ -67,6 +75,20 @@ private:
     int selected_choice;
 
     std::vector<StepsHistory*> all_steps_list;
+
+    /**
+    * Run parser async
+    */
+    atomic<string*>new_intepret_ptr;
+    atomic<bool>running_parser;
+
+    /**
+    * Run lin ops async
+    */
+    atomic<StepsHistory*>new_step_ptr;
+    atomic<bool>running;
+
+    bool running_handled; //If the async tasks are handled by the main thread.
 signals:
     void finish_sig();
     void next_problem_sig();
