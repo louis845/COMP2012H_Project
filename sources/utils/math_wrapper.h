@@ -34,6 +34,7 @@ public:
     ROperand(): type(Type::IMAT) {}
     explicit ROperand(R value): type(Type::NOR), value(std::move(value)) {}
     explicit ROperand(size_t row_num): type(Type::MAT), mat(row_num) {} 
+    explicit ROperand(R** matR, int row_num, int col_num);
     ~ROperand() = default;
 
     ROperand operator-();

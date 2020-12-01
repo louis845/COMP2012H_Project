@@ -3,6 +3,7 @@
 using std::cout;
 using std::endl;
 using std::string;
+using std::make_pair;
 
 typedef Token::TokName TokName;
 typedef Token::TokType TokType;
@@ -17,7 +18,6 @@ typedef Token::TokType TokType;
  */
 
 
-// TODO: add support for intermediate expressions with super/subscripts
 std::unordered_map<TokName, int> Parser::bin_op_precedence = 
 {
     {TokName::PLUS, 100}, {TokName::MINUS, 100}, 
@@ -36,13 +36,13 @@ void Parser::reset_input(const std::string& input)
 {
     delete root;
     delete cur_tok;
-
-    for (auto element : var_table)
-        delete element.second;
-
-    var_table.clear();
     root = nullptr;
     cur_tok = nullptr;
+    
+    for (auto iter = var_table.begin(); iter != var_table.end(); ++iter)
+        if (!iter->second)
+            var_table.erase(iter);
+
     this->input = input;
     tokenizer.reset_input(input);
     getNextToken();
@@ -248,8 +248,12 @@ ExprAst* Parser::parseId()
     if (cur_tok == nullptr)     return nullptr;
     if (cur_tok->get_type() == TokType::ID)
     {
-        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value());
-        var_table.emplace(cur_tok->get_raw_value(), nullptr);
+        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value(), &r_table, &arma_table);
+        
+        auto iter = var_table.find(cur_tok->get_raw_value());
+        if (iter == var_table.end()) var_table[cur_tok->get_raw_value()] = 0;
+        else if (iter->second == 2) iter->second = 1;
+
         getNextToken();
         return var;
     }
@@ -273,8 +277,12 @@ ExprAst* Parser::parseId()
 
     if (cur_tok->get_type() == TokType::ID)
     {
-        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value());
-        var_table.emplace(cur_tok->get_raw_value(), nullptr);
+        ExprAst* var = new VariableExprAst(cur_tok->get_raw_value(), &r_table, &arma_table);
+        
+        auto iter = var_table.find(cur_tok->get_raw_value());
+        if (iter == var_table.end()) var_table[cur_tok->get_raw_value()] = 0;
+        else if (iter->second == 2) iter->second = 1;
+
         func->args.emplace_back(var);
         getNextToken();
         return func;
@@ -583,10 +591,17 @@ void Parser::autoDetect(ExprAst* root)
 
 
 // main driver function, handles all exceptions
-const Info& Parser::parse(int engine_type)
+const Info& Parser::parse(int engine_type, bool save, const string& var_name)
 {
     res.clear();
     res.engine_chosen = engine_type;
+
+    if (save && var_table.count(var_name))
+    {
+        res.success = false;
+        res.err_msg = "Error: variable name already exists, please choose another name";
+        return res;
+    }
 
     if (engine_type == 3 || input.find('=') != std::string::npos)
     {
@@ -599,7 +614,7 @@ const Info& Parser::parse(int engine_type)
         catch (const std::exception& err)
         {
             res.success = false;
-            res.err = new std::invalid_argument("Error: " + string(err.what()));
+            res.err_msg = "Error: " + string(err.what());
             return res;
         }
     }
@@ -622,15 +637,14 @@ const Info& Parser::parse(int engine_type)
     }
     catch (const std::invalid_argument& err)
     {
-        string err_msg = "Error: parsing failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
+        res.err_msg = "Error: parsing failed, " + string(err.what());
         // delete root;
         res.success = false;
         return res;
     }
     catch (...)
     {
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during parsing");
+        res.err_msg = "Fatal error: unexpected exception thrown during parsing";
         // delete root;
         res.success = false;
         return res;
@@ -640,27 +654,27 @@ const Info& Parser::parse(int engine_type)
     if (res.success)
     {
         res.engine_used = res.engine_chosen ? res.engine_chosen : res.engine_used;
-        if (res.engine_used == 1) evalR();
-        if (res.engine_used == 2) eval();
+        if (res.engine_used == 1) evalR(save, var_name);
+        if (res.engine_used == 2) eval(save, var_name);
         return res;
     }
     else
     {
-        res.err = new std::domain_error("Error: auto detection failed, please specify engine type");
+        res.err_msg = "Error: auto detection failed, please specify engine type";
         // delete root;
         return res;
     }
 }
 
 
-void Parser::evalR()
+void Parser::evalR(bool save, const string& var_name)
 {
-    if (var_table.size() > 1)
+    if (getNumUnknown() > 1)
     {  
         res.var_exists = true;
         res.success = false;
-        res.warning += "Warning: more than one variable with unknown value in the expression.\n";
-        res.warning += "You may want to assign values to some of the variables.\n";
+        res.err_msg = "Error: more than one variable with unknown value in the expression.\n";
+        res.err_msg += "You may want to assign values to some of the variables.\n";
         return;
     }
 
@@ -670,19 +684,25 @@ void Parser::evalR()
         if (typeid(*root) == typeid(MatrixExprAst)) 
             res.addMat(result, TokName::NA);
         res.eval_result = result.genTex();
+
+        if (save) 
+        {
+            var_table.insert(make_pair(var_name, 2));
+            r_table.insert(make_pair(var_name, result));
+        }
+
         return;
     }
     catch (const std::invalid_argument& err)
     {
         res.success = false;
-        string err_msg = "Error: evaluation failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
+        res.err_msg = "Error: evaluation failed, " + string(err.what());
         return;
     }
     catch (...)
     {
         res.success = false;
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        res.err_msg = "Fatal error: unexpected exception thrown during evaluation";
         return;
     }
 
@@ -704,14 +724,14 @@ void Parser::evalR()
 }
 
 
-void Parser::eval()
+void Parser::eval(bool save, const string& var_name)
 {
-    if (var_table.size() > 0)
+    if (getNumUnknown() > 0)
     {
         res.var_exists = true;
         res.success = false;
-        res.err = new std::invalid_argument("Warning: variables with unknown values are not supported in Armadillo.\n");
-        res.warning += "You may want to assign values to the variables.\n";
+        res.err_msg = "Error: variables with unknown values are not supported in Armadillo.\n";
+        res.err_msg += "You may want to assign values to the variables.";
         return;
     }
 
@@ -734,26 +754,31 @@ void Parser::eval()
         // else if (result.type == ArmaOperand::Type::MAT) cout << result.mat;
         // else cout << "(" << result.value << ")" << "I";
         res.eval_result = result.genTex();
+        
+        if (save) 
+        {
+            var_table.insert(make_pair(var_name, 2));
+            arma_table.insert(make_pair(var_name, result));
+        }
+
         return;
     }
     catch (const std::logic_error& err)     // both evaluator and Armadillo's exception will be caught here
     {
-        string err_msg = "Error: evaluation failed, " + string(err.what());
-        res.err = new std::invalid_argument(err_msg.c_str());
+        res.err_msg = "Error: evaluation failed, " + string(err.what());
         res.success = false;
         return;
     }
     catch (const std::runtime_error& err)   // part of Armadillo's exception and some fatal error
     {
-        string err_msg = "Fatal error: " + string(err.what());
-        res.err = new std::runtime_error(err_msg.c_str());
+        res.err_msg = "Fatal error: " + string(err.what());
         res.success = false;
         return;
     }
     catch (...)
     {
         res.success = false;
-        res.err = new std::runtime_error("Fatal error: unexpected exception thrown during evaluation");
+        res.err_msg = "Fatal error: unexpected exception thrown during evaluation";
         return;
     }
 }
@@ -1123,15 +1148,23 @@ void Parser::evalLinearSystem(vector<string> var_names)
     res.eval_result = "&";
     for (int i = 0; i < row; ++i)
     {
-        res.eval_result += var_names[i] + " = " + matR[i][0].to_latex() + R"( \quad )";
+        string var = var_names[i];
+        auto pos = var.find('_');
+        if (pos != string::npos)
+            var = var.substr(0, pos + 1) + "{" + var.substr(pos + 1) + "}";
+
+        res.eval_result += var + " = " + matR[i][0].to_latex() + R"( \quad )";
         if (i != 0 && i % 3 == 0 && i != row - 1) res.eval_result += R"( \\ &)";
     }
 
-    res.interpreted_input = R"(text(please check the step-by-step section for the interpreted augmented matrix))";
-    res.interpreted_input += R"(text(the columns, from left to right, correspond to ))";
+    res.interpreted_input = R"(text(Please check the step-by-step section for the interpreted augmented matrix. ))";
+    res.interpreted_input += R"(text(The columns, from left to right, correspond to ))";
     for (size_t i = 0; i < var_names.size() - 1; ++i)
-        res.interpreted_input += var_names[i] + " ";
-
+    {
+        res.interpreted_input += var_names[i];
+        if (i != var_names.size() - 2) res.interpreted_input += ", ";
+    }
+            
     for (int i = 0; i < row; ++i)
         delete [] matR[i];
     delete [] matR;
@@ -1149,4 +1182,128 @@ string Parser::getAsciiMath() const
 {
     if (root == nullptr)    return "";
     return root->genAsciiMath();
+}
+
+
+bool Parser::assignVar(const string& var_name, const string& raw, int type)
+{
+    Parser parser(raw);
+    const Info& result = parser.parse(type);
+    Info dummy_info;
+    if (!res.success)
+    {
+        res.err_msg = result.err_msg;
+        return false;
+    }
+
+    if (type == 1)
+    {
+        ROperand value;
+        try { value = parser.root->evalR(dummy_info); }
+        catch (const std::exception& err)
+        {
+            res.err_msg = err.what();
+            return false;
+        }
+        auto iter = arma_table.find(var_name);
+        if (iter != arma_table.end())   arma_table.erase(iter);
+        r_table[var_name] = value;
+        
+        auto var_iter = var_table.find(var_name);
+        if (var_iter != var_table.end() && !var_iter->second) 
+            var_iter->second = 1;
+        return true;
+    }
+
+    ArmaOperand value;
+    try { value = parser.root->eval(); }
+    catch (const std::exception& err)
+    {
+        res.err_msg = err.what();
+        return false;
+    }
+    auto iter = r_table.find(var_name);
+    if (iter != r_table.end())  r_table.erase(iter);
+    arma_table[var_name] = value;
+    
+    auto var_iter = var_table.find(var_name);
+    if (var_iter != var_table.end() && !var_iter->second) 
+        var_iter->second = 1;
+
+    return true;
+}
+
+
+bool Parser::assignVar(const string& var_name, const ROperand& value)
+{
+    auto iter = arma_table.find(var_name);
+    if (iter != arma_table.end())   arma_table.erase(iter);
+    r_table[var_name] = value;
+    
+    auto var_iter = var_table.find(var_name);
+    if (var_iter != var_table.end() && !var_iter->second) 
+        var_iter->second = 1;
+
+    return true;
+}
+
+
+bool Parser::modifyName(const string& ori_name, const string& new_name)
+{
+    if (!var_table.count(ori_name) || var_table.count(new_name)) return false;
+    if (var_table[ori_name] < 2) return false;
+
+    auto r_iter = r_table.find(ori_name);
+    if (r_iter != r_table.end())
+    {
+        ROperand value = r_iter->second;
+        r_table.erase(r_iter);
+        r_table[new_name] = value;
+        return true;
+    }
+
+    auto arma_iter = arma_table.find(ori_name);
+    if (arma_iter != arma_table.end())
+    {
+        ArmaOperand value = arma_iter->second;
+        arma_table.erase(arma_iter);
+        arma_table[new_name] = value;
+        return true;
+    }
+
+    var_table.erase(ori_name);
+    var_table.insert(make_pair(new_name, 2));
+    return false;
+}
+
+
+bool Parser::eraseVar(const string& var_name)
+{
+    if (!var_table.count(var_name) || var_table[var_name] < 2) return false;
+    if (arma_table.count(var_name)) arma_table.erase(var_name);
+    if (r_table.count(var_name)) r_table.erase(var_name);
+    var_table.erase(var_name);
+    return true;
+}
+
+
+map<string, string> Parser::retrieve_var() const
+{
+    map<string, string> table;
+    for (const auto& item : r_table)
+        table.insert(make_pair(item.first, item.second.genTex()));
+    for (const auto& item : arma_table)
+        table.insert(make_pair(item.first, item.second.genTex()));
+    for (const auto& item : var_table)
+        table.insert(make_pair(item.first, ""));
+    return table;
+}
+
+
+int Parser::getNumUnknown() const
+{
+    int cnt = 0;
+    for (auto item : var_table)
+        if (!item.second)   ++cnt;
+    return cnt;
 }

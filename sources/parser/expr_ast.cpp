@@ -26,7 +26,6 @@ Info::~Info()
         delete [] matR;
         matR = nullptr;
     }
-    delete err;
 }
 
 
@@ -34,7 +33,6 @@ void Info::clear()
 {
     success = true;
     engine_used = 1;
-    err = nullptr;
     for (size_t i = 0; i < parsed_mat.size(); ++i)
     {
         R** mat = parsed_mat[i].second;
@@ -43,7 +41,7 @@ void Info::clear()
     }
     mat_size.clear();
     parsed_mat.clear();
-    interpreted_input = eval_result = warning = "";
+    interpreted_input = eval_result = err_msg = "";
     float_exists = var_exists = func_exists = false;
 }
 
@@ -228,15 +226,27 @@ string MatrixExprAst::genAsciiMath() const
 
 ROperand VariableExprAst::evalR(Info& res)
 {   
-    if (res.engine_used == 3 && name != "t")   return ROperand(newInt(1L));   
+    if (res.engine_used == 3 && name == "t") return ROperand(newTerm(1));
+    if (res.engine_used == 3)   return ROperand(newInt(1L));   
+    auto iter = r_table->find(name);
+    if (iter != r_table->end()) return iter->second;
     return ROperand(newTerm(1));
 }
 
 
 ArmaOperand VariableExprAst::eval()
 {
-    // TODO
-    return ArmaOperand(1);
+    auto iter = arma_table->find(name);
+    if (iter != arma_table->end()) return iter->second;
+    throw std::invalid_argument("variable with unknown value is not supported in Armadillo");
+}
+
+
+string VariableExprAst::genAsciiMath() const
+{
+    auto pos = name.find('_');
+    if (pos == string::npos) return name;
+    return name.substr(0, pos + 1) + "{" + name.substr(pos + 1) + "}";
 }
 
 
@@ -342,7 +352,7 @@ ROperand FunctionExprAst::evalR(Info& res)
         case TokName::NEG:  return -(args[0]->evalR(res));
 
         case TokName::RREF: case TokName::SOLVE: case TokName::INV: 
-        case TokName::DET: case TokName::CHAR_POLY:
+        case TokName::DET: case TokName::CHAR_POLY: case TokName::ORTH:
             break;
 
         default: throw std::invalid_argument("function " + raw + " is not supported in R yet");

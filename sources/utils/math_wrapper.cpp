@@ -3,6 +3,15 @@
 using std::string;
 using std::stringstream;
 
+
+ROperand::ROperand(R** matR, int row_num, int col_num): type(Type::MAT), mat(row_num)
+{
+    for (int i = 0; i < row_num; ++i)
+        for (int j = 0; j < col_num; ++j)
+            mat[i].emplace_back(matR[i][j]);
+}
+
+
 ROperand ROperand::operator-()
 {
     if (type == Type::MAT)

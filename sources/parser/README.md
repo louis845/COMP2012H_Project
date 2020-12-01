@@ -12,7 +12,7 @@
     parser.reset_input(new_input);
 ```
 
-1. Invoke `parse(int engine_type=0)` to parse the input. `engine_type=0` (default) for auto dectection, `engine_type=1` forces the parser to use `R` class to evaluate the expression, `engine_type=2` forces using Armadillo.
+2. Invoke `parse(int engine_type=0)` to parse the input. `engine_type=0` (default) for auto dectection, `engine_type=1` forces the parser to use `R` class to evaluate the expression, `engine_type=2` forces using Armadillo.
 
     `parse()` will return `const Info&`, of which the copy constructor and `operator=` are deleted, therefore you may need to do deep copy on the `R**` if neccessary.
     
@@ -27,9 +27,9 @@
         ~Info();
 
         bool success{true};
-        std::exception* err{nullptr};
-        int engine_chosen{0};           // user chosen engine, 0 = auto, 1 = R, 2 = Armadillo
-        int engine_used{1};             // 1 for using R class, 2 for using Armadillo
+        std::string err_msg;
+        int engine_chosen{0};           // user chosen engine, 0 = auto, 1 = R, 2 = Armadillo, 3 = linear system
+        int engine_used{1};             // 1 for using R class, 2 for using Armadillo, 3 for parsing linear system
         bool float_exists{false};
         bool var_exists{false};
         bool func_exists{false};        // true only if function that R cannot handle appears
@@ -46,20 +46,12 @@
                                             // N.B. both are raw strings and are NOT enclosed by delimiters
                                             // i.e. $$ for LaTeX and ` for AsciiMath
 
-        std::string warning{""};
-
         void clear();
         void addMat(ROperand operand, Token::TokName op);
     };
 ```
 * `bool success` indicates the overall parsing & evaluation status, `true` if the both process encounter no expections.
-* `std::exception* err` will be set if `success` is false, you can show the `err.what()` to the user for their reference. You can also do RTTI to classify the exception more precisely.
-
-```c++
-    typeid(*err) == typeid(std::invalid_argument)   // parsing error
-    typeid(*err) == typeid(std::runtime_error)      // unexpected exception, fatal in other words
-```
-
+* `string err_msg` is the error message passed by the parser as a hint for the user.
 * `int engine_used` is the engine used, 1 for R and 2 for Armadillo, you may also need to show it on the screen.
 * `parsed_mat` contains all the matrices in user's input and their operators and `mat_size` stores the corresponding sizes. Check the full list of `enum class Token::TokName` in [tokens.h](token.h). However, the `parsed_mat` will only contain part of them:
 
@@ -88,6 +80,26 @@ However,
 * R class can deal with some floating point numbers by converting them into fractions but with compromised precision
 * if scientific notation occurs and is beyond the range of built-in `long` type, neither engine will be able handle it
 * but without scientific notation, R will use `mpz_wrapper` to handle integral and Armadillo is limited to `double` and `long`
+
+3. the variable assignment function
+   
+   Currently the parser class has the following accessors and modifiers concerning variables.
+
+```c++
+    const Info& parse(int engine_type=0, bool save=false, const std::string& var_name="Ans");
+    bool assignVar(const std::string& var_name, const std::string& raw, int type);
+    bool assignVar(const std::string& var_name, const ROperand& value);
+    bool modifyName(const std::string& ori_name, const std::string& new_name);
+    bool eraseVar(const std::string& var_name);
+    std::map<std::string, std::string> retrieve_var() const;
+```
+
+* When invoking `parse()`, if `save=true`, the final result will be saved to a variable with name `var_name`, which can be reused in the future calculations.
+* `assignVar()` can be used to assign values to variables. Either raw AsciiMath string or `ROperand` type can be passed as argument, however, when using literals, engine type must be specified (either 1 or 2).
+* `modifyName()` allows users to modify the name of an existing variable, but the new name must be different from any existing ones.
+* `eraseVar()` is used to erase an existing variable by passing its name, note that a variable appeared in the expression can NOT be erased no matter whether a value has been assigned to it.
+* `retrieve_var()` will return a `map` from all the variable names to their values in LaTeX.
+
 
 ## Token List
 

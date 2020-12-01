@@ -40,7 +40,7 @@ void test_parser(const std::string& input, const std::string& name, int type = 0
         cout << "infix notation: " << endl;
         parser.print();
         cout << endl << endl << "AsciiMath output: " << endl << res.interpreted_input << endl << endl;
-        cout << res.err->what() << endl << endl;
+        cout << res.err_msg << endl << endl;
     }
 
     cout << endl << endl << string(80, '-') << endl << endl;
@@ -51,7 +51,7 @@ int main()
 {
     int engine = 0;
 
-    string linear{R"(4*5tx_2 + (5+2i)/t y_1 - 6z_4 + 2 = 0 \\ (t^2 - 6) x_2 - 4y_1 = 3 + z_4 \\ 5t^4z_4 = 3 + 5/6 y_1)"};
+    string linear{R"(4*5t x_alpha + (5+2i)/t y_1 - 6z_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_1 = 3 + z_1 \\ 5t^4z_1 = 3 + 5/6 y_1)"};
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
@@ -73,7 +73,7 @@ int main()
 
     string greek{"sin(alpha) - cos(-beta) / sqrt(omega) * root(phi, varphi)"};
 
-    // test_parser(linear, "linear system: ", 3);
+    test_parser(linear, "linear system: ", 3);
 
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
@@ -95,9 +95,15 @@ int main()
 
     string eval_test_3{"(-2 (2601 + 5598 x - 61921 x^2 - 10126 x^3 + 6848 x^4 + 1056 x^5)) / (x + 3)"};
 
+    string r_test_4{"orth[[3, 4], [5, 6]] + rref[[3, 4], [5, 6]]"};
+
+    string r_test_5{"charpoly[[3, 4], [5, 6]] + inv[[3, 4], [5, 6]]"};
+
     test_parser(eval_test_1, "R test 1", engine);
     test_parser(eval_test_2, "R test 2", engine);
     test_parser(eval_test_3, "R test 3", engine);
+    test_parser(r_test_4, "R test 4", engine);
+    test_parser(r_test_5, "R test 5", engine);
 
 
     // ------------------------- test Armadillo below ------------------------------

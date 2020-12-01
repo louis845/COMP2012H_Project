@@ -19,9 +19,9 @@ struct Info         // for communications between parser and gui / step-by-step 
     ~Info();
 
     bool success{true};
-    std::exception* err{nullptr};
-    int engine_chosen{0};           // user chosen engine, 0 = auto, 1 = R, 2 = Armadillo
-    int engine_used{1};             // 1 for using R class, 2 for using Armadillo
+    std::string err_msg;
+    int engine_chosen{0};           // user chosen engine, 0 = auto, 1 = R, 2 = Armadillo, 3 = linear system
+    int engine_used{1};             // 1 for using R class, 2 for using Armadillo, 3 for parsing linear system
     bool float_exists{false};
     bool var_exists{false};
     bool func_exists{false};        // true only if function that R cannot handle appears
@@ -37,8 +37,6 @@ struct Info         // for communications between parser and gui / step-by-step 
     std::string eval_result{""};        // computation result in LaTeX format
                                         // N.B. both are raw strings and are NOT enclosed by delimiters
                                         // i.e. $$ for LaTeX and ` for AsciiMath
-
-    std::string warning{""};
 
     void clear();
     void addMat(ROperand operand, Token::TokName op);
@@ -102,21 +100,24 @@ private:
 };
 
 
-
-// TODO: add feature that allows user to assign specific values to variables
 class VariableExprAst : public ExprAst
 {
     friend class Parser;
 
 public:
-    VariableExprAst(const std::string& name): name(name) {}
+    VariableExprAst(const std::string& name, std::map<std::string, ROperand>* r_table, 
+                    std::map<std::string, ArmaOperand>* arma_table): name(name), r_table(r_table), 
+                    arma_table(arma_table) {}
+
     std::string get_name() const { return name; }
 
     ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
-    std::string genAsciiMath() const override { return name; }
+    std::string genAsciiMath() const override;
 
 protected:
+    std::map<std::string, ROperand>* r_table;
+    std::map<std::string, ArmaOperand>* arma_table;
     std::string name;
     std::string tex{""};
 };
