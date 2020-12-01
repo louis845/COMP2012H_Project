@@ -11,6 +11,7 @@
 #include "utils/ocr_api.h"
 #include "begin_widget.h"
 #include "parser/parser.h"
+#include <QTreeWidgetItem>
 
 using namespace std;
 
@@ -41,6 +42,7 @@ public:
     void setNewSteps(StepsHistory* s);
 
     void receiveImage(QPixmap p);
+    void on_treeWidget_itemPressed(QTreeWidgetItem *item);
 private:
     Ui::solution_widget *ui;
 
@@ -53,11 +55,18 @@ private:
     QWebEngineView *solution_view;
     QWebEngineView *intepretation_view;
 
-    StepsHistory *steps;
+    StepsHistory *current_viewing_steps;
 
     begin_widget *input_window;
 
+    QTimer* progress_timer;
+    int currentValue = 0;
+
+    int question_num = 0;
+
     int selected_choice;
+
+    std::vector<StepsHistory*> all_steps_list;
 signals:
     void finish_sig();
     void next_problem_sig();
