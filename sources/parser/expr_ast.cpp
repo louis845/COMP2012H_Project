@@ -381,7 +381,7 @@ ROperand FunctionExprAst::evalR(Info& res)
             break;
 
         case TokName::ORTH:
-            LinearOperationsFunc::orthogonal(res.parsed_mat.back().second, res.mat_size.back().first,
+            LinearOperationsFunc::orthogonalize(res.parsed_mat.back().second, res.mat_size.back().first,
                                             res.mat_size.back().second, steps);
             break;
     }
