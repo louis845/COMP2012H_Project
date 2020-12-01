@@ -8,6 +8,7 @@
 #include "math/fraction/Fraction.h"
 #include "math/double/Double.h"
 #include "math/double/DoubleComplex.h"
+#include <utility>
 #include <vector>
 #include <complex>
 #include <armadillo>
@@ -31,7 +32,7 @@ public:
     enum class Type { NOR, MAT, IMAT };             // IMAT : identity matrix 
 
     ROperand(): type(Type::IMAT) {}
-    explicit ROperand(R value): type(Type::NOR), value(value) {}
+    explicit ROperand(R value): type(Type::NOR), value(std::move(value)) {}
     explicit ROperand(size_t row_num): type(Type::MAT), mat(row_num) {} 
     ~ROperand() = default;
 
@@ -41,6 +42,8 @@ public:
     ROperand operator*(ROperand rhs);
     ROperand operator/(ROperand rhs);
     ROperand operator^(int rhs);
+    ROperand operator+=(ROperand rhs);
+    ROperand operator-=(ROperand rhs);
 
     std::string genTex() const;         // generate TeX formated strings for rendering
 
@@ -63,7 +66,7 @@ public:
 
     ArmaOperand(): type(Type::IMAT) {}
     explicit ArmaOperand(const std::complex<double>& value): type(Type::NOR), value(value) {}
-    explicit ArmaOperand(const arma::cx_mat& mat): type(Type::MAT), mat(mat) {}
+    explicit ArmaOperand(arma::cx_mat mat): type(Type::MAT), mat(std::move(mat)) {}
     explicit ArmaOperand(double real, double imag=0.0): type(Type::NOR), value(real, imag) {}
     ArmaOperand(size_t row, size_t col): type(Type::MAT), mat(row, col, arma::fill::none) {}
     ArmaOperand(Type type, const std::complex<double>& coeff): type(type), value(coeff) {}          // for IMAT
@@ -90,10 +93,10 @@ private:
 
 
 inline R newInt(long value) { return R{new Long{value}}; }
-inline R newInt(std::string value) { return R{new Long{mpz_wrapper(value)}}; }
+inline R newInt(const std::string& value) { return R{new Long{mpz_wrapper(value)}}; }
 
 inline R newComplex(long real, long imag) { return R{new LongComplex{real, imag}}; }
-inline R newComplex(std::string real, std::string imag) 
+inline R newComplex(const std::string& real, const std::string& imag)
 {
     return R{new LongComplex{mpz_wrapper(real), mpz_wrapper(imag)}};
 }

@@ -21,11 +21,11 @@ std::unordered_map<std::string, int> Token::tok_map =
 };
 
 
-std::regex Lexer::WHITESPACE_RE = std::regex((R"(\s+)"));
+std::regex Lexer::WHITESPACE_RE = std::regex((R"(^\s+)"));
 std::regex Lexer::DELIM_RE = std::regex((R"(^\s*(,|\\\\))"));
 std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr|charpoly|answer))"));
 std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|((\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?)))"));
-std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z]))"));
+std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z])(_\w+)?)"));
 
 
 // 1) if all meaningful characters are exhausted, return nullptr
@@ -38,6 +38,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
     while (input.length() > 0)
     {
         if (regex_match(input, WHITESPACE_RE))   return nullptr;
+        input = std::regex_replace(input, WHITESPACE_RE, "");
 
         // each parser function will handle exceptions and return TokErr
         // if no pattern matches, the Token* returned will be a nullptr
@@ -118,7 +119,7 @@ Token* Lexer::parseId()
     regex_search(input, result, ID_RE);
     if (result.empty()) return nullptr;
 
-    Token* temp = new TokId(result[1]);
+    Token* temp = new TokId(result[0]);
     input = std::move(result.suffix().str());
     return temp;   
 }
