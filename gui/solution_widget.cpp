@@ -172,7 +172,8 @@ void solution_widget::handle_ascii_update_async(string text){
                 qDebug()<<static_cast<int>(t);
 
                 ostringstream os;
-                os<<"$$";
+                os << "<div>`" << i.interpreted_input << "`</div>";
+                os<<"$$= ";
                 const int rows=pr.first;
                 const int cols=pr.second;
                 write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
@@ -370,7 +371,7 @@ void solution_widget::display_answer(string answer){
 }
 
 void solution_widget::display_preview(string preview){
-    QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
+    QString qs="<html><head><script>MathJax = {loader: { load: ['input/asciimath', 'input/tex', 'output/svg', 'ui/menu'] }, tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script><style>div {  margin: auto;  width: auto;  text-align: center;}</style></head><body>\n";
     qs=qs+QString::fromStdString(preview);
     qs=qs+"</body></html>";
     intepretation_view->setHtml(qs);
@@ -379,13 +380,14 @@ void solution_widget::display_preview(string preview){
 }
 
 void solution_widget::display_preview_ascii(string preview){
-    QString qs="<html><head><script>MathJax = {  loader: {load: ['input/asciimath', 'output/chtml', 'ui/menu']},  asciimath: {    delimiters: [['$','$'],['`','`']]  },};</script><style>div {  margin: auto;  width: auto;  text-align: center;}</style><script type=\"text/javascript\" id=\"MathJax-script\" async  src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js\"></script></head><body>\n";
+    display_preview(preview);
+    /*QString qs="<html><head><script>MathJax = {  loader: {load: ['input/asciimath', 'input/tex', 'output/chtml', 'ui/menu']},  asciimath: {    delimiters: [['$','$'],['`','`']]  },};</script><style>div {  margin: auto;  width: auto;  text-align: center;}</style><script type=\"text/javascript\" id=\"MathJax-script\" async  src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js\"></script></head><body>\n";
     qs=qs+"<div>";
     qs=qs+QString::fromStdString(preview);
     qs=qs+"</div></body></html>";
     intepretation_view->setHtml(qs);
     qDebug().noquote();
-    qDebug()<<qs;
+    qDebug()<<qs;*/
 }
 
 void solution_widget::on_treeWidget_itemPressed(QTreeWidgetItem *item){

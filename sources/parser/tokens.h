@@ -4,14 +4,17 @@
 #include <string>
 #include <unordered_map>
 
-// Check the README for more information about tokens
 
-
+// Base class for all the tokens
 class Token
 {
 public:
+    // The general type of the token: delimiters, operators
+    // numbers, identifiers and errors
     enum class TokType {DELIM, OP, NUM, ID, ERR};
 
+    // The specific name of each token
+    // Check the token list in docs for more details
     enum class TokName
     {
         ANSWER = 42,        // you know, 42 is the Answer to the Ultimate Question of Life, the Universe, and Everything ;)
@@ -27,78 +30,73 @@ public:
         INVALID_TOKEN = 500, NUMERICAL_ERROR // ERR
     };
 
+    // For lexer to quickly translate the string into a token stream
+    // int will be static cast to enum class TokName type
     static std::unordered_map<std::string, int> tok_map;
 
-    explicit Token(TokType prime_type): type(prime_type) {}
+    explicit Token(TokType prime_type, std::string raw_value): 
+        type(prime_type), raw_value(raw_value) {}
     virtual ~Token() = default;
 
     const TokType& get_type() const { return type; }
-    virtual const TokName& get_name() const = 0;
-    virtual const std::string& get_raw_value() const = 0;
+
+    virtual const TokName& get_name() const { return name; };
+
+    // Access the raw string representation of the token
+    virtual const std::string& get_raw_value() const { return raw_value; };
+
+    // Unused after the modification of the architecture
     virtual long double get_num_value() const { return 0.0L; };
 
 protected:
     TokType type;
-};
-
-
-class TokDelim : public Token
-{
-public:
-    TokDelim(): Token(TokType::DELIM), name(TokName::COMMA), raw_value(",") {}
-
-    explicit TokDelim(const std::string& value);
-
-    const TokName& get_name() const override { return name; }
-    const std::string& get_raw_value() const override { return raw_value; }
-
-private:
     TokName name;
     std::string raw_value;
 };
 
 
+// Class for delimiters
+class TokDelim : public Token
+{
+public:
+    TokDelim(): Token(TokType::DELIM, ",") { this->name = TokName::COMMA; }
+
+    explicit TokDelim(const std::string& value);
+};
+
+
+// Class for operators
+//
+// NOTE: functions, parentheses and binary operators are all
+// classified as operators since they will change the parser
+// behaviour
 class TokOp : public Token
 {
 public:
     explicit TokOp(const std::string& value);
 
-    const TokName& get_name() const override { return name; }
-    const std::string& get_raw_value() const override { return raw_value; }
-
-private:
-    TokName name;
-    std::string raw_value;
 };
 
 
-// the string to long/double conversion is handled by NumExprAst now
-// this class only determines the concrete type of the token
+// Class for numbers, scientific constants, imaginary number i and
+// identity matrix I
+//
+// The string to long/double conversion is handled by NumExprAst now
+// This class only determines the concrete type of the token
 class TokNum : public Token
 {
 public:
     explicit TokNum(const std::string& value);
 
-    const TokName& get_name() const override { return name; }
-    const std::string& get_raw_value() const override { return raw_value; }
-
-private:
-    TokName name;
-    std::string raw_value;
 };
 
 
+// Class for identifiers i.e. variable names
 class TokId : public Token
 {
 public:
     explicit TokId(const std::string& value);
 
-    const TokName& get_name() const override { return name; }
-    const std::string& get_raw_value() const override { return raw_value; }
-
-private:
-    TokName name;
-    std::string raw_value;
 };
 
 
@@ -106,14 +104,8 @@ class TokErr : public Token
 {
 public:
     TokErr(const TokName& name, std::string value):
-        Token(TokType::ERR), name(name), raw_value(std::move(value)) {}
+        Token(TokType::ERR, std::move(value)) {}
 
-    const TokName& get_name() const override { return name; }
-    const std::string& get_raw_value() const override { return raw_value; }
-
-private:
-    TokName name;
-    std::string raw_value;
 };
 
 #endif /* TOKEN_H_ */

@@ -10,7 +10,9 @@ typedef Token::TokType TokType;
 
 // TODO: add custom exception classes and refine exception handling
 
-/*  
+/*  Rules for atomic tokens, check the docs for the full token list and
+ *  grammar rules
+ *
  *  number      ::= [(\+|-)?(\.[0-9]+|[0-9]+\.?[0-9]*)((e|E)(\+|-)?[0-9]+)?] | constants
  *  variable    ::= [A-Za-z] | greek letters
  *  function    ::= functions
@@ -58,7 +60,7 @@ void Parser::reset_input(const std::string& input)
 }
 
 
-// only return precedence of binary operators
+// Only return precedence of binary operators
 // any other tokens which are not in {')', ']', '}', '|', ',', '='} will have precedence -1
 // ')', ']', '}', ',', '=' have precedence -2
 // '|' has precedence -3
@@ -83,12 +85,16 @@ void Parser::getNextToken()
 {
     delete cur_tok;
     cur_tok = tokenizer.getNextToken();        // caller will check whether cur_tok is a nullptr
+    
+    // end of line is automatically omitted if not in linear system mode
     while (cur_tok && cur_tok->get_name() == TokName::ENDL)
     {
         delete cur_tok;
         cur_tok = tokenizer.getNextToken();
     }
 
+    // Equal sign should never appear in a valid input unless during
+    // parsing linear systems
     if (cur_tok && cur_tok->get_name() == TokName::EQUAL)
         throw std::invalid_argument("expression contains invalid symbol '='");
 }
@@ -122,17 +128,17 @@ MatrixExprAst* Parser::parseMatrix()
     {
         row = parseBracket();
     }
-    catch(const std::invalid_argument& e)
+    catch (const std::invalid_argument& err)
     {
-        std::cerr << "Invalid matrix: " << e.what() << '\n';
+        std::cerr << "Invalid matrix: " << err.what() << '\n';
         delete matrix;
-        throw std::invalid_argument("Invalid matrix.");
+        throw std::invalid_argument("invalid matrix");
     }
     
     if (row.empty())
     {
         delete matrix;
-        throw std::invalid_argument("Empty entries in matrix.");
+        throw std::invalid_argument("empty entries in matrix");
     }
     
     matrix->entries.push_back(row);
@@ -145,17 +151,17 @@ MatrixExprAst* Parser::parseMatrix()
         {
             row = parseBracket();
         }
-        catch(const std::invalid_argument& e)
+        catch (const std::invalid_argument& err)
         {
-            std::cerr << "Invalid matrix: " << e.what() << '\n';
+            std::cerr << "invalid matrix: " << err.what() << '\n';
             delete matrix;
-            throw std::invalid_argument("Invalid matrix.");
+            throw std::invalid_argument("invalid matrix");
         }
         
         if (row.size() != col_size)
         {
             delete matrix;
-            throw std::invalid_argument("Column sizes mismatch.");
+            throw std::invalid_argument("column sizes of each row of the matrix mismatch.");
         }
         matrix->entries.push_back(row);
     }
@@ -194,14 +200,16 @@ std::vector<ExprAst*> Parser::parseBracket()
         }
 
         if (cur_tok == nullptr || cur_tok->get_name() != TokName::RSB)
-            throw std::invalid_argument("Incomplete matrix, expecting ']'.");
+            throw std::invalid_argument("incomplete matrix, expecting ']'");
 
         getNextToken();
         return row;
     }
-    catch (...)     // catch all exceptions but do not rethrow
+    // Catch all exceptions but do not rethrow
+    // Only let top-level parseMatrix() handle exceptions
+    catch (...)
     {
-        throw std::invalid_argument("Invalid entries in the matrix.");     // only let top-level parseMatrix() handle exceptions
+        throw std::invalid_argument("invalid entries in the matrix");
     } 
 }
 
@@ -252,9 +260,17 @@ ExprAst* Parser::parseParen()
 //          ::= function ( number | variable )
 //          ::= function '(' expression (',' expression)* ')'
 //          ::= function matrixexpr
+//
+// NOTE: the third and fourth rules are indistinguishable within any k tokens of
+// looking-ahead i.e. always exists a string that needs LL(k+1) parser to resolve
+// the ambiguity. To solve this problem, a little time travel trick is used since
+// user input cannot be infinitely long. For this rule, as a result, it can be 
+// regard as an LL(*) parser.
 ExprAst* Parser::parseId()
 {
     if (cur_tok == nullptr)     return nullptr;
+
+    // identifierexpr ::= variable
     if (cur_tok->get_type() == TokType::ID)
     {
         ExprAst* var = new VariableExprAst(cur_tok->get_raw_value(), &r_table, &arma_table);
@@ -278,12 +294,14 @@ ExprAst* Parser::parseId()
         return nullptr;
     }
 
+    // identifierexpr ::= function ( number | variable )
     if (cur_tok->get_type() == TokType::NUM)
     {
         func->args.emplace_back(parseNum());
         return func;
     }
 
+    // identifierexpr ::= function ( number | variable )
     if (cur_tok->get_type() == TokType::ID)
     {
         ExprAst* var = new VariableExprAst(cur_tok->get_raw_value(), &r_table, &arma_table);
@@ -297,7 +315,10 @@ ExprAst* Parser::parseId()
         return func;
     }
 
+    // A little backup for time travelling XD
     string backup = tokenizer.get_input();
+
+    // identifierexpr ::= function '(' expression (',' expression)* ')'
     if (cur_tok->get_name() == TokName::LP)
     {
         getNextToken();
@@ -327,7 +348,8 @@ ExprAst* Parser::parseId()
             }
             else 
             {
-                tokenizer.reset_input(backup);      // use time traval to resolve undetermined parsing state
+                // Fail to follow rule 3, do time travelling and try rule 4
+                tokenizer.reset_input(backup);
                 delete cur_tok;
                 cur_tok = new TokOp("(");
             }
@@ -340,6 +362,7 @@ ExprAst* Parser::parseId()
         }
     }
 
+    // identifierexpr ::= function matrixexpr
     if (cur_tok->get_name() == TokName::LSB || cur_tok->get_name() == TokName::LP)
     {
         try
@@ -365,6 +388,10 @@ ExprAst* Parser::parseId()
 //          ::= parenexpr
 //          ::= matrixexpr
 //          ::= identifierexpr
+//
+// NOTE: again, there always exists a valid string where LL(k) cannot 
+// distinguish whether it is a parenexpr or a matrixexpr, but LL(k+1)
+// parser can do, hence time travel
 ExprAst* Parser::parsePrimary(bool inside_textbar)
 {
     if (cur_tok == nullptr)     return nullptr;
@@ -400,7 +427,7 @@ ExprAst* Parser::parsePrimary(bool inside_textbar)
     }
 
     ExprAst* expr = parseId();
-    if (!expr)  throw std::invalid_argument("Unknown expression.");
+    if (!expr)  throw std::invalid_argument("unknown expression");
     return expr;
 }
 
@@ -409,7 +436,7 @@ ExprAst* Parser::parsePrimary(bool inside_textbar)
 //      ::= ( binop ( '+' | '-' )? primaryexpr | ( '+' | '-' )? primaryexpr )*
 ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_textbar)
 {
-    // loop will terminate when 
+    // Loop will terminate when 
     // 1) hitting right closing brackets i.e. ) ] } 
     // 2) hitting a pairing textbar when parsing a primaryexpr
     // 3) hitting EOF or tokenizer encountered an error   
@@ -521,25 +548,27 @@ ExprAst* Parser::parseExpr(bool inside_textbar)
         if (!expr)   
         {   
             delete neg_expr;
-            throw std::runtime_error("Fatal error, unexpected exception occurs.");
+            throw std::runtime_error("fatal error, unexpected exception occurs");
         }
         neg_expr->args.emplace_back(expr);
         return parseBinOpRhs(0, neg_expr, inside_textbar);
     }
 
     ExprAst* expr = parsePrimary(inside_textbar);
-    if (!expr)   throw std::runtime_error("Fatal error, unexpected exception occurs.");   // should not occur during normal exception handling
+    if (!expr)   throw std::runtime_error("fatal error, unexpected exception occurs");   // should not occur during normal exception handling
     return parseBinOpRhs(0, expr, inside_textbar);
 }
 
 
-// auto detect which engine to use
+// Auto detect which engine to use
 void Parser::autoDetect(ExprAst* root)
 {
     if (root == nullptr || !res.success)    return;
     if (typeid(*root) == typeid(NumberExprAst))
     {
         NumberExprAst* temp = dynamic_cast<NumberExprAst*>(root);
+
+        // Float exists, choose Armadillo
         if (temp->name == TokName::FLOAT || temp->name == TokName::PI || temp->name == TokName::E)
         {
             res.float_exists = true;
@@ -558,6 +587,7 @@ void Parser::autoDetect(ExprAst* root)
         for (auto row : temp->entries)
             for (auto entry : row)
             {
+                // Recursively detect each entry
                 autoDetect(entry);
                 if (!res.success)   return;
             }
@@ -572,6 +602,10 @@ void Parser::autoDetect(ExprAst* root)
         if (!res.success)   return;
     }
 
+
+    // If functions are not in the supported list of R
+    // or the arguments does not fulfill the requirements
+    // choose Armadillo
     if (typeid(*root) == typeid(FunctionExprAst))
     {
         FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(root);
@@ -594,6 +628,7 @@ void Parser::autoDetect(ExprAst* root)
 
         for (auto arg : temp->args)
         {
+            // Recursively detect the arguments
             autoDetect(arg);
             if (!res.success)   return;
         }
@@ -601,7 +636,7 @@ void Parser::autoDetect(ExprAst* root)
 }
 
 
-// main driver function, handles all exceptions
+// Main driver function, handles all exceptions
 const Info& Parser::parse(int engine_type, bool save, const string& var_name)
 {
     res.clear();
@@ -614,6 +649,7 @@ const Info& Parser::parse(int engine_type, bool save, const string& var_name)
         return res;
     }
 
+    // Handle linear system mode
     if (engine_type == 3 || input.find('=') != std::string::npos)
     {
         res.engine_used = 3;
@@ -630,15 +666,7 @@ const Info& Parser::parse(int engine_type, bool save, const string& var_name)
         }
     }
 
-    /*
-    if (input.find('=') != std::string::npos)
-    {
-        res.success = false;
-        res.err = new std::invalid_argument("Error: equal sign detected but computational engine is not on linear system mode \n you may want to manually select the correct engine");
-        return res;
-    }
-    */
-
+    // Normal mode, do the parsing first
     try
     {
         delete root;
@@ -661,6 +689,7 @@ const Info& Parser::parse(int engine_type, bool save, const string& var_name)
         return res;
     }
 
+    // If parsing is fine, do evaluation based on the engine chosen
     if (engine_type == 0)   autoDetect(this->root);
     if (res.success)
     {
@@ -676,6 +705,7 @@ const Info& Parser::parse(int engine_type, bool save, const string& var_name)
         return res;
     }
 }
+
 
 const Info& Parser::getInfo() const
 {
@@ -697,8 +727,9 @@ void Parser::evalR(bool save, const string& var_name)
     try
     {
         ROperand result = root->evalR(res);
-        if (typeid(*root) == typeid(MatrixExprAst)) 
+        if (result.type == ROperand::Type::MAT) 
             res.addMat(result, TokName::NA);
+
         res.eval_result = result.genTex();
 
         if (save) 
@@ -800,6 +831,9 @@ void Parser::eval(bool save, const string& var_name)
 }
 
 
+// Independent part for evaluating decompositions
+// since all of them have unusual output i.e. cannot be wrapped
+// by a single ArmaOperand
 void Parser::evalDecomp()
 {
     FunctionExprAst* func = dynamic_cast<FunctionExprAst*>(root);
@@ -855,7 +889,7 @@ void Parser::evalDecomp()
 }
 
 
-// do pre-order traversal on the AST and print the infix notation of the expression
+// Do pre-order traversal on the AST and print the infix notation of the expression
 // only used in pure CLI mode
 void Parser::printAst(ExprAst* root) const
 {
@@ -953,13 +987,15 @@ void Parser::modifyCoeffs(const std::string& name, size_t row, bool neg,
 // it is a feature added at the very end of the development
 // therefore no major grammar modification on the main parser can be adopted for compatibility
 // EXTREMELY UNRELIABLE, I myself do not believe this will work
-
+//
 // it works, how come??
 std::vector<std::string> Parser::parseLinearSystem()
 {
     string lines = input;
     size_t pos = lines.find(R"(\\)"), row_cnt = 0;
     std::map<string, std::map<int, ROperand*>> coeffs;
+
+    // while-loop for seperating lines
     while (true)
     {
         pos = pos == string::npos ? lines.size() : pos;
@@ -968,6 +1004,8 @@ std::vector<std::string> Parser::parseLinearSystem()
         if (eq_pos == string::npos) 
             throw std::invalid_argument("invalid linear equation, missing '='");
         
+
+        // Seperating the two sides of the equation
         try
         {
             parseLine(line.substr(0, eq_pos), row_cnt, false, coeffs);
@@ -986,6 +1024,10 @@ std::vector<std::string> Parser::parseLinearSystem()
         pos = lines.find(R"(\\)");
     }
 
+    // Arrange all the coefficients after processing
+    //
+    // NOTE: coeffs is a map hence all variables names are automatically
+    // arranged in ascending order when pushed back in the vector
     vector<string> var_names;
     for (auto var : coeffs)
     {
@@ -1004,6 +1046,8 @@ std::vector<std::string> Parser::parseLinearSystem()
                 matR[i][j] = coeffs[var_names[j]].at(i)->value;
             else matR[i][j] = newInt(0L);
         }
+
+        // Constants should be on the right hand side, hence negative
         if (coeffs["constant"].at(i))
             matR[i][var_names.size() - 1] = -coeffs["constant"].at(i)->value;
         else
@@ -1021,8 +1065,11 @@ std::vector<std::string> Parser::parseLinearSystem()
 }
 
 
-// I assert that all the nodes containing variables will be in the right subtree
-// except for the left-most leaf, if the input is well formatted
+// Parsing each side of the equal sign
+//
+// From the parser grammar, I assert that all the nodes containing terms 
+// will be in the right subtree and the left subtree should be a node of 
+// BinaryExprAst except for the left-most leaf node, given the input is valid
 void Parser::parseLine(std::string line, size_t row, bool neg, 
                         std::map<std::string, std::map<int, ROperand*>>& coeffs)
 {
@@ -1114,12 +1161,16 @@ void Parser::parseLine(std::string line, size_t row, bool neg,
 }
 
 
+// Find the variable name with the subtree of given root pointer
+// Result will be an empty string if not found
 string Parser::findVar(ExprAst* root)
 {
     if (typeid(*root) == typeid(BinaryExprAst))
     {
         BinaryExprAst* temp = dynamic_cast<BinaryExprAst*>(root);
         string lhs = findVar(temp->lhs), rhs = findVar(temp->rhs);
+
+        // Both subtrees contain variables and they are not the same
         if (lhs != rhs && !lhs.empty() && !rhs.empty())
             throw std::invalid_argument("the equation is not linear or not in valid form, e.g. group two unknowns with parentheses");
         if (!lhs.empty())  return lhs;
@@ -1130,6 +1181,8 @@ string Parser::findVar(ExprAst* root)
     {
         FunctionExprAst* temp = dynamic_cast<FunctionExprAst*>(root);
         if (temp->op == TokName::NEG)   return findVar(temp->args[0]);
+
+        // A non-linear function contains variables, the input is not a linear system
         for (auto arg : temp->args)
             if (!findVar(arg).empty())
                 throw std::invalid_argument("the equation is not linear or not in valid form");
@@ -1138,6 +1191,8 @@ string Parser::findVar(ExprAst* root)
     if (typeid(*root) == typeid(VariableExprAst))
     {
         VariableExprAst* temp = dynamic_cast<VariableExprAst*>(root);
+
+        // t is a reserved name for unknown parameters in linear system
         return temp->name == "t" ? "" : temp->name;
     }
 
@@ -1161,10 +1216,13 @@ void Parser::evalLinearSystem(vector<string> var_names)
         throw std::invalid_argument("fail to solve the linear system, the input may be invalid or it has not solution");
     }
     
+    // Construct the LaTeX output
     res.eval_result = "&";
     for (int i = 0; i < row; ++i)
     {
         string var = var_names[i];
+
+        // Enclose the subscript by curly braces
         auto pos = var.find('_');
         if (pos != string::npos)
             var = var.substr(0, pos + 1) + "{" + var.substr(pos + 1) + "}";
@@ -1201,6 +1259,11 @@ string Parser::getAsciiMath() const
 }
 
 
+// Assign values to variables by passing the literal input from the user
+// The input needs to be in AsciiMath format and the engine_type used to 
+// parsed the input
+//
+// If returning false, err_msg in Info object will be updated
 bool Parser::assignVar(const string& var_name, const string& raw, int type)
 {
     Parser parser(raw);
@@ -1250,6 +1313,11 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
 }
 
 
+// Explicitly assign values to variables by passing the corresponding ROperand
+// Therefore, users can use the intermediate steps of linear operations as
+// variables to reduce the effort of input
+//
+// If returning false, err_msg in Info object will be updated
 bool Parser::assignVar(const string& var_name, const ROperand& value)
 {
     auto iter = arma_table.find(var_name);
@@ -1264,6 +1332,9 @@ bool Parser::assignVar(const string& var_name, const ROperand& value)
 }
 
 
+// Change the name of an existing variable to an unused name
+// NOTE: the variable name appeared in the input CANNOT be modified
+// even if they are not assigned with values
 bool Parser::modifyName(const string& ori_name, const string& new_name)
 {
     if (!var_table.count(ori_name) || var_table.count(new_name)) return false;
@@ -1293,6 +1364,7 @@ bool Parser::modifyName(const string& ori_name, const string& new_name)
 }
 
 
+// Erase a variable, which CANNOT be the variables appeared in the expression
 bool Parser::eraseVar(const string& var_name)
 {
     if (!var_table.count(var_name) || var_table[var_name] < 2) return false;
@@ -1303,6 +1375,8 @@ bool Parser::eraseVar(const string& var_name)
 }
 
 
+// Retrieve a map from all the variables names to their values in LaTaX
+// Variables with no values assigned will have value empty string
 map<string, string> Parser::retrieve_var() const
 {
     map<string, string> table;
@@ -1311,11 +1385,13 @@ map<string, string> Parser::retrieve_var() const
     for (const auto& item : arma_table)
         table.insert(make_pair(item.first, item.second.genTex()));
     for (const auto& item : var_table)
-        table.insert(make_pair(item.first, ""));
+        table.insert(make_pair(item.first, ""));    // map.insert() won't overwrite an existent pair
     return table;
 }
 
 
+// Retrieve the number of variables with unknown values in the input
+// before do the actual evaluation
 int Parser::getNumUnknown() const
 {
     int cnt = 0;
