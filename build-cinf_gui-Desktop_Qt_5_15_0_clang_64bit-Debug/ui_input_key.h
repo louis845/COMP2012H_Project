@@ -16,7 +16,6 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -24,7 +23,6 @@ QT_BEGIN_NAMESPACE
 class Ui_input_key
 {
 public:
-    QVBoxLayout *verticalLayout;
     QWidget *widget;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
@@ -44,16 +42,18 @@ public:
     QPushButton *no_ocr_btn;
     QPushButton *ok_btn;
     QSpacerItem *horizontalSpacer_6;
+    QWidget *widget_4;
+    QLabel *label;
 
     void setupUi(QWidget *input_key)
     {
         if (input_key->objectName().isEmpty())
             input_key->setObjectName(QString::fromUtf8("input_key"));
-        input_key->resize(544, 220);
-        verticalLayout = new QVBoxLayout(input_key);
-        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
+        input_key->resize(407, 449);
         widget = new QWidget(input_key);
         widget->setObjectName(QString::fromUtf8("widget"));
+        widget->setGeometry(QRect(40, 260, 321, 61));
+        widget->setMinimumSize(QSize(1, 1));
         horizontalLayout = new QHBoxLayout(widget);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -79,11 +79,10 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer_2);
 
-
-        verticalLayout->addWidget(widget);
-
         widget_2 = new QWidget(input_key);
         widget_2->setObjectName(QString::fromUtf8("widget_2"));
+        widget_2->setGeometry(QRect(40, 314, 319, 71));
+        widget_2->setMinimumSize(QSize(0, 0));
         horizontalLayout_2 = new QHBoxLayout(widget_2);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalSpacer_3 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -110,11 +109,9 @@ public:
 
         horizontalLayout_2->addItem(horizontalSpacer_4);
 
-
-        verticalLayout->addWidget(widget_2);
-
         widget_3 = new QWidget(input_key);
         widget_3->setObjectName(QString::fromUtf8("widget_3"));
+        widget_3->setGeometry(QRect(40, 380, 341, 44));
         horizontalLayout_3 = new QHBoxLayout(widget_3);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -140,9 +137,14 @@ public:
 
         horizontalLayout_3->addItem(horizontalSpacer_6);
 
-
-        verticalLayout->addWidget(widget_3);
-
+        widget_4 = new QWidget(input_key);
+        widget_4->setObjectName(QString::fromUtf8("widget_4"));
+        widget_4->setGeometry(QRect(30, 20, 341, 241));
+        label = new QLabel(widget_4);
+        label->setObjectName(QString::fromUtf8("label"));
+        label->setGeometry(QRect(10, 10, 321, 191));
+        label->setPixmap(QPixmap(QString::fromUtf8(":/rsc/transparent_logo.png")));
+        label->setAlignment(Qt::AlignCenter);
 
         retranslateUi(input_key);
 
@@ -157,6 +159,7 @@ public:
         cancel_btn->setText(QCoreApplication::translate("input_key", "Cancel", nullptr));
         no_ocr_btn->setText(QCoreApplication::translate("input_key", "Do not use OCR", nullptr));
         ok_btn->setText(QCoreApplication::translate("input_key", "OK", nullptr));
+        label->setText(QString());
     } // retranslateUi
 
 };

@@ -605,6 +605,9 @@ namespace LinearOperationsFunc{
             }
 
             steps=new StepsHistory;
+            steps->add_step(new StepText{"The system of linear equations is solved by reducing the augmented matrix.", //Console
+            "The system of linear equations is solved by reducing the augmented matrix." //Latex
+            });
             LinOpsRecorder rc{steps, mat, rows, cols};
             rc.capture_initial();
 
@@ -705,6 +708,9 @@ namespace LinearOperationsFunc{
             //Cpl is the submatrix pointing to the same addresses as combined_matrix
 
             steps=new StepsHistory;
+            steps->add_step(new StepText{"The system of linear equations is solved by reducing the augmented matrix.", //Console
+            "The system of linear equations is solved by reducing the augmented matrix." //Latex
+            });
             LinOpsRecorder rc{steps, combined_matrix, mrows, mcols}; //we record the whole matrix
             rc.capture_initial();
             
@@ -758,6 +764,9 @@ namespace LinearOperationsFunc{
         if(mat!=nullptr){
             RF::promote_to_field(mat, rows, cols);
             steps=new StepsHistory;
+            steps->add_step(new StepText{"The determinant is found using row/col operations that do not change the determinant.", //Console
+            "The determinant is computed with row/col operations that do not change the determinant. Notice that swapping rows/cols multiplies the determinant by -1, and adding a multiple times row/col to another row/col does not change the determinant." //Latex
+            });
             LinOpsRecorder rc{steps, mat, rows, cols};
             rc.capture_initial();
 
@@ -823,6 +832,9 @@ namespace LinearOperationsFunc{
                 }
 
                 steps=new StepsHistory;
+                steps->add_step(new StepText{"The determinant is found using row/col operations that do not change the determinant.", //Console
+                "The determinant is computed with row/col operations that do not change the determinant. Notice that swapping rows/cols multiplies the determinant by -1, and adding a multiple times row/col to another row/col does not change the determinant." //Latex
+                });
                 LinOpsRecorder rc{steps, mat, rows, cols};
                 rc.capture_initial();
 
@@ -868,6 +880,9 @@ namespace LinearOperationsFunc{
                 RF::promote_to_field(mat,rows,cols);
 
                 steps=new StepsHistory;
+                steps->add_step(new StepText{"Do Gram-Schmidt process on the matrix. Treats the rows as row vectors.", //Console
+                "Do Gram-Schmidt process on the matrix. Treats the rows as row vectors. For each row, the process computes the orthogonal projections to the previous rows, and then subtracts the orthogonal projections from the current row. This is equivalent to doing row operations." //Latex
+                });
                 LinOpsRecorder rc{steps, mat, rows, cols};
                 rc.capture_initial();
 
