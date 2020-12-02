@@ -66,15 +66,55 @@ long long gcd(long long a,long long b){
     return b;
 }
 
-MathFormulaTree::MathFormulaTree(string formula,char oper){
-    this->formula=formula;
-    left=right=nullptr;
-    this->oper=oper;
+/**
+ * Swaps val1 and val2
+*/
+void swap_values(int &val1,int &val2,int &num_of_a_in_val1,int &num_of_a_in_val2,int &num_of_b_in_val1,int &num_of_b_in_val2){
+    int temp=val1;
+    val1=val2;
+    val2=temp;
+
+    temp=num_of_a_in_val1;
+    num_of_a_in_val1=num_of_a_in_val2;
+    num_of_a_in_val2=temp;
+
+    temp=num_of_b_in_val1;
+    num_of_b_in_val1=num_of_b_in_val2;
+    num_of_b_in_val2=temp;
 }
 
-MathFormulaTree::~MathFormulaTree(){
-    delete left;
-    delete right;
+void xgcd(const int& a, const int& b, int& gcd, int& c, int& d){
+    int val1=a;
+    int val2=b;
+
+    int num_of_a_in_val1=1;
+    int num_of_b_in_val1=0;
+    int num_of_a_in_val2=0;
+    int num_of_b_in_val2=1;
+
+    if(val1<val2){
+        swap_values(val1,val2,num_of_a_in_val1,num_of_a_in_val2,num_of_b_in_val1,num_of_b_in_val2);
+    }
+    //Now val1>=val2
+    //Reduce until val1 is a multiple of val2
+    while(val1%val2 != 0){
+        int temp=val2;
+        int div=val1/val2;
+        val2 = val1%val2;
+        val1 = temp;
+
+        temp = num_of_a_in_val2;
+        num_of_a_in_val2 = num_of_a_in_val1 - div*num_of_a_in_val2;
+        num_of_a_in_val1 = temp;
+
+        temp = num_of_b_in_val2;
+        num_of_b_in_val2 = num_of_b_in_val1 - div*num_of_b_in_val2;
+        num_of_b_in_val1 = temp;
+    }
+
+    gcd=val2;
+    c=num_of_a_in_val2;
+    d=num_of_b_in_val2;
 }
 
 /**
