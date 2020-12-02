@@ -25,6 +25,7 @@ QByteArray Ocr::img2Base64(const QString& img_path) const
 }
 
 
+// Convert the QPixmap to Base64
 QByteArray Ocr::img2Base64(const QPixmap& pixmap) const
 {
     QByteArray ba; 
@@ -72,14 +73,14 @@ QJsonObject Ocr::initJson(const QByteArray& img_base64) const
 }
 
 
-// parse the JSON field in the HTTP response
-// refer to https://docs.mathpix.com/#result-object for the response structure
+// Parse the JSON field in the HTTP response
+// Refer to https://docs.mathpix.com/#result-object for the response structure
 pair<string, string>Ocr::parseJson(const QByteArray& response) const
 {
     QJsonParseError err;
     QJsonDocument json = QJsonDocument::fromJson(response, &err);
     if (err.error != QJsonParseError::NoError)
-        throw std::runtime_error("response is not in a valid JSON format.");
+        throw std::runtime_error("response is not in a valid JSON format");
 
     QJsonObject json_object = json.object();
     if (json_object.contains("error"))
@@ -107,6 +108,7 @@ pair<string, string>Ocr::parseJson(const QByteArray& response) const
 }
 
 
+// Use a event loop to do the post
 QByteArray Ocr::post(const QNetworkRequest& request, const QJsonObject& json) const
 {
     QNetworkAccessManager mgr;
@@ -133,6 +135,7 @@ QByteArray Ocr::post(const QNetworkRequest& request, const QJsonObject& json) co
 }
 
 
+// Main access function for the OCR request
 pair<string, string> Ocr::request(const string& img_path) const
 {
     QByteArray img_base64 = img2Base64(QString::fromStdString(img_path));
@@ -144,6 +147,7 @@ pair<string, string> Ocr::request(const string& img_path) const
 }
 
 
+// Overloaded version which accepts QPixmap as input
 pair<string, string> Ocr::request(const QPixmap &img) const
 {
     QByteArray img_base64 = img2Base64(img);
@@ -155,6 +159,8 @@ pair<string, string> Ocr::request(const QPixmap &img) const
 }
 
 
+// Construct a testing request and test the connectivity
+// If no exception is thrown, the test is passed
 void Ocr::testConnectivity() const
 {
     QJsonObject json;
