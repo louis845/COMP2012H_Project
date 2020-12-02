@@ -7,7 +7,7 @@
 enum RingType{
     //Special type is for the zero element and the one element. Make sure to add comparison in the operator==
     SPECIAL_ZERO,
-    DOUBLE, LONG, FRACTION, POLYNOMIAL, COMPLEXIFY
+    DOUBLE, LONG, FRACTION, POLYNOMIAL, COMPLEXIFY, MOD_FIELD
 };
 
 /**

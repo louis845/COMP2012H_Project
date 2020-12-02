@@ -71,6 +71,11 @@ public:
     void previous_node();
 
     /**
+     * Directly jump to the last node
+    */
+    void last_node();
+
+    /**
      * Directly saves the pointer internally to StepsHistory. Does not perform copy. The previous answer, if exists, will be deallocated.
     */
     void setAnswer(RF** ans, int rows, int cols);
