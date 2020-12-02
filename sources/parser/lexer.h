@@ -7,8 +7,12 @@
 #include "tokens.h"
 
 
-// a simple lexer used to classify tokens from input
-// and evaluate some immediate literals
+// A simple lexer used to tokenize the AsciiMath input
+// It uses regular expressions to parse the input for simplicity
+// EXAMPLE:
+//          Lexer tokenizer("x + y = z");
+//          Token* cur_token = tokenizer.getNextToken();
+//          tokenizer.reset_input("[[1, 0], [0, 1]]");
 class Lexer
 {   
     typedef Token::TokType TokType;
@@ -28,6 +32,7 @@ private:
     Token* parseNum();
     Token* parseId();
 
+    // The regex patterns for corresponding tokens
     static std::regex WHITESPACE_RE;
     static std::regex DELIM_RE;
     static std::regex OP_RE;

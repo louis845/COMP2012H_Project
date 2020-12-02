@@ -51,7 +51,18 @@ int main()
 {
     int engine = 0;
 
+    /*
+    Parser p{""};
+    p.reset_input("[[3,4,4+t][5,6]]");
+    p.parse();
+    p.reset_input("[[3,4,4+t,],[5,6]]");
+    p.parse();
+     */
+
+
     string linear{R"(4*5t x_alpha + (5+2i)/t y_1 - 6z_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_1 = 3 + z_1 \\ 5t^4z_1 = 3 + 5/6 y_1)"};
+
+    string debug_0{"tan(sin([[3, 4], [5, 6]]))+"};
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
@@ -73,8 +84,9 @@ int main()
 
     string greek{"sin(alpha) - cos(-beta) / sqrt(omega) * root(phi, varphi)"};
 
-    test_parser(linear, "linear system: ", 3);
+    // test_parser(linear, "linear system: ", 3);
 
+    test_parser(debug_0, "debug 0", engine);
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
     test_parser(debug_3, "debug 3", engine);

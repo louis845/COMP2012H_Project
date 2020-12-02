@@ -439,6 +439,8 @@ ExprAst* Parser::parseBinOpRhs(int min_precedence, ExprAst* lhs, bool inside_tex
                 cur_op = cur_tok->get_name();
                 cur_raw_str = cur_tok->get_raw_value();
                 getNextToken();
+                if (cur_tok == nullptr)
+                    throw std::invalid_argument("binary expression is incomplete, missing right operand for " + cur_raw_str);
                 break;
         }
         

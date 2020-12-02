@@ -10,12 +10,25 @@
 #include <unordered_map>
 
 
+// Core part of the parser function, it can parse an AsciiMath string and
+// construct an anstrct syntax tree. The output is an Info class, containing
+// the evaluation result of the input string in LaTaX and other related 
+// information
+//
+// The main part is largely an LL(1) parser, with a bit of LL(*) feature
+// for disambiguation. Check the docs for the concrete grammar.
+// The parser also has a seperate component handling linear system.
+//
+// EXAMPLE:
+//      Parser parser("schur[[3, 4.5], [6i, 7pi/(8e)]]")
+//      const Info& result = parser.parse(0, true, "Demo")
+//      if (result.success) { ... }
+//      else {...}  // show users the error message
+// 
 class Parser
 {
     typedef Token::TokName TokName;
     typedef Token::TokType TokType;
-
-    friend class VariableExprAst;
 
 public:
     explicit Parser(const std::string& input);

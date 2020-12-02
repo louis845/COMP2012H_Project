@@ -5,22 +5,6 @@ using std::regex;
 using std::smatch;
 
 
-std::unordered_map<std::string, int> Token::tok_map = 
-{
-    {"answer", 42},
-    {",", 100}, {R"(\\)", 101},
-    {"**", 200}, {"*", 201}, {"xx", 202}, {"//", 203}, {"/", 204}, {"%", 205}, {"+", 206}, {"-", 207},
-    {"^", 208}, {"_", 209}, {"|", 210}, {"(", 211}, {")", 212}, {"[", 213}, {"]", 214}, {"{", 213}, {"}", 214}, {"=", 217},
-    {"sin", 218}, {"cos", 219}, {"tan", 220}, {"sec", 221}, {"csc", 222}, {"cot", 223}, {"arcsin", 224}, {"arccos", 225}, 
-    {"arctan", 226}, {"exp", 227}, {"log", 228}, {"ln", 229}, {"det", 230}, {"rank", 231}, {"ran", 232}, {"col", 232}, {"orth", 232},
-    {"ker", 234}, {"null", 234}, {"mod", 235}, {"gcd", 236}, {"lcm", 237}, {"min", 238}, {"max", 239}, {"trace", 240}, {"tr", 240}, 
-    {"rref", 241}, {"norm", 242}, {"abs", 243}, {"sqrt", 244}, {"root", 245}, {"inv", 247}, {"pinv", 248}, {"eigen", 249}, {"schur", 250},
-    {"svd", 251}, {"solve", 252}, {"qr", 253}, {"charpoly", 255},
-    {"e", 300}, {"pi", 301}, {"i", 302}, {"I", 303},
-    {"alpha", 400}, {"beta", 401}, {"theta", 402}, {"lambda", 403}, {"mu", 404}, {"phi", 405}, {"varphi", 406}, {"omega", 407}
-};
-
-
 std::regex Lexer::WHITESPACE_RE = std::regex((R"(^\s+)"));
 std::regex Lexer::DELIM_RE = std::regex((R"(^\s*(,|\\\\))"));
 std::regex Lexer::OP_RE = std::regex((R"(^\s*(\||\+|-|\*\*|\*|\/\/|xx|\/|\^|\(|\)|=|\[|\]|\{|\}|_|%|sqrt|root|abs|norm|sin|cos|tan|sec|csc|cot|arcsin|arccos|arctan|exp|log|ln|det|rank|ran|Ran|col|Col|orth|Ker|ker|mod|gcd|lcm|min|max|trace|tr|RREF|rref|inv|pinv|eigen|schur|svd|solve|qr|charpoly|answer))"));
@@ -28,11 +12,16 @@ std::regex Lexer::NUM_RE = std::regex((R"(^\s*(e|i|I|pi|((\+|-)?(\.[0-9]+|[0-9]+
 std::regex Lexer::ID_RE = std::regex((R"(^\s*(alpha|beta|theta|lambda|mu|phi|varphi|omega|[a-zA-Z]+)(_\w+)?)"));
 
 
+// Get next token in the input stream
+//
+// It follows the rules below
 // 1) if all meaningful characters are exhausted, return nullptr
 // 2) otherwise if no valid token is found, return TokErr
 // 3) otherwise return the corresponding valid token
-// if ignore_invalid_token is enabled, will keep advancing the cursor for the 2) case
-// in this case, only a nullptr or a valid token will be returned
+// If ignore_invalid_token is enabled, will keep advancing the cursor for the 2) case
+// In this case, only a nullptr or a valid token will be returned
+//
+// NOTE: ignore_invalid_token is unused in parser so far
 Token* Lexer::getNextToken(bool ignore_invalid_token)
 {
     while (input.length() > 0)
@@ -40,10 +29,10 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
         if (regex_match(input, WHITESPACE_RE))   return nullptr;
         input = std::regex_replace(input, WHITESPACE_RE, "");
 
-        // each parser function will handle exceptions and return TokErr
-        // if no pattern matches, the Token* returned will be a nullptr
+        // Each parser function will handle exceptions and return TokErr
+        // If no pattern matches, the Token* returned will be a nullptr
         // otherwise memory will be allocated for the new token
-        // the parser which receives the pointer has the responsibility to deallocate it
+        // The parser which receives the pointer has the responsibility to deallocate it
         Token* temp = parseDelim();
         if (temp == nullptr)    temp = parseOp();
         if (temp == nullptr)    temp = parseNum();
@@ -52,6 +41,7 @@ Token* Lexer::getNextToken(bool ignore_invalid_token)
         {
             if (ignore_invalid_token)   
             {
+                // Skip one character and search again
                 input.erase(0, 1);
                 continue;
             }

@@ -7,11 +7,12 @@ typedef Token::TokName TokName;
 typedef Token::TokType TokType;
 
 
-// cannot simply use the bin_op_precedence in Parser class due to cross-referencing
+// Used in BinaryExprAst::genAsciiMath()
+// Cannot simply use the bin_op_precedence in Parser class due to cross-referencing
 std::unordered_map<TokName, int> BinaryExprAst::precedence = 
 {
     {TokName::PLUS, 100}, {TokName::MINUS, 100}, 
-    {TokName::AST, 200}, {TokName::CDOT, 200}, {TokName::DIV, 200}, {TokName::FRAC, 200}, {TokName::PERCENT, 200}, 
+    {TokName::AST, 200}, {TokName::CDOT, 200}, {TokName::DIV, 200}, {TokName::FRAC, 200}, {TokName::PERCENT, 200},
     {TokName::CROSS, 300}, {TokName::SUP, 400}
 };
 
@@ -64,6 +65,7 @@ void Info::addMat(ROperand operand, TokName op)
 }
 
 
+// Check whether the raw input contains 'e' or 'E' as a sign of scientific notation
 NumberExprAst::NumberExprAst(TokName name, const string& raw): name(name), raw(raw)
 {
     if (raw.find('e') != string::npos || raw.find('E') != string::npos) 
@@ -77,6 +79,13 @@ ROperand NumberExprAst::evalR(Info& res)
     {
         case TokName::INTEGRAL:
         {
+            // mpz_wrapper does not support converting strings with
+            // scientific notation to their integral types
+            // the conversion needs to be done using stol() instead
+            //
+            // It means that when using scientific notation to represent
+            // a large number exceeding the range of long type, there will
+            // be a std::out_of_range exception thrown
             if (scientific)
             {
                 try 
@@ -96,7 +105,11 @@ ROperand NumberExprAst::evalR(Info& res)
             else return ROperand(newInt(raw));
         }
         
-        case TokName::FLOAT: case TokName::E: case TokName::PI:    // not really recommended, use Armadillo for approximated solutions               
+        // interpret floating point numbers, e and pi for R class
+        // floats will be converted to fractions with truncated precision for R
+        // as a result, users should avoid using R when tacking floats
+        // unless the fraction representation is expected
+        case TokName::FLOAT: case TokName::E: case TokName::PI:
         {
             try 
             { 
@@ -104,8 +117,9 @@ ROperand NumberExprAst::evalR(Info& res)
                 if (name == TokName::FLOAT) value = stod(raw);
                 else if (name == TokName::PI) value = arma::datum::pi;
 
+                // The naive implementation simply truncated the first six effective digits
                 long int_part = static_cast<long>(value);
-                long float_part = static_cast<long>((value - int_part) * 1e6);    // naive implementation, avoid to use it
+                long float_part = static_cast<long>((value - int_part) * 1e6);
                 return ROperand(newFrac(newInt(int_part), newInt(1L)) + newFrac(newInt(float_part), newInt(1e6L))); 
             }
             catch (const std::invalid_argument& err)
@@ -118,12 +132,15 @@ ROperand NumberExprAst::evalR(Info& res)
             }
         }
 
+        // I is the imaginary number i
         case TokName::I:
             return ROperand(newComplex(0L, 1L));
 
+        // Return an identity matrix with coefficient one
         case TokName::IDENTITY_MATRIX:
             return ROperand();
 
+        // You know why
         case TokName::ANSWER:
             return ROperand(newInt(42));
 
@@ -172,6 +189,9 @@ ArmaOperand NumberExprAst::eval()
 }
 
 
+// This function will first evaluate every AST node in the matrix
+// if any result of them is not a scalar, a std::invalid_argument
+// will be thrown
 ROperand MatrixExprAst::evalR(Info& res)
 {
     ROperand matrix(entries.size());
@@ -189,6 +209,11 @@ ROperand MatrixExprAst::evalR(Info& res)
 }
 
 
+// It works similarly to eval(), but uses the internal data type
+// from Armadillo
+// 
+// We do not use template here because the type it accepts is highly
+// specialised and it actually add more code if use template
 ArmaOperand MatrixExprAst::eval()
 {
     ArmaOperand matrix(entries.size(), entries[0].size());
@@ -250,6 +275,7 @@ string VariableExprAst::genAsciiMath() const
 }
 
 
+// Use the binary operators overloaded by ROperand in math_wrapper.h
 ROperand BinaryExprAst::evalR(Info& res)
 {
     ROperand lhsR = lhs->evalR(res);
@@ -266,13 +292,16 @@ ROperand BinaryExprAst::evalR(Info& res)
         case TokName::MINUS:
             return lhsR - rhsR;
 
-        case TokName::AST: case TokName::CDOT: case TokName::CROSS:         // so far do not distinguish cross cdot and *
+        // So far, it does not distinguish cross product and dot product
+        case TokName::AST: case TokName::CDOT: case TokName::CROSS:
             return lhsR * rhsR;
 
         case TokName::DIV: case TokName::FRAC:
             return lhsR / rhsR;
 
-        case TokName::SUP:              // exponential, may be enhanced in the future
+        case TokName::SUP:
+            // Exponential only support the orginal integer value
+            // hence we need to do RTTI and check
             if (typeid(*rhs) == typeid(NumberExprAst))
             {
                 NumberExprAst* temp = dynamic_cast<NumberExprAst*>(rhs);
@@ -295,6 +324,7 @@ ROperand BinaryExprAst::evalR(Info& res)
 }
 
 
+// Use the overloaded operators in Armadillo
 ArmaOperand BinaryExprAst::eval()
 {
     ArmaOperand left_operand = lhs->eval();
@@ -345,6 +375,8 @@ string BinaryExprAst::genAsciiMath() const
 }
 
 
+// Currently, R support RREF, solving augmented matrices, inverse
+// determinant, characteristic polynomials and orthogonalization
 ROperand FunctionExprAst::evalR(Info& res)
 {
     switch (op)
@@ -362,6 +394,9 @@ ROperand FunctionExprAst::evalR(Info& res)
     if (operand.type == ROperand::Type::MAT) res.addMat(operand, op);
     else throw std::invalid_argument(raw + " operation only accept a matrix as argument");
     
+    // Due to the implementation of linear operation
+    // we have to first setup a StepsHistory* and use it to retrieve
+    // the answers
     StepsHistory* steps{nullptr};
     switch (op)
     {
@@ -400,14 +435,14 @@ ROperand FunctionExprAst::evalR(Info& res)
 
     R** matR{nullptr};
     int row, col;
-    steps->getAnswer(matR, row, col);
+    steps->getAnswer(matR, row, col);       // retrieve the final answer from the step history
     if (matR == nullptr)    
     {
         delete steps;
         throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
     }
 
-    if (row == 1 && col == 1)
+    if (row == 1 && col == 1)           // matrix degenerates to a scalar
     {
         ROperand result(matR[0][0]);
         delete [] matR[0];
@@ -416,7 +451,7 @@ ROperand FunctionExprAst::evalR(Info& res)
         return result;
     }
 
-    ROperand result(row);
+    ROperand result(row);               // converting the R** to ROperand and deallocate R**
     for (int i = 0; i < row; ++i)
     {
         for (int j = 0; j < col; ++j)
@@ -430,15 +465,24 @@ ROperand FunctionExprAst::evalR(Info& res)
 }
 
 
-// supported functions
-// SIN, COS, TAN, ARCSIN, ARCCOS, ARCTAN, EXP, LN,
-// DET, DIM, RAN, COL, KER, MOD, TR,
-// RREF, NORM, ABS, SQRT, ROOT
+// Function evaluation when use Armadillo engine
+// supported functions:
+// sin, cos, tan and their inverse functions
+// exp, ln, sqrt, root
+// these are compatible with both scalars and matrices
+// when applied to matrices, the operation is element-wise
+// 
+// linear operators:
+// determinant, orthogonalization, transpose, kernel, trace
+// RREF, norm, inverse, pseudo inverse, solve arugmented matrices
+// find roots of polynomials
 ArmaOperand FunctionExprAst::eval()
 {
     typedef ArmaOperand::Type Type;
 
     int num_args = args.size();
+
+    // Check if the number of arguments is valid
     switch (op)
     {
         case TokName::SOLVE:
@@ -460,6 +504,11 @@ ArmaOperand FunctionExprAst::eval()
     for (auto arg : args)
         arg_vals.emplace_back(arg->eval());
 
+    // Handle general root and solving augmented matrix
+    // solve() can either accept one or two arguments
+    // if one argument is given, it should be the augmented matrix
+    // if two, the first argument should be the coefficient matrix (A)
+    // while the second is the constants vector (B), Ax = B
     if (arg_vals.size() == 2)
         switch (op)
         {
@@ -494,6 +543,7 @@ ArmaOperand FunctionExprAst::eval()
         }
 
 
+    // Handle linear operations and element-wise operations
     if (arg_vals[0].type == Type::MAT)
         switch (op)
         {
@@ -547,6 +597,7 @@ ArmaOperand FunctionExprAst::eval()
             default: throw std::invalid_argument("unsupported function: " + raw);
         }
 
+    // Handle scalar functions
     switch (op) 
     {
         case TokName::NEG:  return ArmaOperand(-arg_vals[0].value);
