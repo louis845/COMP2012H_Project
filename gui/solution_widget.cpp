@@ -173,11 +173,12 @@ void solution_widget::handle_ascii_update_async(string text){
 
                 ostringstream os;
                 os << "<div>`" << i.interpreted_input << "`</div>";
-                os<<"$$= ";
-                const int rows=pr.first;
-                const int cols=pr.second;
-                write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
-                os<<"$$";
+                os<<R"( \begin{align*} = )";
+                // const int rows=pr.first;
+                // const int cols=pr.second;
+                // write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
+                os << i.eval_result;
+                os<<R"( \end{align*} )";
                 ns_addr=new string{os.str()};
                 ascii_or_latex=true;
                 err_addr=new string{"No errors!"};

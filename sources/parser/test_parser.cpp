@@ -62,7 +62,7 @@ int main()
 
     string linear{R"(4*5t x_alpha + (5+2i)/t y_1 - 6z_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_1 = 3 + z_1 \\ 5t^4z_1 = 3 + 5/6 y_1)"};
 
-    string debug_0{"tan(sin([[3, 4], [5, 6]]))+"};
+    string debug_0{"schur"};
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
@@ -111,11 +111,14 @@ int main()
 
     string r_test_5{"charpoly[[3, 4], [5, 6]] + inv[[3, 4], [5, 6]]"};
 
+    string r_test_6{"det(inv(inv(inv([[1, 0], [0, 2]]))))"};
+
     test_parser(eval_test_1, "R test 1", engine);
     test_parser(eval_test_2, "R test 2", engine);
     test_parser(eval_test_3, "R test 3", engine);
     test_parser(r_test_4, "R test 4", engine);
     test_parser(r_test_5, "R test 5", engine);
+    test_parser(r_test_6, "R test 6", 1);
 
 
     // ------------------------- test Armadillo below ------------------------------

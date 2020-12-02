@@ -136,16 +136,22 @@ private:
 };
 
 
-// 
+// Wrappers for R class
+
+// Create new R Long Object from built-in long type
 inline R newInt(long value) { return R{new Long{value}}; }
+
+// Create new R Long Object from string, using mpz_wrapper
 inline R newInt(const std::string& value) { return R{new Long{mpz_wrapper(value)}}; }
 
+// Create new R LongComplex Object
 inline R newComplex(long real, long imag) { return R{new LongComplex{real, imag}}; }
 inline R newComplex(const std::string& real, const std::string& imag)
 {
     return R{new LongComplex{mpz_wrapper(real), mpz_wrapper(imag)}};
 }
 
+// Create new R Fraction Object from two R Objects
 inline R newFrac(R num, R denom)
 {
     if (R::complexify_if_needed(num, denom))
@@ -156,6 +162,7 @@ inline R newFrac(R num, R denom)
     throw std::invalid_argument("Numerator and denominator are in incompatible type.");
 }
 
+// Create a new term of R Polynomial with given degree
 inline R newTerm(int degree)
 {
     R* arr = new R[degree + 1];

@@ -26,19 +26,20 @@ ROperand ROperand::operator-()
 }
 
 
-ROperand ROperand::operator+(ROperand rhs)             // use PBV here since complexify_if_needed() may modify the value
+// Use PBV here since complexify_if_needed() may modify the value
+ROperand ROperand::operator+(ROperand rhs)
 {
     if (type == Type::MAT && rhs.type == Type::MAT)     // matrix-matrix addition
     {
         if (mat.size() != rhs.mat.size() || mat[0].size() != rhs.mat[0].size())
-            throw std::runtime_error("Error: attempting to add two matrices with different sizes.");
-        ROperand result(rhs);            // use synthesized move constructor
+            throw std::runtime_error("attempting to add two matrices with different sizes");
+        ROperand result(rhs);
         for (size_t i = 0; i < mat.size(); ++i)
             for (size_t j = 0; j < mat[i].size(); ++j)
             {
                 if (R::complexify_if_needed(result.mat[i][j], mat[i][j]))
-                    result.mat[i][j] = result.mat[i][j] + mat[i][j];         // no += overloaded for R class
-                else throw std::runtime_error("Error: unsupported matrix addition due to type mismatch.");
+                    result.mat[i][j] = result.mat[i][j] + mat[i][j];
+                else throw std::runtime_error("unsupported matrix addition due to type mismatch");
             }
         return result;
     }
@@ -51,14 +52,14 @@ ROperand ROperand::operator+(ROperand rhs)             // use PBV here since com
             {
                 if (R::complexify_if_needed(result.mat[i][j], value))
                     result.mat[i][j] = result.mat[i][j] + value;
-                else throw std::runtime_error("Error: unsupported addition due to type mismatch.");
+                else throw std::runtime_error("unsupported addition due to type mismatch");
             }
         return result;
     }
 
     if (type == Type::MAT)          // matrix + scalar
     {
-        return rhs * (*this);       // huge time & space complexity here
+        return rhs + (*this);       // huge time & space complexity here
     }
 
     ROperand result(rhs);

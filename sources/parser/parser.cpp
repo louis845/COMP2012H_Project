@@ -531,6 +531,8 @@ ExprAst* Parser::parseExpr(bool inside_textbar)
         {
             FunctionExprAst* decomp = new FunctionExprAst(cur_tok->get_name(), cur_tok->get_raw_value());
             getNextToken();
+            if (cur_tok == nullptr)
+                throw std::invalid_argument("missing argument for decomposition");
             ExprAst* expr = parsePrimary(inside_textbar);
             decomp->args.emplace_back(expr);
             return decomp;          // all remaining expression will be dumped
