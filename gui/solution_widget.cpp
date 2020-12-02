@@ -32,6 +32,8 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     running_handled=true;
     new_step_ptr=nullptr;
     new_intepret_ptr=nullptr;
+    new_intepret_err=nullptr;
+    ascii_or_latex=true;
 }
 
 void solution_widget::init_window(){
@@ -108,6 +110,9 @@ void solution_widget::init_window(){
 
 }
 
+/**
+* Helper function to write matrix to ostringstream
+*/
 void write_matrix_to_html_latex(ostringstream& os, R** matrix, int rows, int cols){
     os<<"\\begin{pmatrix}\n";
     for(int i=0;i<rows;i++){
@@ -151,6 +156,7 @@ void solution_widget::handle_ascii_update_async(string text){
     //probably cannot use Q functions in async
 
     string* ns_addr=nullptr;
+    string* err_addr=nullptr;
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
             if(i.mat_size.size()>0){
@@ -166,12 +172,22 @@ void solution_widget::handle_ascii_update_async(string text){
                 write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
                 os<<"$$";
                 ns_addr=new string{os.str()};
+                ascii_or_latex=true;
+                err_addr=new string{"No errors!"};
+            }else{
+                err_addr=new string{i.err_msg};
             }
         }else{
-            ns_addr=new string{i.interpreted_input};
+            string to_disp="`"+i.interpreted_input+"`";
+            ns_addr=new string{to_disp};
+            ascii_or_latex=false;
+            err_addr=new string{"No errors!"};
         }
+    }else{
+        err_addr=new string{i.err_msg};
     }
     new_intepret_ptr=ns_addr;
+    new_intepret_err=err_addr;
     running_parser=false;
 }
 
@@ -244,13 +260,24 @@ void solution_widget::run_solver_async(){
 void solution_widget::fetch_async_loop(){
     if((!running) && (!running_parser)){
         string *s=new_intepret_ptr;
+        string *err=new_intepret_err;
         StepsHistory *hist=new_step_ptr;
 
         new_intepret_ptr=nullptr;
+        new_intepret_err=nullptr;
         new_step_ptr=nullptr;
+
         if(s!=nullptr){
-            display_preview(*s);
+            if(ascii_or_latex){
+                display_preview(*s);
+            }else{
+                display_preview_ascii(*s);
+            }
             delete s;
+        }
+        if(err!=nullptr){
+            ui->ascii_parser_err->setText(QString::fromStdString(*err));
+            delete err;
         }
         if(hist!=nullptr){
             setNewSteps(hist);
@@ -337,9 +364,19 @@ void solution_widget::display_answer(string answer){
 }
 
 void solution_widget::display_preview(string preview){
-    QString qs=R"(<html><head><script>MathJax = {loader: { load: ['input/asciimath', 'input/tex', 'output/svg', 'ui/menu'] }, tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}, svg: {fontCache: 'global'}, asciimath: {delimiters: [['`','`']]} };</script><script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js"></script></head><body>)";
+    QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
     qs=qs+QString::fromStdString(preview);
-    qs=qs+R"(</body></html>)";
+    qs=qs+"</body></html>";
+    intepretation_view->setHtml(qs);
+    qDebug().noquote();
+    qDebug()<<qs;
+}
+
+void solution_widget::display_preview_ascii(string preview){
+    QString qs="<html><head><script>MathJax = {  loader: {load: ['input/asciimath', 'output/chtml', 'ui/menu']},  asciimath: {    delimiters: [['$','$'],['`','`']]  },};</script><style>div {  margin: auto;  width: auto;  text-align: center;}</style><script type=\"text/javascript\" id=\"MathJax-script\" async  src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/startup.js\"></script></head><body>\n";
+    qs=qs+"<div>";
+    qs=qs+QString::fromStdString(preview);
+    qs=qs+"</div></body></html>";
     intepretation_view->setHtml(qs);
     qDebug().noquote();
     qDebug()<<qs;

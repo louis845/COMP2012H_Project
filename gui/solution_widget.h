@@ -32,6 +32,8 @@ public:
     void method_dealer(int choice);
     void display_answer(string answer);
     void display_preview(string preview);
+    void display_preview_ascii(string preview);
+
     void captureMathExpression();
 
     void handle_ascii_update();
@@ -80,6 +82,9 @@ private:
     * Run parser async
     */
     atomic<string*>new_intepret_ptr;
+    atomic<string*>new_intepret_err;
+    atomic<bool>ascii_or_latex; //true for latex, false for ascii
+
     atomic<bool>running_parser;
 
     /**
