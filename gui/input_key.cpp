@@ -2,6 +2,7 @@
 #include "ui_input_key.h"
 #include "utils/ocr_api.h"
 #include <QMessageBox>
+#include <QPainter>
 
 void input_key::on_ok_button_clicked(){
     QString user_qstr = ui->user_text->text();
@@ -45,6 +46,16 @@ input_key::input_key(QWidget *parent) :
     connect(ui->no_ocr_btn,&QPushButton::clicked,[=](){
         this->close(); emit user_input("","");
     });
+}
+
+void input_key::paintEvent(QPaintEvent *event)
+{
+    //Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(Qt::white);
+    painter.drawRect(rect());
+
 }
 
 input_key::~input_key()
