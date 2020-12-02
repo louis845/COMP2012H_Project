@@ -4,6 +4,8 @@
 #include <cctype>
 
 
+// Hashmap for fast conversion from string to int 
+// int will the be cast to TokName type
 std::unordered_map<std::string, int> Token::tok_map = 
 {
     {"answer", 42},
@@ -20,7 +22,7 @@ std::unordered_map<std::string, int> Token::tok_map =
 };
 
 
-TokDelim::TokDelim(const std::string& value): Token(TokType::DELIM)
+TokDelim::TokDelim(const std::string& value): Token(TokType::DELIM, value)
 {
     if(tok_map.count(value) == 0)
         throw std::invalid_argument(value);
@@ -29,8 +31,9 @@ TokDelim::TokDelim(const std::string& value): Token(TokType::DELIM)
 }
 
 
-TokOp::TokOp(const std::string& value): Token(TokType::OP)
+TokOp::TokOp(const std::string& value): Token(TokType::OP, value)
 {
+    // Transform all the operators to lower case
     std::string lower_case_value = value;
     std::transform(value.begin(), value.end(), lower_case_value.begin(),
                     [](unsigned char c){ return std::tolower(c); });
@@ -42,10 +45,11 @@ TokOp::TokOp(const std::string& value): Token(TokType::OP)
 }
 
 
-TokNum::TokNum(const std::string& value): Token(TokType::NUM), raw_value(value)
+TokNum::TokNum(const std::string& value): Token(TokType::NUM, value)
 {
     if (tok_map.count(value) == 0)
     {
+        // Determine whether the token is integral or float
         name = TokName::INTEGRAL;
         if (value.find('.') != std::string::npos)   name = TokName::FLOAT;
         else
@@ -61,11 +65,11 @@ TokNum::TokNum(const std::string& value): Token(TokType::NUM), raw_value(value)
             }
         }
     }
-    else    name = static_cast<TokName>(tok_map[value]);
+    else name = static_cast<TokName>(tok_map[value]);
 }
 
 
-TokId::TokId(const std::string& value): Token(TokType::ID), raw_value(value)
+TokId::TokId(const std::string& value): Token(TokType::ID, value)
 {
     if (tok_map.count(value) == 0)
         name = TokName::VARIABLE;

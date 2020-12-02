@@ -640,7 +640,7 @@ string FunctionExprAst::genAsciiMath() const
     string result;
     switch (op) 
     {
-        case TokName::ORTH: result = "text(orth)"; break;
+        case TokName::ORTH: result = "text(orth)("; break;
 
         case TokName::ROOT:
             result = "root(" + args[1]->genAsciiMath() + ")(" + args[0]->genAsciiMath() + ")";
@@ -648,13 +648,13 @@ string FunctionExprAst::genAsciiMath() const
 
         case TokName::NEG:  result = "-("; break;
 
-        case TokName::INV:  result = "text(inv)"; break;
+        case TokName::INV:  result = "text(inv)("; break;
 
-        case TokName::PINV: result = "text(pinv)"; break;
+        case TokName::PINV: result = "text(pinv)("; break;
 
-        case TokName::EIGEN:    result = "text(eigen)"; break;
+        case TokName::EIGEN:    result = "text(eigen)("; break;
 
-        case TokName::ROOTS:    result = "text(roots)"; break;
+        case TokName::ROOTS:    result = "text(roots)("; break;
 
         default: result = raw + "("; break;
     }   
