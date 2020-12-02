@@ -14,6 +14,7 @@
 #include <QWebEngineView>
 #include <QWebEngineSettings>
 #include <QProgressBar>
+#include <algorithm>
 
 #include "math/linear/LinearOperations.h"
 
@@ -136,8 +137,12 @@ void solution_widget::handle_ascii_update(){
 
         QString text=ui->ascii_textedit->toPlainText();
         std::string std_text=text.toStdString();
-        std_text.erase(std::remove(std_text.begin(), std_text.end(), '\n'), std_text.end());
-        std_text.erase(std::remove(std_text.begin(), std_text.end(), '\r'), std_text.end());
+        if(std_text.rfind('=')==string::npos){
+            std_text.erase(std::remove(std_text.begin(), std_text.end(), '\n'), std_text.end());
+            std_text.erase(std::remove(std_text.begin(), std_text.end(), '\r'), std_text.end());
+        }else{
+            std_text=regex_replace(std_text,regex("\\n"),"\\\\");
+        }
         std::thread thrd(&solution_widget::handle_ascii_update_async, this, std_text);
         thrd.detach();
     }
@@ -160,9 +165,10 @@ void solution_widget::handle_ascii_update_async(string text){
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
             if(i.mat_size.size()>0){
-                const std::pair<int,int> &pr = i.mat_size.at(0);
-                R** matrix=i.parsed_mat.at(0).second;
-                TokNum::TokName t=i.parsed_mat.at(0).first;
+                const int last_elem=i.mat_size.size()-1;
+                const std::pair<int,int> &pr = i.mat_size.at(last_elem);
+                R** matrix=i.parsed_mat.at(last_elem).second;
+                TokNum::TokName t=i.parsed_mat.at(last_elem).first;
                 qDebug()<<static_cast<int>(t);
 
                 ostringstream os;
@@ -208,10 +214,10 @@ void solution_widget::run_solver_async(){
     if(i.success){
         if(i.engine_used==1){
             if(i.mat_size.size()>0){
-
-                const std::pair<int,int> &pr = i.mat_size.at(0);
-                R** matrix=i.parsed_mat.at(0).second;
-                TokNum::TokName t=i.parsed_mat.at(0).first;
+                const int last_elem=i.mat_size.size()-1;
+                const std::pair<int,int> &pr = i.mat_size.at(last_elem);
+                R** matrix=i.parsed_mat.at(last_elem).second;
+                TokNum::TokName t=i.parsed_mat.at(last_elem).first;
 
                 const int rows=pr.first;
                 const int cols=pr.second;
