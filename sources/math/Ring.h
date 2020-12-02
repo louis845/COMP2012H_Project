@@ -86,6 +86,11 @@ public:
     NestedRingType& set_sub_type(const NestedRingType* subtype);
 
     /**
+     * Sets the extra info of the NestedRingType.
+    */
+    void set_extra_info(const int& i);
+
+    /**
      * Deep deallocates the current subtype (if not nullptr) and assigns the given subtype to sub_type. DOES NOT deep copy. Returns *this.
     */
     NestedRingType& set_sub_type_no_copy(NestedRingType* subtype);
@@ -124,7 +129,7 @@ public:
     /**
      * Shallow equals.
     */
-    static bool is_type_compatible_shallow(const RingType&,const RingType&);
+    static bool is_type_compatible_shallow(const NestedRingType&, const NestedRingType&);
 
     /**
      * Whether it is compatible with binary operations. Our implementation support operations where either

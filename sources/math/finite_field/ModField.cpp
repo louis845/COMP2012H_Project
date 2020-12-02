@@ -2,7 +2,9 @@
 #include "math/tools.h"
 
 //Take modulo, but make sure the modulo is always positive.
-ModField::ModField(const int& val, const int& mod) : Field(RingType::MOD_FIELD), val( val%mod + (val<0 ? mod : 0) ), mod(mod){}
+ModField::ModField(const int& val, const int& mod) : Field(RingType::MOD_FIELD), val( val%mod + (val<0 ? mod : 0) ), mod(mod){
+    type->set_extra_info(mod); //Type of mod fields is equal iff the modulo is the same.
+}
 
 const Ring* ModField::addImpl(const Ring* r) const{
     const ModField* d=dynamic_cast<const ModField*>(r);

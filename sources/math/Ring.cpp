@@ -66,6 +66,10 @@ NestedRingType& NestedRingType::operator=(NestedRingType&& type){
     return *this;
 }
 
+void NestedRingType::set_extra_info(const int& i){
+    extra_info=i;
+}
+
 bool NestedRingType::has_sub_type() const{
     return sub_type!=nullptr;
 }
@@ -148,6 +152,7 @@ const RingType& NestedRingType::get_current_type() const{
 
 NestedRingType* NestedRingType::deep_copy() const{
     NestedRingType* n=new NestedRingType{current_type};
+    n->extra_info=extra_info;
 
     if(sub_type!=nullptr){
         n->sub_type=sub_type->deep_copy();
@@ -159,8 +164,8 @@ bool NestedRingType::complex() const{
     return is_complex;
 }
 
-bool Ring::is_type_compatible_shallow(const RingType& r1,const RingType& r2){
-    return r1==r2 || r1==RingType::SPECIAL_ZERO || r2==RingType::SPECIAL_ZERO;
+bool Ring::is_type_compatible_shallow(const NestedRingType& r1,const NestedRingType& r2){
+    return (r1.shallow_equals(r2)) || r1.get_current_type()==RingType::SPECIAL_ZERO || r2.get_current_type()==RingType::SPECIAL_ZERO;
 }
 
 bool Ring::is_type_compatible(const Ring& other) const{
@@ -184,9 +189,9 @@ bool Ring::is_type_subset(const NestedRingType& supset,const NestedRingType& sub
             }
         }
     }
-
+    
     if( (!supset.has_sub_type()) && (!subset.has_sub_type())){
-        return is_type_compatible_shallow(supset.get_current_type(),subset.get_current_type());
+        return is_type_compatible_shallow(supset,subset);
     }
     return false;
 }
@@ -222,6 +227,8 @@ string ring_type_to_string(const RingType& type){
         return "POLYNOMIAL";
     case COMPLEXIFY:
         return "COMPLEX";
+    case MOD_FIELD:
+        return "MOD_FIELD";
     }
     return "ERROR UNKNOWN TYPE";
 }
@@ -230,10 +237,12 @@ string NestedRingType::to_string() const{
     ostringstream str;
 
     str<<ring_type_to_string(current_type);
+    str<<"("<<extra_info<<")";
 
     NestedRingType* itr=sub_type;
     while(itr!=nullptr){
         str<<" "<<ring_type_to_string(itr->current_type);
+        str<<"("<<itr->extra_info<<")";
         itr=itr->sub_type;
     }
 

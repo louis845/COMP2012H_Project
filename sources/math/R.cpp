@@ -643,8 +643,3 @@ void RF::promote_to_field(RF* const* const mat, int rows, int cols){
         }
     }
 }
-
-std::ostream& operator<< (std::ostream& out, const RF& val){
-    out<<val.to_string();
-    return out;
-}

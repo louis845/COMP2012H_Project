@@ -11,12 +11,12 @@
 #include "math/long/LongComplex.h"
 #include "math/fraction/Fraction.h"
 #include "math/polynomial/Polynomial.h"
+#include "math/finite_field/ModField.h"
 #include "debug_stress_test.h"
 
 using namespace std;
 
 int main(){
-    
     console_main_loop();
     return 0;
 }
