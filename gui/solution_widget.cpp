@@ -131,6 +131,8 @@ void solution_widget::handle_ascii_update(){
 
         QString text=ui->ascii_textedit->toPlainText();
         std::string std_text=text.toStdString();
+        std_text.erase(std::remove(std_text.begin(), std_text.end(), '\n'), std_text.end());
+        std_text.erase(std::remove(std_text.begin(), std_text.end(), '\r'), std_text.end());
         std::thread thrd(&solution_widget::handle_ascii_update_async, this, std_text);
         thrd.detach();
     }
@@ -231,11 +233,7 @@ void solution_widget::run_solver_async(){
             }
         }else if(i.engine_used==2){
             steps=new StepsHistory;
-            steps->add_step(new StepText{i.eval_result});
-            setNewSteps(steps);
-
-            display_preview("`"+i.interpreted_input+"`");
-            display_answer(R"(\begin{align*} )" + i.eval_result + R"( \end{align*})");
+            steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
         }
     }
 
@@ -271,10 +269,10 @@ void solution_widget::fetch_async_loop(){
 }
 
 void solution_widget::captureMathExpression(){
-    /*if(username==""){
+    if(username==""){
         QMessageBox::information(this,"Error","OCR is not enabled.",QMessageBox::Ok);
         return;
-    }*/
+    }
     if(!running_handled){
         QMessageBox::information(this,"Error","Sorry, cannot do OCR with ongoing computation.",QMessageBox::Ok);
     }
@@ -288,7 +286,7 @@ void solution_widget::receiveImage(QPixmap p){
     ui->original_image_display->setPixmap(p);
     ui->original_image_display->resize(p.width(),p.height());
     dynamic_cast<QWidget*>(ui->original_image_display->parent())->resize(p.width(),p.height());
-    return;
+
     std::pair<string, string> result=Ocr::getInstance().request(p);
     string asciimath=result.second;
     ui->ascii_textedit->setPlainText(QString::fromStdString(asciimath));
