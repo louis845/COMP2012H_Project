@@ -99,3 +99,10 @@ void StepsHistory::previous_node(){
         current=current->prev;
     }
 }
+
+
+void StepsHistory::last_node(){
+    if(end!=nullptr){
+        current=end;
+    }
+}
