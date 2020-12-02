@@ -60,7 +60,7 @@ public:
     QHBoxLayout *horizontalLayout_2;
     QPushButton *next_btn2;
     QProgressBar *disp_prog;
-    QPushButton *finish_btn;
+    QPushButton *jump_btn;
     QTreeWidget *treeWidget;
 
     void setupUi(QWidget *solution_widget)
@@ -189,7 +189,7 @@ public:
         scrollArea->setWidgetResizable(true);
         steps_widget = new QWidget();
         steps_widget->setObjectName(QString::fromUtf8("steps_widget"));
-        steps_widget->setGeometry(QRect(0, 0, 327, 448));
+        steps_widget->setGeometry(QRect(0, 0, 361, 422));
         scrollArea->setWidget(steps_widget);
 
         verticalLayout_2->addWidget(scrollArea);
@@ -211,10 +211,10 @@ public:
 
         horizontalLayout_2->addWidget(disp_prog);
 
-        finish_btn = new QPushButton(finish_btn_widget);
-        finish_btn->setObjectName(QString::fromUtf8("finish_btn"));
+        jump_btn = new QPushButton(finish_btn_widget);
+        jump_btn->setObjectName(QString::fromUtf8("jump_btn"));
 
-        horizontalLayout_2->addWidget(finish_btn);
+        horizontalLayout_2->addWidget(jump_btn);
 
 
         verticalLayout_2->addWidget(finish_btn_widget);
@@ -251,7 +251,7 @@ public:
         previous_btn->setText(QCoreApplication::translate("solution_widget", "Previous", nullptr));
         next_btn->setText(QCoreApplication::translate("solution_widget", "Next", nullptr));
         next_btn2->setText(QCoreApplication::translate("solution_widget", "Compute", nullptr));
-        finish_btn->setText(QCoreApplication::translate("solution_widget", "Finished", nullptr));
+        jump_btn->setText(QCoreApplication::translate("solution_widget", "Jump To Anwser", nullptr));
     } // retranslateUi
 
 };

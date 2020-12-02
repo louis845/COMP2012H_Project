@@ -34,7 +34,6 @@ SOURCES += \
     input_key.cpp \
     main.cpp \
     begin_widget.cpp \
-    manual_window.cpp \
     show_capture.cpp \
     solution_widget.cpp \
     window_capture.cpp
@@ -68,7 +67,6 @@ HEADERS += \
     ../sources/utils/ocr_api.h \
     begin_widget.h \
     input_key.h \
-    manual_window.h \
     show_capture.h \
     solution_widget.h \
     window_capture.h \
@@ -76,7 +74,6 @@ HEADERS += \
 FORMS += \
     begin_widget.ui \
     input_key.ui \
-    manual_window.ui \
     show_capture.ui \
     solution_widget.ui
 

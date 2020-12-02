@@ -77,13 +77,11 @@ SOURCES       = ../sources/math/Field.cpp \
 		../gui/input_key.cpp \
 		../gui/main.cpp \
 		../gui/begin_widget.cpp \
-		../gui/manual_window.cpp \
 		../gui/show_capture.cpp \
 		../gui/solution_widget.cpp \
 		../gui/window_capture.cpp qrc_res.cpp \
 		moc_begin_widget.cpp \
 		moc_input_key.cpp \
-		moc_manual_window.cpp \
 		moc_show_capture.cpp \
 		moc_solution_widget.cpp \
 		moc_window_capture.cpp
@@ -112,14 +110,12 @@ OBJECTS       = Field.o \
 		input_key.o \
 		main.o \
 		begin_widget.o \
-		manual_window.o \
 		show_capture.o \
 		solution_widget.o \
 		window_capture.o \
 		qrc_res.o \
 		moc_begin_widget.o \
 		moc_input_key.o \
-		moc_manual_window.o \
 		moc_show_capture.o \
 		moc_solution_widget.o \
 		moc_window_capture.o
@@ -335,7 +331,6 @@ DIST          = /Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/features/spec_pre.pr
 		../sources/utils/ocr_api.h \
 		../gui/begin_widget.h \
 		../gui/input_key.h \
-		../gui/manual_window.h \
 		../gui/show_capture.h \
 		../gui/solution_widget.h \
 		../gui/window_capture.h ../sources/math/Field.cpp \
@@ -363,7 +358,6 @@ DIST          = /Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/features/spec_pre.pr
 		../gui/input_key.cpp \
 		../gui/main.cpp \
 		../gui/begin_widget.cpp \
-		../gui/manual_window.cpp \
 		../gui/show_capture.cpp \
 		../gui/solution_widget.cpp \
 		../gui/window_capture.cpp
@@ -385,7 +379,7 @@ include /Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/features/mac/sdk.mk
 first: all
 ####### Build rules
 
-cinf_gui.app/Contents/MacOS/cinf_gui: /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/gui/../libraries/gmp_621_macosx/libgmp.a ui_begin_widget.h ui_input_key.h ui_manual_window.h ui_show_capture.h ui_solution_widget.h $(OBJECTS)  
+cinf_gui.app/Contents/MacOS/cinf_gui: /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/gui/../libraries/gmp_621_macosx/libgmp.a ui_begin_widget.h ui_input_key.h ui_show_capture.h ui_solution_widget.h $(OBJECTS)  
 	@test -d cinf_gui.app/Contents/MacOS/ || mkdir -p cinf_gui.app/Contents/MacOS/
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
@@ -819,9 +813,9 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../gui/res.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../sources/math/Field.h ../sources/math/R.h ../sources/math/Ring.h ../sources/math/double/Double.h ../sources/math/double/DoubleComplex.h ../sources/math/fraction/Fraction.h ../sources/math/linear/CoupledOperations.h ../sources/math/linear/GenDiagonalization.h ../sources/math/linear/InvariantOperations.h ../sources/math/linear/LinOpsSteps.h ../sources/math/linear/LinearOperations.h ../sources/math/linear/Orthogonalisation.h ../sources/math/long/Long.h ../sources/math/long/LongComplex.h ../sources/math/long/LongType.h ../sources/math/long/mpz_wrapper.h ../sources/math/polynomial/Polynomial.h ../sources/math/tools.h ../sources/parser/expr_ast.h ../sources/parser/lexer.h ../sources/parser/parser.h ../sources/parser/tokens.h ../sources/steps/Step.h ../sources/steps/StepsHistory.h ../sources/utils/math_wrapper.h ../sources/utils/ocr_api.h ../gui/begin_widget.h ../gui/input_key.h ../gui/manual_window.h ../gui/show_capture.h ../gui/solution_widget.h ../gui/window_capture.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../sources/math/Field.cpp ../sources/math/R.cpp ../sources/math/Ring.cpp ../sources/math/double/Double.cpp ../sources/math/double/DoubleComplex.cpp ../sources/math/fraction/Fraction.cpp ../sources/math/linear/CoupledOperations.cpp ../sources/math/linear/LinOpsSteps.cpp ../sources/math/linear/LinearOperations.cpp ../sources/math/long/Long.cpp ../sources/math/long/LongComplex.cpp ../sources/math/long/mpz_wrapper.cpp ../sources/math/polynomial/Polynomial.cpp ../sources/math/tools.cpp ../sources/parser/expr_ast.cpp ../sources/parser/lexer.cpp ../sources/parser/parser.cpp ../sources/parser/tokens.cpp ../sources/steps/Step.cpp ../sources/steps/StepsHistory.cpp ../sources/utils/math_wrapper.cpp ../sources/utils/ocr_api.cpp ../gui/input_key.cpp ../gui/main.cpp ../gui/begin_widget.cpp ../gui/manual_window.cpp ../gui/show_capture.cpp ../gui/solution_widget.cpp ../gui/window_capture.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../gui/begin_widget.ui ../gui/input_key.ui ../gui/manual_window.ui ../gui/show_capture.ui ../gui/solution_widget.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ../sources/math/Field.h ../sources/math/R.h ../sources/math/Ring.h ../sources/math/double/Double.h ../sources/math/double/DoubleComplex.h ../sources/math/fraction/Fraction.h ../sources/math/linear/CoupledOperations.h ../sources/math/linear/GenDiagonalization.h ../sources/math/linear/InvariantOperations.h ../sources/math/linear/LinOpsSteps.h ../sources/math/linear/LinearOperations.h ../sources/math/linear/Orthogonalisation.h ../sources/math/long/Long.h ../sources/math/long/LongComplex.h ../sources/math/long/LongType.h ../sources/math/long/mpz_wrapper.h ../sources/math/polynomial/Polynomial.h ../sources/math/tools.h ../sources/parser/expr_ast.h ../sources/parser/lexer.h ../sources/parser/parser.h ../sources/parser/tokens.h ../sources/steps/Step.h ../sources/steps/StepsHistory.h ../sources/utils/math_wrapper.h ../sources/utils/ocr_api.h ../gui/begin_widget.h ../gui/input_key.h ../gui/show_capture.h ../gui/solution_widget.h ../gui/window_capture.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../sources/math/Field.cpp ../sources/math/R.cpp ../sources/math/Ring.cpp ../sources/math/double/Double.cpp ../sources/math/double/DoubleComplex.cpp ../sources/math/fraction/Fraction.cpp ../sources/math/linear/CoupledOperations.cpp ../sources/math/linear/LinOpsSteps.cpp ../sources/math/linear/LinearOperations.cpp ../sources/math/long/Long.cpp ../sources/math/long/LongComplex.cpp ../sources/math/long/mpz_wrapper.cpp ../sources/math/polynomial/Polynomial.cpp ../sources/math/tools.cpp ../sources/parser/expr_ast.cpp ../sources/parser/lexer.cpp ../sources/parser/parser.cpp ../sources/parser/tokens.cpp ../sources/steps/Step.cpp ../sources/steps/StepsHistory.cpp ../sources/utils/math_wrapper.cpp ../sources/utils/ocr_api.cpp ../gui/input_key.cpp ../gui/main.cpp ../gui/begin_widget.cpp ../gui/show_capture.cpp ../gui/solution_widget.cpp ../gui/window_capture.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../gui/begin_widget.ui ../gui/input_key.ui ../gui/show_capture.ui ../gui/solution_widget.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -865,9 +859,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/features/data/dummy.cpp
 	/Library/Developer/CommandLineTools/usr/bin/clang++ -pipe -stdlib=libc++ -g -std=gnu++1y $(EXPORT_ARCH_ARGS) -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -mmacosx-version-min=10.13 -Wall -Wextra -dM -E -o moc_predefs.h /Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_begin_widget.cpp moc_input_key.cpp moc_manual_window.cpp moc_show_capture.cpp moc_solution_widget.cpp moc_window_capture.cpp
+compiler_moc_header_make_all: moc_begin_widget.cpp moc_input_key.cpp moc_show_capture.cpp moc_solution_widget.cpp moc_window_capture.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_begin_widget.cpp moc_input_key.cpp moc_manual_window.cpp moc_show_capture.cpp moc_solution_widget.cpp moc_window_capture.cpp
+	-$(DEL_FILE) moc_begin_widget.cpp moc_input_key.cpp moc_show_capture.cpp moc_solution_widget.cpp moc_window_capture.cpp
 moc_begin_widget.cpp: ../gui/begin_widget.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
@@ -936,13 +930,6 @@ moc_input_key.cpp: ../gui/input_key.h \
 		moc_predefs.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/bin/moc
 	/Users/zhangjian/Qt/5.15.0/clang_64/bin/moc $(DEFINES) --include /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/build-cinf_gui-Desktop_Qt_5_15_0_clang_64bit-Debug/moc_predefs.h -I/Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/macx-clang -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/gui -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/sources -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/Armadillo/include -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/Armadillo/include/armadillo_bits -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/gmp_621_macosx -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/openblas_macosx -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngine.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineWidgets.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineCore.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQuick.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtGui.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQmlModels.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebChannel.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQml.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtPositioning.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/zhangjian/Qt/5.15.0/clang_64/lib ../gui/input_key.h -o moc_input_key.cpp
-
-moc_manual_window.cpp: ../gui/manual_window.h \
-		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		moc_predefs.h \
-		/Users/zhangjian/Qt/5.15.0/clang_64/bin/moc
-	/Users/zhangjian/Qt/5.15.0/clang_64/bin/moc $(DEFINES) --include /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/build-cinf_gui-Desktop_Qt_5_15_0_clang_64bit-Debug/moc_predefs.h -I/Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/macx-clang -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/gui -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/sources -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/Armadillo/include -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/Armadillo/include/armadillo_bits -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/gmp_621_macosx -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/openblas_macosx -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngine.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineWidgets.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineCore.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQuick.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtGui.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQmlModels.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebChannel.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQml.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtPositioning.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/zhangjian/Qt/5.15.0/clang_64/lib ../gui/manual_window.h -o moc_manual_window.cpp
 
 moc_show_capture.cpp: ../gui/show_capture.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
@@ -1623,6 +1610,8 @@ moc_solution_widget.cpp: ../gui/solution_widget.h \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergEigen_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergQR_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/compiler_setup_post.hpp \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QTreeWidgetItem \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qtreewidget.h \
 		moc_predefs.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/bin/moc
 	/Users/zhangjian/Qt/5.15.0/clang_64/bin/moc $(DEFINES) --include /Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/build-cinf_gui-Desktop_Qt_5_15_0_clang_64bit-Debug/moc_predefs.h -I/Users/zhangjian/Qt/5.15.0/clang_64/mkspecs/macx-clang -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/gui -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/sources -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/Armadillo/include -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/Armadillo/include/armadillo_bits -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/gmp_621_macosx -I/Users/zhangjian/Desktop/COMP2012H/COMP2012H_Project/2012hproject/COMP2012H_Project-1/libraries/openblas_macosx -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngine.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineWidgets.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineCore.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQuick.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtPrintSupport.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtGui.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQmlModels.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebChannel.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtQml.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtNetwork.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtPositioning.framework/Headers -I/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/zhangjian/Qt/5.15.0/clang_64/lib ../gui/solution_widget.h -o moc_solution_widget.cpp
@@ -1642,9 +1631,9 @@ compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_begin_widget.h ui_input_key.h ui_manual_window.h ui_show_capture.h ui_solution_widget.h
+compiler_uic_make_all: ui_begin_widget.h ui_input_key.h ui_show_capture.h ui_solution_widget.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_begin_widget.h ui_input_key.h ui_manual_window.h ui_show_capture.h ui_solution_widget.h
+	-$(DEL_FILE) ui_begin_widget.h ui_input_key.h ui_show_capture.h ui_solution_widget.h
 ui_begin_widget.h: ../gui/begin_widget.ui \
 		/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic
 	/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic ../gui/begin_widget.ui -o ui_begin_widget.h
@@ -1652,10 +1641,6 @@ ui_begin_widget.h: ../gui/begin_widget.ui \
 ui_input_key.h: ../gui/input_key.ui \
 		/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic
 	/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic ../gui/input_key.ui -o ui_input_key.h
-
-ui_manual_window.h: ../gui/manual_window.ui \
-		/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic
-	/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic ../gui/manual_window.ui -o ui_manual_window.h
 
 ui_show_capture.h: ../gui/show_capture.ui \
 		/Users/zhangjian/Qt/5.15.0/clang_64/bin/uic
@@ -1720,6 +1705,7 @@ Fraction.o: ../sources/math/fraction/Fraction.cpp ../sources/math/fraction/Fract
 		../sources/math/ring.h \
 		../sources/math/R.h \
 		../sources/math/Ring.h \
+		../sources/math/polynomial/Polynomial.h \
 		../sources/math/tools.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Fraction.o ../sources/math/fraction/Fraction.cpp
 
@@ -3017,7 +3003,11 @@ parser.o: ../sources/parser/parser.cpp ../sources/parser/parser.h \
 		../libraries/Armadillo/include/armadillo_bits/newarp_TridiagEigen_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergEigen_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergQR_meat.hpp \
-		../libraries/Armadillo/include/armadillo_bits/compiler_setup_post.hpp
+		../libraries/Armadillo/include/armadillo_bits/compiler_setup_post.hpp \
+		../sources/math/linear/LinearOperations.h \
+		../sources/steps/StepsHistory.h \
+		../sources/steps/Step.h \
+		../sources/math/linear/LinOpsSteps.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o parser.o ../sources/parser/parser.cpp
 
 tokens.o: ../sources/parser/tokens.cpp ../sources/parser/tokens.h
@@ -3743,7 +3733,9 @@ input_key.o: ../gui/input_key.cpp ../gui/input_key.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtGui.framework/Headers/qimage.h \
 		ui_input_key.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
-		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtGui.framework/Headers/QPainter \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtGui.framework/Headers/qpainter.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o input_key.o ../gui/input_key.cpp
 
 main.o: ../gui/main.cpp ../gui/input_key.h \
@@ -4417,6 +4409,8 @@ main.o: ../gui/main.cpp ../gui/input_key.h \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergEigen_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergQR_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/compiler_setup_post.hpp \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QTreeWidgetItem \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qtreewidget.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QApplication \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qapplication.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers/QObject \
@@ -5105,17 +5099,13 @@ begin_widget.o: ../gui/begin_widget.cpp ../gui/begin_widget.h \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergEigen_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergQR_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/compiler_setup_post.hpp \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QTreeWidgetItem \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qtreewidget.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QLineEdit \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qlineedit.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers/QDebug \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers/qdebug.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o begin_widget.o ../gui/begin_widget.cpp
-
-manual_window.o: ../gui/manual_window.cpp ../gui/manual_window.h \
-		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
-		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
-		ui_manual_window.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o manual_window.o ../gui/manual_window.cpp
 
 show_capture.o: ../gui/show_capture.cpp ../gui/show_capture.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QWidget \
@@ -5801,6 +5791,8 @@ solution_widget.o: ../gui/solution_widget.cpp ../gui/solution_widget.h \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergEigen_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/newarp_UpperHessenbergQR_meat.hpp \
 		../libraries/Armadillo/include/armadillo_bits/compiler_setup_post.hpp \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QTreeWidgetItem \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qtreewidget.h \
 		ui_solution_widget.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
@@ -5814,6 +5806,8 @@ solution_widget.o: ../gui/solution_widget.cpp ../gui/solution_widget.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtCore.framework/Headers/qdir.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QApplication \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qapplication.h \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineWidgets.framework/Headers/QWebEngineSettings \
+		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWebEngineWidgets.framework/Headers/qwebenginesettings.h \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/QProgressBar \
 		/Users/zhangjian/Qt/5.15.0/clang_64/lib/QtWidgets.framework/Headers/qprogressbar.h \
 		../sources/math/linear/LinearOperations.h \
@@ -5849,9 +5843,6 @@ moc_begin_widget.o: moc_begin_widget.cpp
 
 moc_input_key.o: moc_input_key.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_input_key.o moc_input_key.cpp
-
-moc_manual_window.o: moc_manual_window.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_manual_window.o moc_manual_window.cpp
 
 moc_show_capture.o: moc_show_capture.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_show_capture.o moc_show_capture.cpp

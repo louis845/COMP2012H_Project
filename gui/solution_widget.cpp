@@ -86,7 +86,12 @@ void solution_widget::init_window(){
 
     ui->methods_btn->setMenu(method_menu);
 
-    connect(ui->finish_btn,&QPushButton::clicked,[=](){emit finish_sig();});
+    connect(ui->jump_btn,&QPushButton::clicked,[=](){
+        if (current_viewing_steps!=nullptr){
+            current_viewing_steps->last_node();
+            updateAnsDisp();
+        }
+    });
 
     connect(ui->next_btn,&QPushButton::clicked,[=](){emit next_problem_sig();});
 

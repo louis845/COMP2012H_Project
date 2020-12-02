@@ -213,8 +213,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>327</width>
-           <height>448</height>
+           <width>361</width>
+           <height>422</height>
           </rect>
          </property>
         </widget>
@@ -244,9 +244,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="finish_btn">
+          <widget class="QPushButton" name="jump_btn">
            <property name="text">
-            <string>Finished</string>
+            <string>Jump To Anwser</string>
            </property>
           </widget>
          </item>
