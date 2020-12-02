@@ -39,10 +39,18 @@ void Parser::reset_input(const std::string& input)
     root = nullptr;
     cur_tok = nullptr;
     
-    
-    for (auto iter = var_table.begin(); iter != var_table.end(); ++iter)
-        if (!iter->second)
-            var_table.erase(iter);
+    while (!var_table.empty())
+    {
+        bool flag{false};
+        for (auto iter = var_table.begin(); iter != var_table.end(); ++iter)
+            if (!iter->second)
+            {
+                var_table.erase(iter);
+                flag = true;
+                break;
+            }
+        if (!flag) break;
+    }
     
     this->input = input;
     tokenizer.reset_input(input);
