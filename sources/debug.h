@@ -6,6 +6,6 @@
  * will be checked programmatically, with error thrown whenever such behaviour happens. 
  * All header files should include this header.
 */
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 
 #endif

@@ -708,8 +708,8 @@ namespace LinearOperationsFunc{
             //Cpl is the submatrix pointing to the same addresses as combined_matrix
 
             steps=new StepsHistory;
-            steps->add_step(new StepText{"The system of linear equations is solved by reducing the augmented matrix.", //Console
-            "The system of linear equations is solved by reducing the augmented matrix." //Latex
+            steps->add_step(new StepText{"The inverse of the matrix is found by adjoining an identity matrix onto the given matrix and then with row or col operations.", //Console
+            "The inverse of the matrix is found by adjoining an identity matrix onto the given matrix and then with row or col operations." //Latex
             });
             LinOpsRecorder rc{steps, combined_matrix, mrows, mcols}; //we record the whole matrix
             rc.capture_initial();

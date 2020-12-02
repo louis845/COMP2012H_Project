@@ -62,7 +62,7 @@ int main()
 
     string linear{R"(4*5t x_alpha + (5+2i)/t y_1 - 6z_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_1 = 3 + z_1 \\ 5t^4z_1 = 3 + 5/6 y_1)"};
 
-    string debug_0{"schur"};
+    string debug_0{"3I * [[1, 2], [3, 4.0]]"};
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 

@@ -12,6 +12,19 @@ ROperand::ROperand(R** matR, int row_num, int col_num): type(Type::MAT), mat(row
 }
 
 
+ROperand ROperand::fromImat(size_t row) const
+{
+    ROperand result(row);
+    for (size_t i = 0; i < row; ++i)
+        for (size_t j = 0; j < row; ++j)
+        {
+            if (i == j) result.mat[i].emplace_back(value);
+            else result.mat[i].emplace_back(newInt(0L));
+        }
+    return result;
+}
+
+
 ROperand ROperand::operator-()
 {
     if (type == Type::MAT)
@@ -33,40 +46,50 @@ ROperand ROperand::operator+(ROperand rhs)
     {
         if (mat.size() != rhs.mat.size() || mat[0].size() != rhs.mat[0].size())
             throw std::runtime_error("attempting to add two matrices with different sizes");
-        ROperand result(rhs);
+
+        ROperand result(*this);
         for (size_t i = 0; i < mat.size(); ++i)
             for (size_t j = 0; j < mat[i].size(); ++j)
             {
-                if (R::complexify_if_needed(result.mat[i][j], mat[i][j]))
-                    result.mat[i][j] = result.mat[i][j] + mat[i][j];
+                if (R::complexify_if_needed(result.mat[i][j], rhs.mat[i][j]))
+                    result.mat[i][j] = result.mat[i][j] + rhs.mat[i][j];
                 else throw std::runtime_error("unsupported matrix addition due to type mismatch");
             }
         return result;
     }
 
-    if (rhs.type == Type::MAT)      // scalar + matrix
+    if (type == Type::NOR && rhs.type == Type::MAT)      // scalar + matrix
     {
-        ROperand result(rhs);
+        ROperand result(*this);
         for (size_t i = 0; i < result.mat.size(); ++i)
             for (size_t j = 0; j < result.mat[i].size(); ++j)
             {
-                if (R::complexify_if_needed(result.mat[i][j], value))
-                    result.mat[i][j] = result.mat[i][j] + value;
+                if (R::complexify_if_needed(result.mat[i][j], rhs.value))
+                    result.mat[i][j] = result.mat[i][j] + rhs.value;
                 else throw std::runtime_error("unsupported addition due to type mismatch");
             }
         return result;
     }
 
-    if (type == Type::MAT)          // matrix + scalar
-    {
+    if (type == Type::MAT && rhs.type == Type::NOR)     // matrix + scalar
         return rhs + (*this);       // huge time & space complexity here
+
+    if (type == rhs.type)           // scalar + scalar or I + I
+    {
+        ROperand result(*this);
+        if (R::complexify_if_needed(result.value, rhs.value))
+            result.value = result.value + rhs.value;
+        return result;
     }
 
-    ROperand result(rhs);
-    if (R::complexify_if_needed(result.value, value))
-        result.value = result.value + value;
-    else throw std::runtime_error("Error: unsupported addition due to type mismatch.");
-    return result;
+    if (type == Type::IMAT && rhs.type == Type::MAT)    // I + matrix
+        return fromImat(rhs.mat.size()) + rhs;
+
+    if (type == Type::MAT && rhs.type == Type::IMAT)    // matrix + I
+        return (*this) + rhs.fromImat(rhs.mat.size());
+
+    // Add scalar to identity matrix is not a good idea, in my opinion
+    else throw std::runtime_error("addition/subtraction between scalar and identity matrix is not supported");
 }
 
 
@@ -75,7 +98,7 @@ ROperand ROperand::operator*(ROperand rhs)
     if (type == Type::MAT && rhs.type == Type::MAT)     // matrix-matrix multiplication
     {
         if (mat[0].size() != rhs.mat.size())
-            throw std::runtime_error("Error: attempting to multiply two matrices with different sizes.");
+            throw std::runtime_error("attempting to multiply two matrices with different sizes");
         ROperand result(mat.size());
         for (size_t i = 0; i < mat.size(); ++i)
             for (size_t j = 0; j < rhs.mat[0].size(); ++j)
@@ -87,17 +110,17 @@ ROperand ROperand::operator*(ROperand rhs)
                 {
                     if (R::complexify_if_needed(mat[i][k], rhs.mat[k][j]))
                         result.mat[i][j] = result.mat[i][j] + (mat[i][k] * rhs.mat[k][j]);
-                    else throw std::runtime_error("Error: unsupported matrix multiplication due to type mismatch.");
+                    else throw std::runtime_error("unsupported matrix multiplication due to type mismatch");
                 }
         return result;
     }
     
-    if (type == Type::MAT)          // matrix * scalar
+    if (type == Type::MAT && rhs.type == Type::NOR)     // matrix * scalar
     {
         return rhs * (*this);
     }
 
-    if (rhs.type == Type::MAT)      // scalar * matrix
+    if (type == Type::NOR && rhs.type == Type::MAT)     // scalar * matrix
     {
         ROperand result(rhs);
         for (size_t i = 0; i < result.mat.size(); ++i)
@@ -105,16 +128,27 @@ ROperand ROperand::operator*(ROperand rhs)
             {
                 if (R::complexify_if_needed(result.mat[i][j], value))
                     result.mat[i][j] = result.mat[i][j] * value;
-                else throw std::runtime_error("Error: unsupported multiplication due to type mismatch.");
+                else throw std::runtime_error("unsupported multiplication due to type mismatch");
             }
         return result;
     }
 
-    ROperand result(rhs);        // scalar * scalar
-    if (R::complexify_if_needed(result.value, value))
-        result.value = result.value * value;
-    else throw std::runtime_error("Error: unsupported multiplication due to type mismatch.");
-    return result;
+    if (type == Type::IMAT && rhs.type == Type::MAT)
+        return fromImat(rhs.mat.size()) * rhs;
+
+    if (type == Type::MAT && rhs.type == Type::IMAT)
+        return (*this) * rhs.fromImat(rhs.mat.size());
+
+    if (type == rhs.type || rhs.type == Type::IMAT)       // scalar * scalar, I * I, scalar * I
+    {
+        ROperand result(rhs);        
+        if (R::complexify_if_needed(result.value, value))
+            result.value = result.value * value;
+        else throw std::runtime_error("unsupported multiplication due to type mismatch");
+        return result;
+    }
+
+    return rhs * (*this);       // I * scalar
 }
 
 
@@ -128,18 +162,18 @@ ROperand ROperand::operator/(ROperand rhs)
 {
     if (type == Type::NOR && rhs.type == Type::NOR)
     {
-        if (rhs.value.is_zero())  throw std::overflow_error("Divide by zero.");
+        if (rhs.value.is_zero())  throw std::overflow_error("divide by zero");
         if (!rhs.value.is_field())  rhs = ROperand(newFrac(rhs.value, rhs.value.promote_one()));
         if (R::complexify_if_needed(value, rhs.value))  return ROperand(value / rhs.value);
-        else throw std::runtime_error("Error: unsupported division due to type mismatch.");
+        else throw std::runtime_error("unsupported division due to type mismatch");
     }
-    throw std::runtime_error("Error: matrix does not support division.");
+    throw std::runtime_error("matrix does not support division");
 }
 
 
 ROperand ROperand::operator^(int rhs)           // fast exponentiation
 {
-    if (rhs < 0)    throw std::invalid_argument("Negative exponential is not supported");
+    if (rhs < 0)    throw std::runtime_error("negative exponential is not supported");
 
     ROperand result(newInt(1L)), cur_base(*this);
     while (rhs)
@@ -208,16 +242,14 @@ ArmaOperand ArmaOperand::operator+(const ArmaOperand& rhs) const
         return ArmaOperand(Type::IMAT, value + rhs.value);           // two identity matrices
     }
 
-    if (type == Type::IMAT && rhs.type == Type::NOR)
-        return ArmaOperand(Type::IMAT, value + rhs.value);
-
-    if (type == Type::NOR && rhs.type == Type::IMAT)
-        return ArmaOperand(Type::IMAT, value + rhs.value);
+    // again, add scalar to identity matrix is not a good idea
+    if ((type == Type::IMAT && rhs.type == Type::NOR) || (type == Type::NOR && rhs.type == Type::IMAT))
+        throw std::runtime_error("addition between scalar and identity matrix is not supported");
 
     if (type == Type::IMAT && rhs.type == Type::MAT)
     {   
         if (!rhs.mat.is_square())   
-            throw std::runtime_error("Error: attempting to add a square matrix to a non-square matrix.");
+            throw std::runtime_error("attempt to add a square matrix to a non-square matrix");
         return ArmaOperand(rhs.mat + arma::cx_mat(rhs.mat.n_rows, rhs.mat.n_cols, arma::fill::eye) * value);
     }
 
@@ -240,16 +272,13 @@ ArmaOperand ArmaOperand::operator-(const ArmaOperand& rhs) const
         return ArmaOperand(Type::IMAT, value - rhs.value);           
     }
 
-    if (type == Type::IMAT && rhs.type == Type::NOR)
-        return ArmaOperand(Type::IMAT, value - rhs.value);
-
-    if (type == Type::NOR && rhs.type == Type::IMAT)
-        return ArmaOperand(Type::IMAT, value - rhs.value);
+    if ((type == Type::IMAT && rhs.type == Type::NOR) || (type == Type::NOR && rhs.type == Type::IMAT))
+        throw std::runtime_error("subtraction between scalar and identity matrix is not supported");
 
     if (type == Type::IMAT && rhs.type == Type::MAT)
     {   
         if (!rhs.mat.is_square())   
-            throw std::runtime_error("Error: attempting to subtract a non-square matrix from a square matrix.");
+            throw std::runtime_error("attempt to subtract a non-square matrix from a square matrix");
         return ArmaOperand(rhs.mat - arma::cx_mat(rhs.mat.n_rows, rhs.mat.n_cols, arma::fill::eye) * value);
     }
 
@@ -294,7 +323,7 @@ ArmaOperand ArmaOperand::operator*(const ArmaOperand& rhs) const
 ArmaOperand ArmaOperand::operator/(const ArmaOperand& rhs) const
 {
     if (rhs.type != Type::NOR)
-        throw std::logic_error("Error: divided by a matrix.");
+        throw std::logic_error("divide by a matrix");
     
     if (type == Type::NOR)  return ArmaOperand(value / rhs.value);
     if (type == Type::MAT)  return ArmaOperand(mat / rhs.value);
@@ -305,7 +334,7 @@ ArmaOperand ArmaOperand::operator/(const ArmaOperand& rhs) const
 ArmaOperand ArmaOperand::operator^(const ArmaOperand& rhs) const
 {
     if (rhs.type != ArmaOperand::Type::NOR)
-        throw std::logic_error("Error: matrix is not a valid exponential.");
+        throw std::logic_error("matrix is not a valid exponential");
     if (type == ArmaOperand::Type::NOR)
         return ArmaOperand(std::pow(value, rhs.value));
     
