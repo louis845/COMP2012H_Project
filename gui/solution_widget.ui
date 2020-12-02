@@ -144,6 +144,13 @@
       <item>
        <widget class="QPlainTextEdit" name="ascii_textedit"/>
       </item>
+      <item>
+       <widget class="QLabel" name="ascii_parser_err">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
