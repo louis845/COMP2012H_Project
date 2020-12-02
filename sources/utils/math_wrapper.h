@@ -60,6 +60,9 @@ public:
     ROperand operator+=(ROperand rhs);
     ROperand operator-=(ROperand rhs);
 
+    // Construct a square matrix with as an identity matrix multiply with its coefficient
+    ROperand fromImat(size_t row) const;
+
     // Generate LaTeX formated strings for rendering
     std::string genTex() const;
 
