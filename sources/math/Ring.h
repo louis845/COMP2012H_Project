@@ -25,10 +25,14 @@ enum RingType{
 class NestedRingType final{
 private:
     NestedRingType* sub_type;
+
     RingType current_type;
+    int extra_info; //The current type is equal if and only if RingTypes are equal and extra_info are equal
+
     bool is_complex;
-    int no_fraction;
-    int no_polynomial;
+    int no_fraction; //Number of nested fractions in the type.
+    int no_polynomial; //Number of nested polynomials in the type.
+    
 
     NestedRingType* deep_copy() const;
 public:
@@ -64,6 +68,11 @@ public:
      * Returns the reference to sub_type. Check has_sub_type before calling this.
     */
     const NestedRingType& get_sub_type() const;
+
+    /**
+     * Whether the types are equal, disregarding the subtype.
+    */
+    bool shallow_equals(const NestedRingType& other) const;
 
     /**
      * Whether the type are exactly equals. Use Ring::is_type_compatible(const NestedRingType&, const NestedRingType&) for

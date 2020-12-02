@@ -18,12 +18,14 @@ NestedRingType::NestedRingType(const RingType& cur_type){
     is_complex=cur_type==RingType::COMPLEXIFY;
     no_fraction = cur_type==RingType::FRACTION? 1 : 0;
     no_polynomial = cur_type==RingType::POLYNOMIAL? 1 : 0;
+    extra_info=0;
 }
 
 NestedRingType::NestedRingType(const RingType& cur_type,NestedRingType* type){
     current_type=cur_type;
     sub_type=nullptr;
     set_sub_type_no_copy(type);
+    extra_info=0;
 }
 
 NestedRingType::~NestedRingType(){
@@ -32,12 +34,16 @@ NestedRingType::~NestedRingType(){
 
 NestedRingType::NestedRingType(const NestedRingType& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     sub_type=nullptr;
     set_sub_type(type.sub_type);
 }
 
 NestedRingType::NestedRingType(NestedRingType&& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     sub_type=nullptr;
     set_sub_type_no_copy(type.sub_type);
     type.sub_type=nullptr;
@@ -45,12 +51,16 @@ NestedRingType::NestedRingType(NestedRingType&& type){
 
 NestedRingType& NestedRingType::operator=(const NestedRingType& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     set_sub_type(type.sub_type);
     return *this;
 }
 
 NestedRingType& NestedRingType::operator=(NestedRingType&& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     set_sub_type_no_copy(type.sub_type);
     type.sub_type=nullptr;
     return *this;
@@ -64,8 +74,12 @@ const NestedRingType& NestedRingType::get_sub_type() const{
     return *sub_type;
 }
 
+bool NestedRingType::shallow_equals(const NestedRingType& other) const{
+    return current_type==other.current_type && extra_info==other.extra_info;
+}
+
 bool NestedRingType::deep_equals(const NestedRingType& other) const{
-    if(current_type!=other.current_type){
+    if(!shallow_equals(other)){
         return false;
     }
     if(sub_type!=nullptr){
@@ -163,7 +177,7 @@ bool Ring::is_type_subset(const NestedRingType& supset,const NestedRingType& sub
         }
 
         if(subset.has_sub_type()){
-            if(supset.get_current_type() == subset.get_current_type()){
+            if(supset.shallow_equals(subset)){
                 if(is_type_subset(supset.get_sub_type(), subset.get_sub_type())){
                     return true;
                 }
