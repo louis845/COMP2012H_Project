@@ -136,6 +136,7 @@ private:
 };
 
 
+// 
 inline R newInt(long value) { return R{new Long{value}}; }
 inline R newInt(const std::string& value) { return R{new Long{mpz_wrapper(value)}}; }
 
