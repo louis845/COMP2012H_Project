@@ -168,13 +168,13 @@ void solution_widget::handle_ascii_update_async(string text){
     string* ns_addr=nullptr;
     string* err_addr=nullptr;
 
-    string engine_used = "<p>Engine used: R</p>";
-    if (i.engine_used)  engine_used = "<p>Engine used: Armadillo</p>";
+    string engine_used_str = "<p>Engine used:</p>";
 
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
+            engine_used_str = "<p>Engine used: R</p>";
             ostringstream os;
-            os << engine_used << "<p>Interpreted input:</p> <div>`" << i.interpreted_input << "`</div>";
+            os << engine_used_str << "<p>Interpreted input:</p> <div>`" << i.interpreted_input << "`</div>";
             os<<R"( Calculation result: \begin{align*} )";
             // const int rows=pr.first;
             // const int cols=pr.second;
@@ -183,7 +183,7 @@ void solution_widget::handle_ascii_update_async(string text){
             os<<R"( \end{align*} )";
             ns_addr=new string{os.str()};
             ascii_or_latex=true;
-            err_addr=new string{engine_used + "No error!"};
+            err_addr=new string{engine_used_str + "No error!"};
 
             if(i.mat_size.size()>0){
                 const int last_elem=i.mat_size.size()-1;
@@ -194,9 +194,11 @@ void solution_widget::handle_ascii_update_async(string text){
             }else{
                 err_addr=new string{i.err_msg};
             }
+
         }else{
+            engine_used_str = "<p>Engine used: Armadillo</p>";
             ostringstream os;
-            os << engine_used << "<p>Interpreted input:</p> <div>`" << i.interpreted_input << "`</div>";
+            os << engine_used_str << "<p>Interpreted input:</p> <div>`" << i.interpreted_input << "`</div>";
             os<<R"( Calculation result: \begin{align*} )";
             // const int rows=pr.first;
             // const int cols=pr.second;
@@ -205,15 +207,15 @@ void solution_widget::handle_ascii_update_async(string text){
             os<<R"( \end{align*} )";
             ns_addr=new string{os.str()};
             ascii_or_latex=true;
-            err_addr=new string{engine_used + "No error!"};
+            err_addr=new string{engine_used_str + "No error!"};
         }
     }else{
         ostringstream os;
-        os << engine_used << "<p>Error message: " << i.err_msg << "</p>";
+        os << engine_used_str << "<p>Error message: " << i.err_msg << "</p>";
         ns_addr=new string{os.str()};
         ascii_or_latex=true;
 
-        err_addr=new string{engine_used + i.err_msg};
+        err_addr=new string{engine_used_str + i.err_msg};
     }
     new_intepret_ptr=ns_addr;
     new_intepret_err=err_addr;
