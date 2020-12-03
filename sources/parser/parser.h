@@ -92,7 +92,9 @@ public:
     // Reset the parser input. This will reset the Info object within the
     // parser as well. It will wipe away all the variables WITHOUT values,
     // but retain those variables already been assigned.
-    void reset_input(const std::string& input);
+    // 
+    // If the input is an empty string, by default use the input passed previously
+    void reset_input(const std::string& input="");
     
 private:
 
