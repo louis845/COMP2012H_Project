@@ -1408,3 +1408,17 @@ int Parser::getNumUnknown() const
         if (!item.second)   ++cnt;
     return cnt;
 }
+
+
+// Check whether a variable user picked is valid or not
+bool Parser::checkVarNameValid(const std::string& var_name) const
+{
+    Lexer lexer(var_name);
+    Token* var = lexer.getNextToken();
+    if (var == nullptr || var->get_type() != TokType::ID)
+        return false;
+
+    // Check whether there is additional useless string
+    if (lexer.getNextToken() != nullptr)
+        return false;
+}

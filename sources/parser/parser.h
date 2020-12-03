@@ -65,6 +65,10 @@ public:
     bool eraseVar(const std::string& var_name);
 
 
+    // Check if a variable name is valid, i.e. not a number or reserved operator
+    bool checkVarNameValid(const std::string& var_name) const;
+
+
     // Retrieve a map from all the variables names to their values in LaTaX
     // Variables with no values assigned will have value empty string
     std::map<std::string, std::string> retrieve_var() const;
