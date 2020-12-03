@@ -70,6 +70,10 @@ public:
     std::string checkVarNameValid(const std::string& var_name) const;
 
 
+    // Check whether the variable name already exists
+    bool hasVarName(const std::string& var_name) const;
+
+
     // Retrieve a map from all the variables names to their values in LaTaX
     // Variables with no values assigned will have value empty string
     std::map<std::string, std::string> retrieve_var() const;

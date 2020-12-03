@@ -1429,4 +1429,13 @@ string Parser::checkVarNameValid(const std::string& var_name) const
     // Check whether there is additional useless string
     if (lexer.getNextToken() != nullptr)
         return "";
+
+    return var->get_raw_value();
+}
+
+
+// Check whether the given var_name exists
+bool Parser::hasVarName(const std::string& var_name) const
+{
+    return var_table.count(var_name) > 0;
 }
