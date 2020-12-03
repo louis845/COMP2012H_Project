@@ -18,6 +18,10 @@
 using namespace std;
 
 int main(){
-    console_main_loop();
+    R a=R::parse_string("3.0"); //For polynomials the variable must be t
+    R b=R::parse_string("4");
+    cout << a.is_type_compatible(b) << "\n"; //False
+    cout << (a+b) << "\n";
+    //console_main_loop();
     return 0;
 }
