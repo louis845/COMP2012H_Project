@@ -72,6 +72,19 @@ bool R::internal_type_compatibility(const Ring* &r1, const Ring* &r2, const Ring
     return true;
 }
 
+bool R::is_type_compatible(const R* const& arr, int length){
+    R largest_type=R::ZERO; //The type of ring that includes all the rings of non-zero elements
+    for(int i=0;i<length;++i){
+        const R& cElem=arr[i];
+        if(Ring::is_type_subset( cElem.get_type(), largest_type.get_type() )){
+            largest_type=cElem;
+        }else if(!Ring::is_type_subset( largest_type.get_type(), cElem.get_type() )){
+            return false;
+        }
+    }
+    return true;
+}
+
 /**
  * Binary operations/comparison. Internally, dynamically allocates a temporary Ring object if necessary to ensure the types are 
  * exactly equal before passing into the functions in Ring (and its subclasses)

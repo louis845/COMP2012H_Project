@@ -59,6 +59,8 @@ public:
     */
     static R parse_string_modulo(const std::string& s, int mod);
 
+    static bool is_type_compatible(const R* const& arr, int length);
+
     /**
      * Creates a ring wrapper to point to zero.
     */
