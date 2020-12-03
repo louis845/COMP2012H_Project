@@ -66,7 +66,8 @@ public:
 
 
     // Check if a variable name is valid, i.e. not a number or reserved operator
-    bool checkVarNameValid(const std::string& var_name) const;
+    // If valid, return the variable name, otherwise return empty string
+    std::string checkVarNameValid(const std::string& var_name) const;
 
 
     // Retrieve a map from all the variables names to their values in LaTaX

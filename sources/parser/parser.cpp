@@ -1275,6 +1275,9 @@ string Parser::getAsciiMath() const
 // If returning false, err_msg in Info object will be updated
 bool Parser::assignVar(const string& var_name, const string& raw, int type)
 {
+    string name = checkVarNameValid(var_name);
+    if (name.empty())   return false;
+
     Parser parser(raw);
     const Info& result = parser.parse(type);
     Info dummy_info;
@@ -1293,11 +1296,11 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
             res.err_msg = err.what();
             return false;
         }
-        auto iter = arma_table.find(var_name);
+        auto iter = arma_table.find(name);
         if (iter != arma_table.end())   arma_table.erase(iter);
-        r_table[var_name] = value;
+        r_table[name] = value;
         
-        auto var_iter = var_table.find(var_name);
+        auto var_iter = var_table.find(name);
         if (var_iter != var_table.end() && !var_iter->second) 
             var_iter->second = 1;
         return true;
@@ -1310,11 +1313,11 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
         res.err_msg = err.what();
         return false;
     }
-    auto iter = r_table.find(var_name);
+    auto iter = r_table.find(name);
     if (iter != r_table.end())  r_table.erase(iter);
-    arma_table[var_name] = value;
+    arma_table[name] = value;
     
-    auto var_iter = var_table.find(var_name);
+    auto var_iter = var_table.find(name);
     if (var_iter != var_table.end() && !var_iter->second) 
         var_iter->second = 1;
 
@@ -1329,11 +1332,14 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
 // If returning false, err_msg in Info object will be updated
 bool Parser::assignVar(const string& var_name, const ROperand& value)
 {
-    auto iter = arma_table.find(var_name);
+    string name = checkVarNameValid(var_name);
+    if (name.empty())   return false;
+
+    auto iter = arma_table.find(name);
     if (iter != arma_table.end())   arma_table.erase(iter);
-    r_table[var_name] = value;
+    r_table[name] = value;
     
-    auto var_iter = var_table.find(var_name);
+    auto var_iter = var_table.find(name);
     if (var_iter != var_table.end() && !var_iter->second) 
         var_iter->second = 1;
 
@@ -1348,13 +1354,15 @@ bool Parser::modifyName(const string& ori_name, const string& new_name)
 {
     if (!var_table.count(ori_name) || var_table.count(new_name)) return false;
     if (var_table[ori_name] < 2) return false;
+    string name = checkVarNameValid(new_name);
+    if (name.empty()) return false;
 
     auto r_iter = r_table.find(ori_name);
     if (r_iter != r_table.end())
     {
         ROperand value = r_iter->second;
         r_table.erase(r_iter);
-        r_table[new_name] = value;
+        r_table[name] = value;
         return true;
     }
 
@@ -1363,12 +1371,12 @@ bool Parser::modifyName(const string& ori_name, const string& new_name)
     {
         ArmaOperand value = arma_iter->second;
         arma_table.erase(arma_iter);
-        arma_table[new_name] = value;
+        arma_table[name] = value;
         return true;
     }
 
     var_table.erase(ori_name);
-    var_table.insert(make_pair(new_name, 2));
+    var_table.insert(make_pair(name, 2));
     return false;
 }
 
@@ -1411,14 +1419,14 @@ int Parser::getNumUnknown() const
 
 
 // Check whether a variable user picked is valid or not
-bool Parser::checkVarNameValid(const std::string& var_name) const
+string Parser::checkVarNameValid(const std::string& var_name) const
 {
     Lexer lexer(var_name);
     Token* var = lexer.getNextToken();
     if (var == nullptr || var->get_type() != TokType::ID)
-        return false;
+        return "";
 
     // Check whether there is additional useless string
     if (lexer.getNextToken() != nullptr)
-        return false;
+        return "";
 }
