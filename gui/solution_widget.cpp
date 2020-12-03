@@ -300,8 +300,8 @@ void solution_widget::run_solver_async(){
                     }
                 }
 
-                parser.reset_input();
-                parser.parse(parser_last_run_engine, true, to_add_steps_name);
+                /*parser.reset_input();
+                parser.parse(parser_last_run_engine, true, to_add_steps_name);*/
 
             }else{
                 steps=new StepsHistory;
@@ -314,15 +314,15 @@ void solution_widget::run_solver_async(){
             steps=new StepsHistory;
             steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
 
-            string prefix="arma_";
+            /*string prefix="arma_";
             int index=1;
             string varname=prefix+to_string(index);
             while(parser.hasVarName(varname)){
                 ++index;
                 varname=prefix+to_string(index);
-            }
+            }*/
             parser.reset_input();
-            parser.parse(parser_last_run_engine, true, varname);
+            parser.parse(parser_last_run_engine, true, to_add_steps_name);
         }
     }
 
@@ -444,7 +444,8 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
         //It may be the case where there is no answer.
         if(answer!=nullptr){
             ROperand nr{answer, ans_rows, ans_cols};
-            // parser.assignVar(to_add_steps_name, nr);
+            parser.reset_input();
+            parser.assignVar(to_add_steps_name, nr);
 
             for(int i=0;i<ans_rows;++i){
                 delete[] answer[i];
