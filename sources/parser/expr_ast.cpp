@@ -255,6 +255,10 @@ ROperand VariableExprAst::evalR(Info& res)
     if (res.engine_used == 3)   return ROperand(newInt(1L));   
     auto iter = r_table->find(name);
     if (iter != r_table->end()) return iter->second;
+
+    if (arma_table->find(name) != arma_table->end())
+        throw std::invalid_argument("variables evaluated using Armadillo cannot be used when using R");
+        
     return ROperand(newTerm(1));
 }
 
