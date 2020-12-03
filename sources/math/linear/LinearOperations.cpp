@@ -660,6 +660,7 @@ namespace LinearOperationsFunc{
                     int free_var_idx=0;
                     for(int col=0;col<cols-1;++col){
                         if(std::find(fixed_variables_cols.begin(),fixed_variables_cols.end(), col) == fixed_variables_cols.end()){
+
                             //Whether the column represents a free variable.
 
                             //Free variable contributes 1 to itself.

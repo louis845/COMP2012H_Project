@@ -12,6 +12,7 @@
 #include "math/fraction/Fraction.h"
 #include "math/polynomial/Polynomial.h"
 #include "math/finite_field/ModField.h"
+#include "math/linear/LinearOperations.h"
 #include "debug_stress_test.h"
 
 using namespace std;
