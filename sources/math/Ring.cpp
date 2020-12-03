@@ -18,12 +18,14 @@ NestedRingType::NestedRingType(const RingType& cur_type){
     is_complex=cur_type==RingType::COMPLEXIFY;
     no_fraction = cur_type==RingType::FRACTION? 1 : 0;
     no_polynomial = cur_type==RingType::POLYNOMIAL? 1 : 0;
+    extra_info=0;
 }
 
 NestedRingType::NestedRingType(const RingType& cur_type,NestedRingType* type){
     current_type=cur_type;
     sub_type=nullptr;
     set_sub_type_no_copy(type);
+    extra_info=0;
 }
 
 NestedRingType::~NestedRingType(){
@@ -32,12 +34,16 @@ NestedRingType::~NestedRingType(){
 
 NestedRingType::NestedRingType(const NestedRingType& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     sub_type=nullptr;
     set_sub_type(type.sub_type);
 }
 
 NestedRingType::NestedRingType(NestedRingType&& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     sub_type=nullptr;
     set_sub_type_no_copy(type.sub_type);
     type.sub_type=nullptr;
@@ -45,15 +51,23 @@ NestedRingType::NestedRingType(NestedRingType&& type){
 
 NestedRingType& NestedRingType::operator=(const NestedRingType& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     set_sub_type(type.sub_type);
     return *this;
 }
 
 NestedRingType& NestedRingType::operator=(NestedRingType&& type){
     current_type=type.current_type;
+    extra_info=type.extra_info;
+
     set_sub_type_no_copy(type.sub_type);
     type.sub_type=nullptr;
     return *this;
+}
+
+void NestedRingType::set_extra_info(const int& i){
+    extra_info=i;
 }
 
 bool NestedRingType::has_sub_type() const{
@@ -64,8 +78,12 @@ const NestedRingType& NestedRingType::get_sub_type() const{
     return *sub_type;
 }
 
+bool NestedRingType::shallow_equals(const NestedRingType& other) const{
+    return current_type==other.current_type && extra_info==other.extra_info;
+}
+
 bool NestedRingType::deep_equals(const NestedRingType& other) const{
-    if(current_type!=other.current_type){
+    if(!shallow_equals(other)){
         return false;
     }
     if(sub_type!=nullptr){
@@ -134,6 +152,7 @@ const RingType& NestedRingType::get_current_type() const{
 
 NestedRingType* NestedRingType::deep_copy() const{
     NestedRingType* n=new NestedRingType{current_type};
+    n->extra_info=extra_info;
 
     if(sub_type!=nullptr){
         n->sub_type=sub_type->deep_copy();
@@ -145,8 +164,8 @@ bool NestedRingType::complex() const{
     return is_complex;
 }
 
-bool Ring::is_type_compatible_shallow(const RingType& r1,const RingType& r2){
-    return r1==r2 || r1==RingType::SPECIAL_ZERO || r2==RingType::SPECIAL_ZERO;
+bool Ring::is_type_compatible_shallow(const NestedRingType& r1,const NestedRingType& r2){
+    return (r1.shallow_equals(r2)) || r1.get_current_type()==RingType::SPECIAL_ZERO || r2.get_current_type()==RingType::SPECIAL_ZERO;
 }
 
 bool Ring::is_type_compatible(const Ring& other) const{
@@ -163,16 +182,16 @@ bool Ring::is_type_subset(const NestedRingType& supset,const NestedRingType& sub
         }
 
         if(subset.has_sub_type()){
-            if(supset.get_current_type() == subset.get_current_type()){
+            if(supset.shallow_equals(subset)){
                 if(is_type_subset(supset.get_sub_type(), subset.get_sub_type())){
                     return true;
                 }
             }
         }
     }
-
+    
     if( (!supset.has_sub_type()) && (!subset.has_sub_type())){
-        return is_type_compatible_shallow(supset.get_current_type(),subset.get_current_type());
+        return is_type_compatible_shallow(supset,subset);
     }
     return false;
 }
@@ -208,6 +227,8 @@ string ring_type_to_string(const RingType& type){
         return "POLYNOMIAL";
     case COMPLEXIFY:
         return "COMPLEX";
+    case MOD_FIELD:
+        return "MOD_FIELD";
     }
     return "ERROR UNKNOWN TYPE";
 }
@@ -216,10 +237,12 @@ string NestedRingType::to_string() const{
     ostringstream str;
 
     str<<ring_type_to_string(current_type);
+    str<<"("<<extra_info<<")";
 
     NestedRingType* itr=sub_type;
     while(itr!=nullptr){
         str<<" "<<ring_type_to_string(itr->current_type);
+        str<<"("<<itr->extra_info<<")";
         itr=itr->sub_type;
     }
 
@@ -344,6 +367,10 @@ const Ring* Ring::conjugate() const{
     return copy();
 }
 
+const Ring* Ring::to_finite_field(int mod) const{
+    return copy();
+}
+
 /**
  * Implementation of ZeroElmt. The return values are straightforward (operations by 0 and 1). Notice that a copy (new allocation) has to be returned for the functions,
  * since the functions are used internally by the R class, and a new R object (no matter statically or dynamically allocated) is created with
@@ -380,6 +407,10 @@ const Ring* ZeroElmt::remainderImpl(const Ring* r) const{
 }
 
 const Ring* ZeroElmt::negate() const{
+    return new ZeroElmt{};
+}
+
+const Ring* ZeroElmt::to_finite_field(int mod) const{
     return new ZeroElmt{};
 }
 

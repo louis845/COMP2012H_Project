@@ -78,6 +78,8 @@ protected:
 
     const Ring* complexify() const override;
 
+    const Ring* to_finite_field(int mod) const override;
+
     const Ring* conjugate() const override;
 
     bool is_one() const override;

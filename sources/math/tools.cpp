@@ -4,6 +4,7 @@
 #include "math/long/LongComplex.h"
 #include "math/double/DoubleComplex.h"
 #include "math/double/Double.h"
+#include "math/finite_field/ModField.h"
 
 using namespace std;
 
@@ -66,15 +67,73 @@ long long gcd(long long a,long long b){
     return b;
 }
 
-MathFormulaTree::MathFormulaTree(string formula,char oper){
-    this->formula=formula;
-    left=right=nullptr;
-    this->oper=oper;
+/**
+ * Swaps val1 and val2
+*/
+void swap_values(int &val1,int &val2,int &num_of_a_in_val1,int &num_of_a_in_val2,int &num_of_b_in_val1,int &num_of_b_in_val2){
+    int temp=val1;
+    val1=val2;
+    val2=temp;
+
+    temp=num_of_a_in_val1;
+    num_of_a_in_val1=num_of_a_in_val2;
+    num_of_a_in_val2=temp;
+
+    temp=num_of_b_in_val1;
+    num_of_b_in_val1=num_of_b_in_val2;
+    num_of_b_in_val2=temp;
 }
 
-MathFormulaTree::~MathFormulaTree(){
-    delete left;
-    delete right;
+void xgcd(const int& a, const int& b, int& gcd, int& c, int& d){
+    int val1=a;
+    int val2=b;
+
+    int num_of_a_in_val1=1;
+    int num_of_b_in_val1=0;
+    int num_of_a_in_val2=0;
+    int num_of_b_in_val2=1;
+
+    if(val1<val2){
+        swap_values(val1,val2,num_of_a_in_val1,num_of_a_in_val2,num_of_b_in_val1,num_of_b_in_val2);
+    }
+    //Now val1>=val2
+    //Reduce until val1 is a multiple of val2
+    while(val1%val2 != 0){
+        int temp=val2;
+        int div=val1/val2;
+        val2 = val1%val2;
+        val1 = temp;
+
+        temp = num_of_a_in_val2;
+        num_of_a_in_val2 = num_of_a_in_val1 - div*num_of_a_in_val2;
+        num_of_a_in_val1 = temp;
+
+        temp = num_of_b_in_val2;
+        num_of_b_in_val2 = num_of_b_in_val1 - div*num_of_b_in_val2;
+        num_of_b_in_val1 = temp;
+    }
+
+    gcd=val2;
+    c=num_of_a_in_val2;
+    d=num_of_b_in_val2;
+}
+
+int primes[25]={2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97};
+
+bool is_supported_prime(const int& val){
+    for(int i=0;i<25;i++){
+        if(primes[i] == val){
+            return true;
+        }
+    }
+    return false;
+}
+
+void print_primes_to_console(){
+    for(int i=0;i<25;i++){
+        cout<<primes[i]<<" ";
+    }
+    cout<<"\n";
 }
 
 /**
@@ -136,6 +195,9 @@ bool reverse_precedence(const char& c1,const char& c2){
     return (c2!=-1 && ((c1=='*' || c1=='/' || c1== '(' || c1==')') && (c2=='+' || c2=='-')));
 }
 
+/**
+ * Parses the coefficient of some polynomials. Possible types are Double, Long.
+*/
 void simple_parse_cpx(const string& input, string& err, R& val, int& success, const int& start_index, const int& end_index){
     if(start_index>=end_index){
         err="Expected expression in here";
@@ -197,29 +259,168 @@ void simple_parse_cpx(const string& input, string& err, R& val, int& success, co
     }
 }
 
-/** end index is not inclusive
- * Operator precedence: + and - (unary) > * / > + -
+/**
+ * Parses the coefficient as a modulo field.
 */
-void parse_recurse(const string& input, string& err, R& val, int& success, const int& start_index, const int& end_index, const char& poly_char){
+void simple_parse_mod_field(const string& input, string& err, R& val, int& success, const int& start_index, const int& end_index, const int& modulo){
     if(start_index>=end_index){
-        throw "debug";
         err="Expected expression in here";
         success=start_index;
         return;
     }
-    bool unary=true; //Is current char unary?
-    int cutoff=start_index;
-    int unary_cutoff=start_index;
+    string substr=input.substr(start_index, end_index-start_index);
+    int i=-1;
+    try{
+        i=stoi(substr);
+    }catch(...){
+        err="Invalid integer: "+i;
+        success=start_index;
+        return;
+    }
+    val=R{ new ModField{i, modulo} };
+}
+
+/**
+ * Parses a univariate atomic expression, of real/complex entries.
+*/
+void parse_atomic_expr_univariate(const string& input, string& err, R& val, int& success, const int& start_index, const int& end_index){
+    const char poly_char='t';
+    int poly_idx=-1;
+    for(int i=start_index;i<end_index;i++){
+        if(input.at(i)==poly_char){
+            poly_idx=i;
+            break;
+        }
+    }
+    int poly_deg=-1;
+    if(poly_idx!=-1){
+        if(poly_idx==end_index-1){
+            poly_deg=1;
+        }else{
+            string degree=input.substr(poly_idx+1, end_index-poly_idx);
+            try{
+                poly_deg=stoi(degree);
+            }catch(...){
+                success=poly_idx;
+                err="Invalid integer.";
+                return;
+            }
+        }
+        if(poly_deg<1){
+            success=poly_idx;
+            err="Degree of polynomial must be >=1. Do not write polynomial charater for constant term";
+            return;
+        }
+        R coeff;
+        if(poly_idx==start_index){
+            coeff=R{new Fraction{ R{new Long{1}}, R{new Long{1}} }}; //Assuming long type. To specify double, type 1.0
+        }else{
+            simple_parse_cpx(input, err, coeff, success, start_index, poly_idx);
+            if(success!=-1){
+                return;
+            }
+        }
+        if(!coeff.is_field()){
+            R one=coeff.promote_one();
+            coeff=R{new Fraction{ coeff, one}};
+        }
+        R* coeffs=new R[poly_deg+1];
+        coeffs[poly_deg]=coeff;
+
+        val=R{new Polynomial{coeffs, poly_deg+1}};
+
+        delete[] coeffs;
+    }else{
+        simple_parse_cpx(input, err, val, success, start_index, end_index);
+    }
+}
+
+/**
+ * Parses a univariate atomic expression, of finite field entries.
+*/
+void parse_atomic_expr_univariate_modulo(const string& input, string& err, R& val, int& success, const int& start_index, const int& end_index, const int& modulo){
+    const char poly_char='t';
+    int poly_idx=-1;
+    for(int i=start_index;i<end_index;i++){
+        if(input.at(i)==poly_char){
+            poly_idx=i;
+            break;
+        }
+    }
+    int poly_deg=-1;
+    if(poly_idx!=-1){
+        if(poly_idx==end_index-1){
+            poly_deg=1;
+        }else{
+            string degree=input.substr(poly_idx+1, end_index-poly_idx);
+            try{
+                poly_deg=stoi(degree);
+            }catch(...){
+                success=poly_idx;
+                err="Invalid integer.";
+                return;
+            }
+        }
+        if(poly_deg<1){
+            success=poly_idx;
+            err="Degree of polynomial must be >=1. Do not write polynomial charater for constant term";
+            return;
+        }
+        R coeff;
+        if(poly_idx==start_index){
+            coeff=R{new ModField{1, modulo}};
+        }else{
+            simple_parse_mod_field(input, err, coeff, success, start_index, poly_idx, modulo);
+            if(success!=-1){
+                return;
+            }
+        }
+        if(!coeff.is_field()){
+            R one=coeff.promote_one();
+            coeff=R{new Fraction{ coeff, one}};
+        }
+        R* coeffs=new R[poly_deg+1];
+        coeffs[poly_deg]=coeff;
+
+        val=R{new Polynomial{coeffs, poly_deg+1}};
+
+        delete[] coeffs;
+    }else{
+        simple_parse_mod_field(input, err, val, success, start_index, end_index, modulo);
+    }
+}
+
+/** end index is not inclusive
+ * Operator precedence: + and - (unary) > * / > + -
+*/
+template<class Funct> void parse_recurse(const string& input, string& err, R& val, int& success, const int& start_index, const int& end_index, Funct atomic_parser ){
+    if(start_index>=end_index){
+        err="Expected expression in here";
+        success=start_index;
+        return;
+    }
+
+    /**
+     * Splits into a binary operation of two subexpressions. The innermost operations are by this operator precedence:
+     * (brackets, innermost) > mult, div > add minus. If there are no subexpression we directly parse the atomic expression.
+    */
+
+    bool unary=true; //Is current char unary? This means it is at the start of the expression
+
+    int cutoff=start_index; //The position of the operator, if found.
+    int unary_cutoff=start_index; //The position of the chain of unary operator
 
     bool negate=false; //Unary needs negate? (Number of minuses)
 
-    int bracket_depth=0;
+    int bracket_depth=0; //Keeps track of how many brackets enclosing the current char.
 
-    char op=-1;
+    char op=-1; //Current existing operator.
     for(int i=start_index;i<end_index;i++){
         const char& c=input.at(i);
+
+        //If inside brackets, ignore until outside bracket.
         if(bracket_depth==0){
-            bool bracket_mult=true;
+            bool bracket_mult=true; //Whether or not multiplication is possibly done by implicit brackets, e.g. (val)val2 or val(val2) or (val)(val2)
             if(unary){
                 if(c=='*'||c=='/'){
                     success=i;
@@ -233,7 +434,7 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
                     unary_cutoff=i;
                     unary=false;
                 }
-                bracket_mult=false;
+                bracket_mult=false; //Won't be bracket mult here, because opening brackets would just be preceded by a unary ( + or - ) operation, or at the start of the expression
             }
             if(!unary){
                 if(c=='+' || c=='-' || c== '*' || c=='/'){
@@ -244,6 +445,7 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
                     }
                     unary=true;
                 }else if(c=='('){ //implicit multiplication, both cases ')(' or '<some other val>(' are considered
+                    //Check bracket_mult to see if it is not preceded by a unary operation.
                     if(bracket_mult && !reverse_precedence('*',op)){
                         //here c <= op
                         cutoff=i;
@@ -265,26 +467,28 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
             }else if(c==')'){
                 --bracket_depth;
                 unary=false;
+                //Won't be unary immediately after a bracket, since + - means adding or subtracting from the expression in bracket.
             }
         }
     }
     
+    //If expression can be split in to two subexpressions, operated by a binary operation.
     if(op!=-1){
         R front;
         R back;
-        parse_recurse(input, err, front, success, start_index, cutoff, poly_char);
+        parse_recurse(input, err, front, success, start_index, cutoff, atomic_parser);
         if(success!=-1){
             return;
         }
         if(op=='('){
             //bracket, remove the ending bracket ')'
-            parse_recurse(input, err, back, success, cutoff+1, end_index-1, poly_char);
+            parse_recurse(input, err, back, success, cutoff+1, end_index-1, atomic_parser);
         }else if(cutoff>start_index && op==')'){
             //implicitly multiply with ')'
-            parse_recurse(input, err, back, success, cutoff, end_index,poly_char);
+            parse_recurse(input, err, back, success, cutoff, end_index, atomic_parser);
         }else{
             // + - * / , no need to include
-            parse_recurse(input, err, back, success, cutoff+1, end_index, poly_char);
+            parse_recurse(input, err, back, success, cutoff+1, end_index, atomic_parser);
         }
         
         if(success!=-1){
@@ -341,71 +545,22 @@ void parse_recurse(const string& input, string& err, R& val, int& success, const
                 break;
         }
     }else{
+        //Here expression cannot be split into two subexpressions.
         R valin;
         //Either unary with bracket or unary without bracket
         if(input.at(unary_cutoff)=='('){
-            parse_recurse(input, err, valin, success, unary_cutoff+1, end_index-1, poly_char);
+            parse_recurse(input, err, valin, success, unary_cutoff+1, end_index-1, atomic_parser);
         }else{
-            int poly_idx=-1;
-            if(poly_char!=-1){
-                for(int i=unary_cutoff;i<end_index;i++){
-                    if(input.at(i)==poly_char){
-                        poly_idx=i;
-                        break;
-                    }
-                }
-            }
-            int poly_deg=-1;
-            if(poly_idx!=-1){
-                if(poly_idx==end_index-1){
-                    poly_deg=1;
-                }else{
-                    string degree=input.substr(poly_idx+1, end_index-poly_idx);
-                    try{
-                        poly_deg=stoi(degree);
-                    }catch(...){
-                        success=poly_idx;
-                        err="Invalid integer.";
-                        return;
-                    }
-                }
-                if(poly_deg<1){
-                    success=poly_idx;
-                    err="Degree of polynomial must be >=1. Do not write polynomial charater for constant term";
-                    return;
-                }
-                R coeff;
-                if(poly_idx==unary_cutoff){
-                    coeff=R{new Fraction{ R{new Long{1}}, R{new Long{1}} }}; //Assuming long type. To specify double, type 1.0
-                }else{
-                    simple_parse_cpx(input, err, coeff, success, unary_cutoff, poly_idx);
-                    if(success!=-1){
-                        return;
-                    }
-                }
-                if(!coeff.is_field()){
-                    R one=coeff.promote_one();
-                    coeff=R{new Fraction{ coeff, one}};
-                }
-                R* coeffs=new R[poly_deg+1];
-                coeffs[poly_deg]=coeff;
-
-                valin=R{new Polynomial{coeffs, poly_deg+1}};
-
-                delete[] coeffs;
-            }else{
-                simple_parse_cpx(input, err, valin, success, unary_cutoff, end_index);
-                if(success!=-1){
-                    return;
-                }
-            }
+            //Run the chosen atomic parser.
+            atomic_parser(input, err, valin, success, unary_cutoff, end_index);
         }
-
+        
         if(negate){
             val= -valin;
         }else{
             val= valin;
         }
+        
     }
 }
 
@@ -416,6 +571,17 @@ void parse_expression(const string& input,string& err, R& val, int& success){
     if(success!=-1){
         return;
     }
-    parse_recurse(input,err,val,success,0,input.length(),poly_char);
+    parse_recurse(input,err,val,success,0,input.length(), &parse_atomic_expr_univariate); //Parse univariate normal polynomials.
 }
 
+void parse_expression_modulo(const string& input,string& err, R& val, int& success, const int& modulo){
+    success=-1;
+    char poly_char=-1;
+    ensure_basic_char(input, poly_char, err, success);
+    if(success!=-1){
+        return;
+    }
+    parse_recurse(input,err,val,success,0,input.length(), [modulo](const string& minput, string& merr, R& mval, int& msuccess, const int& mstart, const int& mend){
+        parse_atomic_expr_univariate_modulo(minput, merr, mval, msuccess, mstart, mend, modulo);
+    }); //Parse univariate normal polynomials.
+}

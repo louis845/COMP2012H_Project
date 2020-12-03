@@ -25,10 +25,14 @@ enum RingType{
 class NestedRingType final{
 private:
     NestedRingType* sub_type;
+
     RingType current_type;
+    int extra_info; //The current type is equal if and only if RingTypes are equal and extra_info are equal
+
     bool is_complex;
-    int no_fraction;
-    int no_polynomial;
+    int no_fraction; //Number of nested fractions in the type.
+    int no_polynomial; //Number of nested polynomials in the type.
+    
 
     NestedRingType* deep_copy() const;
 public:
@@ -66,6 +70,11 @@ public:
     const NestedRingType& get_sub_type() const;
 
     /**
+     * Whether the types are equal, disregarding the subtype.
+    */
+    bool shallow_equals(const NestedRingType& other) const;
+
+    /**
      * Whether the type are exactly equals. Use Ring::is_type_compatible(const NestedRingType&, const NestedRingType&) for
      * compatibility for binary operations
     */
@@ -75,6 +84,11 @@ public:
      * Deep deallocates the current subtype (if not nullptr) and deep copies the given subtype to sub_type. Returns *this.
     */
     NestedRingType& set_sub_type(const NestedRingType* subtype);
+
+    /**
+     * Sets the extra info of the NestedRingType.
+    */
+    void set_extra_info(const int& i);
 
     /**
      * Deep deallocates the current subtype (if not nullptr) and assigns the given subtype to sub_type. DOES NOT deep copy. Returns *this.
@@ -115,7 +129,7 @@ public:
     /**
      * Shallow equals.
     */
-    static bool is_type_compatible_shallow(const RingType&,const RingType&);
+    static bool is_type_compatible_shallow(const NestedRingType&, const NestedRingType&);
 
     /**
      * Whether it is compatible with binary operations. Our implementation support operations where either
@@ -292,6 +306,12 @@ protected:
     virtual const Ring* complexify() const = 0;
 
     /**
+     * If type is complex, returns a copy of this. Returns a finite field version of this otherwise, and returns this if field is already finite field.
+     * Does not check whether mod is prime. Throws an error if divide by zero occurs.
+    */
+    virtual const Ring* to_finite_field(int mod) const;
+
+    /**
      * Returns the a newly allocated complex conjugate of this. Returns a newly allocated copy() of itself if 
      * it does not belong to a complex field. In default implementation returns itself. For subclasses override
      * this function to handle possible complex scenarios.
@@ -378,6 +398,8 @@ private:
     const Ring* promote_one() const override;
 
     const Ring* complexify() const override;
+
+    const Ring* to_finite_field(int mod) const override;
 
     bool is_unit() const override;
 

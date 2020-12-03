@@ -60,9 +60,9 @@ int main()
      */
 
 
-    string linear{R"(4*5t x_alpha + (5+2i)/t y_1 - 6z_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_1 = 3 + z_1 \\ 5t^4z_1 = 3 + 5/6 y_1)"};
+    string linear{R"(4*5t x_alpha + (5+2i)/t y_ - 6z'_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_ = 3 + z'_1 \\ 5t^4z'_1 = 3 + 5/6 y_)"};
 
-    string debug_0{"3I * [[1, 2], [3, 4.0]]"};
+    string debug_0{"solve[[0, 0, 1], [0, 0, 2]] _ "};
 
     string debug_1{"sin({3, 4}, [5, 6]) * root(2, 3) + (3) + ([1, 2], [3, 4])"};
 
@@ -86,7 +86,7 @@ int main()
 
     // test_parser(linear, "linear system: ", 3);
 
-    test_parser(debug_0, "debug 0", engine);
+    test_parser(debug_0, "debug 0", 1);
     test_parser(debug_1, "debug 1", engine);
     test_parser(debug_2, "debug 2", engine);
     test_parser(debug_3, "debug 3", engine);

@@ -564,6 +564,27 @@ const Ring* Polynomial::complexify() const{
     return n;
 }
 
+const Ring* Polynomial::to_finite_field(int mod) const{
+    if(get_type().complex()){
+        return copy();
+    }
+    int len=length;
+    RF* new_coeff=RF::array_copy(coeff,length,0);
+    
+    try{
+        for(int i=0;i<length;i++){
+            RF& elem=(new_coeff)[i];
+            elem = elem.to_finite_field(mod);
+        }
+    }catch(const std::exception& err){
+        delete[] new_coeff;
+        throw err;
+    }
+    Polynomial *newp=polynomial_no_check(new_coeff,length);
+    delete[] new_coeff;
+    return newp;
+}
+
 const Ring* Polynomial::conjugate() const{
     Polynomial *n=new Polynomial{}; //No need to check and promote, just copy
     n->length=length;

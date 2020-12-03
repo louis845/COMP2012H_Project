@@ -340,3 +340,12 @@ const Ring* Fraction::conjugate() const{
     RF ud=under.conjugate();
     return new Fraction{ov,ud};
 }
+
+const Ring* Fraction::to_finite_field(int mod) const{
+    RF ov=over.to_finite_field(mod);
+    RF ud=under.to_finite_field(mod);
+    if(ud.is_zero()){
+        throw std::logic_error("Divide by zero when converting to finite field!");
+    }
+    return new Fraction{ov,ud};
+}

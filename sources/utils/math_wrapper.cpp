@@ -12,6 +12,8 @@ ROperand::ROperand(R** matR, int row_num, int col_num): type(Type::MAT), mat(row
 }
 
 
+// Create a square matrix with given size
+// whose diagonal contains this->value
 ROperand ROperand::fromImat(size_t row) const
 {
     ROperand result(row);
@@ -25,6 +27,7 @@ ROperand ROperand::fromImat(size_t row) const
 }
 
 
+// Unitary minus
 ROperand ROperand::operator-()
 {
     if (type == Type::MAT)
@@ -200,6 +203,7 @@ ROperand ROperand::operator-=(ROperand rhs)
 }
 
 
+// Generate corresponding LaTeX string
 string ROperand::genTex() const
 {
     switch (type)
@@ -242,7 +246,7 @@ ArmaOperand ArmaOperand::operator+(const ArmaOperand& rhs) const
         return ArmaOperand(Type::IMAT, value + rhs.value);           // two identity matrices
     }
 
-    // again, add scalar to identity matrix is not a good idea
+    // Again, add scalar to identity matrix is not a good idea
     if ((type == Type::IMAT && rhs.type == Type::NOR) || (type == Type::NOR && rhs.type == Type::IMAT))
         throw std::runtime_error("addition between scalar and identity matrix is not supported");
 
@@ -347,6 +351,8 @@ ArmaOperand ArmaOperand::operator^(const ArmaOperand& rhs) const
 }
 
 
+// Construct a new square matrix with given size, whose diagonal
+// contains this->value
 arma::cx_mat ArmaOperand::fromImat(size_t row) const 
 {
     if (type != Type::IMAT) throw std::runtime_error("operand type is not identity matrix");
@@ -354,6 +360,7 @@ arma::cx_mat ArmaOperand::fromImat(size_t row) const
 }
 
 
+// Generate corresponding LaTeX string
 string ArmaOperand::genTex() const
 {
     stringstream ss;

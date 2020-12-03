@@ -41,6 +41,8 @@ public:
     bool operator>= (const long& i) const;
     bool operator<= (const long& i) const;
 
+    int truncate_to_int() const;
+
     friend mpz_wrapper abs(const mpz_wrapper& val);
     friend mpz_wrapper gcd(const mpz_wrapper& a, const mpz_wrapper& b);
     friend mpz_wrapper operator/ (long l,const mpz_wrapper& o);

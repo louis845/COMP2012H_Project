@@ -19,7 +19,7 @@ SOURCES = main.cpp Ring.cpp R.cpp Field.cpp Double.cpp Long.cpp
 DEBUG = -g
 
 
-link: main.o console.o Ring.o R.o Field.o Double.o DoubleComplex.o Long.o mpz_wrapper.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Linear3.o Steps.o History.o tools.o
+link: main.o console.o Ring.o R.o Field.o Double.o ModField.o DoubleComplex.o Long.o mpz_wrapper.o Fraction.o LongComplex.o Polynomial.o Linear.o Linear2.o Linear3.o Steps.o History.o tools.o
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)run $(LIBRARIES) $(OUTPUT_DIRECTORY)/*.o -lgmpxx -lgmp
 
 main.o: main.cpp
@@ -39,6 +39,9 @@ Field.o: math/Field.cpp
 
 Double.o: math/double/Double.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Double.o $(HEADER_ROOT_DIRECTORY) -c math/double/Double.cpp
+
+ModField.o: math/finite_field/ModField.cpp
+	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)ModField.o $(HEADER_ROOT_DIRECTORY) -c math/finite_field/ModField.cpp
 
 Long.o: math/long/Long.cpp
 	$(CC) $(DEBUG) -o $(OUTPUT_DIRECTORY)Long.o $(HEADER_ROOT_DIRECTORY) -c math/long/Long.cpp
