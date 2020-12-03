@@ -748,6 +748,12 @@ void Parser::evalR(bool save, const string& var_name)
         res.err_msg = "Error: evaluation failed, " + string(err.what());
         return;
     }
+    catch (const std::runtime_error& err)
+    {
+        res.success = false;
+        res.err_msg = "Error: evaluation failed, " + string(err.what());
+        return;
+    }
     catch (...)
     {
         res.success = false;
@@ -851,8 +857,8 @@ void Parser::evalDecomp()
         arma::cx_mat eigvec;
         arma::cx_vec eigval;
         arma::eig_gen(eigval, eigvec, arg.mat);
-        res.eval_result = "eigenvalues: " + ArmaOperand(arma::cx_mat(eigval)).genTex() 
-                            + R"( \\ eigenvectors: )" + ArmaOperand(eigvec).genTex();
+        res.eval_result = "&eigenvalues: " + ArmaOperand(arma::cx_mat(eigval)).genTex() 
+                            + R"( \\ &eigenvectors: )" + ArmaOperand(eigvec).genTex();
         return;
     }
 
@@ -860,9 +866,9 @@ void Parser::evalDecomp()
     {
         arma::cx_mat U, S;
         arma::schur(U, S, arg.mat);
-        res.eval_result = R"(Schur~decomposition: \\ )";
-        res.eval_result += arg.genTex() + " = " + ArmaOperand(U).genTex() + ArmaOperand(S).genTex() 
-                            + ArmaOperand(U).genTex() + R"(^*)";
+        res.eval_result = R"(&Schur~decomposition: \\ )";
+        res.eval_result += "&" + arg.genTex() + R"(\\ = &)" + ArmaOperand(U).genTex() + R"( \\ &)" 
+                        +ArmaOperand(S).genTex() + R"( \\ &)" + ArmaOperand(U).genTex() + R"(^*)";
         return;
     }
 
@@ -870,8 +876,9 @@ void Parser::evalDecomp()
     {
         arma::cx_mat Q, R;
         arma::qr(Q, R, arg.mat);
-        res.eval_result = R"(QR~decomposition: \\ )";
-        res.eval_result += arg.genTex() + " = " + ArmaOperand(Q).genTex() + ArmaOperand(R).genTex();
+        res.eval_result = R"(&QR~decomposition: \\ )";
+        res.eval_result += "&" + arg.genTex() + R"(\\ = &)" + ArmaOperand(Q).genTex() + 
+                            R"(\\ &)" + ArmaOperand(R).genTex();
         return;
     }
 
@@ -883,9 +890,9 @@ void Parser::evalDecomp()
         arma::cx_mat S(arma::size(arg.mat), arma::fill::zeros);
         s.resize(arma::size(arg.mat.diag()));
         S.diag() = arma::cx_vec(s, arma::vec(arma::size(s), arma::fill::zeros));
-        res.eval_result = R"(SVD: \\ )";
-        res.eval_result += arg.genTex() + " = " + ArmaOperand(U).genTex() + ArmaOperand(S).genTex() 
-                            + ArmaOperand(V).genTex() + R"(^T)";
+        res.eval_result = R"(&SVD: \\ )";
+        res.eval_result += "&" + arg.genTex() + R"(\\ = &)" + ArmaOperand(U).genTex() 
+                        + R"(\\ &)" + ArmaOperand(S).genTex() + R"(\\ &)" + ArmaOperand(V).genTex() + R"(^T)";
         return;
     }
 }

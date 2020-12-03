@@ -169,24 +169,25 @@ void solution_widget::handle_ascii_update_async(string text){
     string* err_addr=nullptr;
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
+
+            ostringstream os;
+            os << "<div>`" << i.interpreted_input << "`</div>";
+            os<<R"( \begin{align*} = )";
+            // const int rows=pr.first;
+            // const int cols=pr.second;
+            // write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
+            os << i.eval_result;
+            os<<R"( \end{align*} )";
+            ns_addr=new string{os.str()};
+            ascii_or_latex=true;
+            err_addr=new string{"No error!"};
+
             if(i.mat_size.size()>0){
                 const int last_elem=i.mat_size.size()-1;
                 const std::pair<int,int> &pr = i.mat_size.at(last_elem);
                 R** matrix=i.parsed_mat.at(last_elem).second;
                 TokNum::TokName t=i.parsed_mat.at(last_elem).first;
                 qDebug()<<static_cast<int>(t);
-
-                ostringstream os;
-                os << "<div>`" << i.interpreted_input << "`</div>";
-                os<<R"( \begin{align*} = )";
-                // const int rows=pr.first;
-                // const int cols=pr.second;
-                // write_matrix_to_html_latex(os, matrix,rows,cols); //just helper function to write to ostringstream
-                os << i.eval_result;
-                os<<R"( \end{align*} )";
-                ns_addr=new string{os.str()};
-                ascii_or_latex=true;
-                err_addr=new string{"No errors!"};
             }else{
                 err_addr=new string{i.err_msg};
             }
@@ -194,7 +195,7 @@ void solution_widget::handle_ascii_update_async(string text){
             string to_disp="`"+i.interpreted_input+"`";
             ns_addr=new string{to_disp};
             ascii_or_latex=false;
-            err_addr=new string{"No errors!"};
+            err_addr=new string{"No error!"};
         }
     }else{
         err_addr=new string{i.err_msg};
