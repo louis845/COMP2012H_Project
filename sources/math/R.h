@@ -45,7 +45,7 @@ public:
 
     /**
      * Tries to make a,b compatible by complexifying one of a,b. Returns true if it can be done and a,b will be replaced
-     * by the appropriate complexified versions. Returns false if it is not possible.
+     * by the appropriate complexified versions. Returns false if it is not possible, and does not change a,b.
     */
     static bool complexify_if_needed(R& a, R& b);
 
