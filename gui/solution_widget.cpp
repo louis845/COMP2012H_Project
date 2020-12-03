@@ -235,7 +235,7 @@ void solution_widget::run_solver_async(){
     const Info& i=parser.getInfo();
     StepsHistory *steps=nullptr;
     if(i.success){
-        if(i.engine_used==1){
+        if(i.engine_used==1 || i.engine_used==3){
             if(i.mat_size.size()>0){
                 const int last_elem=i.mat_size.size()-1;
                 const std::pair<int,int> &pr = i.mat_size.at(last_elem);
