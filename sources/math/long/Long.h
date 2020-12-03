@@ -54,6 +54,8 @@ protected:
 
     const Ring* complexify() const override;
 
+    const Ring* to_finite_field(int mod) const override;
+
     bool is_one() const override;
 
     bool is_unit() const override;

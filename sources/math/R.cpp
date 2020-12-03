@@ -1,5 +1,6 @@
 #include "math/R.h"
 #include "math/fraction/Fraction.h"
+#include "math/tools.h"
 
 using namespace std;
 
@@ -391,11 +392,48 @@ R* R::array_copy(R* const& arr, int len, int shift){
     return newarr;
 }
 
+R R::parse_string(const string& str){
+    int success;
+    string err="";
+    R val;
+    parse_expression(str, err, val, success);
+    if(success==-1){
+        return val;
+    }else{
+        throw std::logic_error(err);
+    }
+}
+
+R R::parse_string_modulo(const string& str, int modulo){
+    int success;
+    string err="";
+    R val;
+    parse_expression_modulo(str, err, val, success, modulo);
+    if(success==-1){
+        return val;
+    }else{
+        throw std::logic_error(err);
+    }
+}
+
 R R::complexify() const{
     if(get_type().complex()){
         return *this;
     }
     return R{impl->complexify()};
+}
+
+R R::to_finite_field(int mod) const{
+    if(get_type().complex()){
+        throw "Cannot convert complex values to values of finite field!";
+    }
+    const Ring* finite_field=nullptr;
+    try{
+        finite_field=impl->to_finite_field(mod);
+    }catch(const std::exception& e){
+        throw e;
+    }
+    return R{finite_field};
 }
 
 const Ring& R::getImpl() const{

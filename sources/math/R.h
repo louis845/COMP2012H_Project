@@ -50,6 +50,16 @@ public:
     static bool complexify_if_needed(R& a, R& b);
 
     /**
+     * Parses using the univariate string parser (tools.h). Throws exception when parsing fails.
+    */
+    static R parse_string(const std::string& s);
+
+    /**
+     * Parses using the univariate modulo parser (tools.h). Throws exception when parsing fails.
+    */
+    static R parse_string_modulo(const std::string& s, int mod);
+
+    /**
      * Creates a ring wrapper to point to zero.
     */
     explicit R();
@@ -168,7 +178,8 @@ public:
     R complexify() const;
 
     /**
-     * Converts to a finite field version of this value. Throws an exception if the type is complex.
+     * Converts to a finite field version of this value. Throws an error if type is complex, or if divide by zero.
+     *  Does not check whether mod is prime. See Fraction to_finite_field for behaviour of fractions converting to finite field.
     */
     R to_finite_field(int modulo) const;
 

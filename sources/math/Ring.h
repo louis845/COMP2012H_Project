@@ -306,6 +306,12 @@ protected:
     virtual const Ring* complexify() const = 0;
 
     /**
+     * If type is complex, returns a copy of this. Returns a finite field version of this otherwise, and returns this if field is already finite field.
+     * Does not check whether mod is prime. Throws an error if divide by zero occurs.
+    */
+    virtual const Ring* to_finite_field(int mod) const;
+
+    /**
      * Returns the a newly allocated complex conjugate of this. Returns a newly allocated copy() of itself if 
      * it does not belong to a complex field. In default implementation returns itself. For subclasses override
      * this function to handle possible complex scenarios.
@@ -392,6 +398,8 @@ private:
     const Ring* promote_one() const override;
 
     const Ring* complexify() const override;
+
+    const Ring* to_finite_field(int mod) const override;
 
     bool is_unit() const override;
 

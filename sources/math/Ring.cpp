@@ -367,6 +367,10 @@ const Ring* Ring::conjugate() const{
     return copy();
 }
 
+const Ring* Ring::to_finite_field(int mod) const{
+    return copy();
+}
+
 /**
  * Implementation of ZeroElmt. The return values are straightforward (operations by 0 and 1). Notice that a copy (new allocation) has to be returned for the functions,
  * since the functions are used internally by the R class, and a new R object (no matter statically or dynamically allocated) is created with
@@ -403,6 +407,10 @@ const Ring* ZeroElmt::remainderImpl(const Ring* r) const{
 }
 
 const Ring* ZeroElmt::negate() const{
+    return new ZeroElmt{};
+}
+
+const Ring* ZeroElmt::to_finite_field(int mod) const{
     return new ZeroElmt{};
 }
 

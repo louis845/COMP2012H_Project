@@ -71,6 +71,8 @@ protected:
 
     const Ring* complexify() const override;
 
+    const Ring* to_finite_field(int modulo) const override;
+
     /**
      * Conjugates both over and under. Mathematically correct as conjugation is an automorphism.
     */
