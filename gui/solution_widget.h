@@ -99,6 +99,7 @@ private:
 
     atomic<bool>running_parser;
     int parser_last_run_engine;
+    int matrix_chosen;
 
     /**
     * Run lin ops async
@@ -109,6 +110,8 @@ private:
     //We need such a variable sincethe QTreeWidget cannot be accessed in async
 
     bool running_handled; //If the async tasks are handled by the main thread.
+
+    int translate_token(const TokNum::TokName& t);
 signals:
     void finish_sig();
     void next_problem_sig();

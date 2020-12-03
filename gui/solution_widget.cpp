@@ -1,5 +1,6 @@
 #include "solution_widget.h"
 #include "ui_solution_widget.h"
+#include "matrixchooserdialog.h"
 #include "begin_widget.h"
 #include <QPainter>
 #include <QMessageBox>
@@ -35,6 +36,7 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     new_intepret_ptr=nullptr;
     new_intepret_err=nullptr;
     ascii_or_latex=true;
+    matrix_chosen=-1;
 }
 
 void solution_widget::init_window(){
@@ -128,8 +130,6 @@ void solution_widget::init_window(){
     input_window=new begin_widget{username,password};
     input_window->setVisible(false);
     input_window->parent_window=this;
-
-
 }
 
 /**
@@ -155,6 +155,8 @@ void solution_widget::handle_ascii_update(){
         running_handled=false;
         running_parser=true;
         progress_timer->start(20);
+        ui->methods_btn->setDisabled(true);
+
         parser_last_run_engine=selected_engine;
 
         QString text=ui->ascii_textedit->toPlainText();
@@ -241,10 +243,24 @@ void solution_widget::handle_ascii_update_async(string text){
 }
 
 void solution_widget::run_solver(){
-    if(running_handled){
+    const Info& i=parser.getInfo();
+    if(running_handled && i.success){
+        if(i.engine_used==1){
+            if(i.mat_size.size()>1){
+                MatrixChooserDialog d{i,selected_choice,this};
+                int user_input=d.exec();
+                if(user_input==1){
+                    //ok pressed
+                    matrix_chosen=d.selected_index;
+                }else{
+                    return;
+                }
+            }
+        }
         running_handled=false;
         running=true;
         progress_timer->start(20);
+        ui->methods_btn->setDisabled(true);
 
         to_add_steps_name=get_usable_steps_string();
 
@@ -253,15 +269,33 @@ void solution_widget::run_solver(){
     }
 }
 
+int solution_widget::translate_token(const TokNum::TokName& t){
+    typedef TokNum::TokName T;
+    switch(t){
+    case T::RREF:
+        return 0;
+    case T::DET:
+        return 4;
+    case T::INV:
+        return 3;
+    case T::SOLVE:
+        return 2;
+    case T::CHAR_POLY:
+        return 5;
+    case T::ORTH:
+        return 6;
+    }
+    return -1;
+}
+
 void solution_widget::run_solver_async(){
-    parser.reset_input(cur_input);
-    parser.parse(selected_engine);
     const Info& i=parser.getInfo();
     StepsHistory *steps=nullptr;
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
             if(i.mat_size.size()>0){
-                const int last_elem=i.mat_size.size()-1;
+                const int last_elem = (matrix_chosen==-1)? (i.mat_size.size()-1) : matrix_chosen;
+
                 const std::pair<int,int> &pr = i.mat_size.at(last_elem);
                 R** matrix=i.parsed_mat.at(last_elem).second;
                 TokNum::TokName t=i.parsed_mat.at(last_elem).first;
@@ -269,7 +303,14 @@ void solution_widget::run_solver_async(){
                 const int rows=pr.first;
                 const int cols=pr.second;
 
-                switch(selected_choice){
+                int current_operation = matrix_chosen==-1 ? selected_choice : translate_token(t);
+                if(current_operation==-1){
+                    current_operation=selected_choice;
+                }
+
+                matrix_chosen = -1;
+
+                switch(current_operation){
                     case 0:{
                         LinearOperationsFunc::row_reduce(matrix, rows, cols, steps);
                         break;
@@ -361,6 +402,7 @@ void solution_widget::fetch_async_loop(){
         currentValue=0;
         ui->disp_prog->setValue(currentValue);
         ui->disp_prog->update();
+        ui->methods_btn->setDisabled(false);
     }else{
         currentValue = (currentValue+1)%100;
         ui->disp_prog->setValue(currentValue);
