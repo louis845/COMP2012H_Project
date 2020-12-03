@@ -390,6 +390,9 @@ ROperand FunctionExprAst::evalR(Info& res)
         default: throw std::invalid_argument("function " + raw + " is not supported in R yet");
     }
 
+    if (args.size() != 1)
+        throw std::invalid_argument(raw + " only accepts one matrix as argument, but got " + std::to_string(args.size()));
+
     ROperand operand = args[0]->evalR(res);
     if (operand.type == ROperand::Type::MAT) res.addMat(operand, op);
     else throw std::invalid_argument(raw + " operation only accept a matrix as argument");
@@ -431,7 +434,8 @@ ROperand FunctionExprAst::evalR(Info& res)
             break;
     }
 
-    if (steps == nullptr)   throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
+    if (steps == nullptr)   
+        throw std::runtime_error("R operation " + raw + " failed, the matrix is not invertible/has no solution/is not square");
 
     R** matR{nullptr};
     int row, col;
@@ -439,7 +443,7 @@ ROperand FunctionExprAst::evalR(Info& res)
     if (matR == nullptr)    
     {
         delete steps;
-        throw std::runtime_error("R operation " + raw + " failed, unknown error occurred");
+        throw std::runtime_error("R operation " + raw + " failed, the matrix is not invertible/has no solution/is not square");
     }
 
     if (row == 1 && col == 1)           // matrix degenerates to a scalar
@@ -536,6 +540,7 @@ ArmaOperand FunctionExprAst::eval()
                 if (arg_vals[1].type == Type::IMAT)
                     B = arg_vals[1].fromImat(A.n_rows);
                 
+                // If no solution, solve will attempt to find an approximated one
                 return ArmaOperand(arma::solve(A, B));
             }
 
@@ -582,6 +587,7 @@ ArmaOperand FunctionExprAst::eval()
 
             case TokName::PINV: return ArmaOperand(arma::pinv(arg_vals[0].mat));
 
+            // If no solution, solve will attempt to find an approximated one
             case TokName::SOLVE:
             {
                 size_t num_cols = arg_vals[0].mat.n_cols;

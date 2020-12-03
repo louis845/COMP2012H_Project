@@ -57,6 +57,12 @@
       </item>
       <item>
        <widget class="QTabWidget" name="tabWidget_2">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>360</height>
+         </size>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -76,7 +82,7 @@
                <x>0</x>
                <y>0</y>
                <width>303</width>
-               <height>211</height>
+               <height>312</height>
               </rect>
              </property>
             </widget>
@@ -142,10 +148,20 @@
        </widget>
       </item>
       <item>
-       <widget class="QPlainTextEdit" name="ascii_textedit"/>
+       <widget class="QPlainTextEdit" name="ascii_textedit">
+        <property name="tabStopDistance">
+         <double>82.000000000000000</double>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="ascii_parser_err">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string/>
         </property>
@@ -213,8 +229,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>361</width>
-           <height>422</height>
+           <width>357</width>
+           <height>438</height>
           </rect>
          </property>
         </widget>
