@@ -299,6 +299,10 @@ void solution_widget::run_solver_async(){
                         break;
                     }
                 }
+
+                parser.reset_input();
+                parser.parse(parser_last_run_engine, true, to_add_steps_name);
+
             }else{
                 steps=new StepsHistory;
                 steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
@@ -440,7 +444,7 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
         //It may be the case where there is no answer.
         if(answer!=nullptr){
             ROperand nr{answer, ans_rows, ans_cols};
-            parser.assignVar(to_add_steps_name, nr);
+            // parser.assignVar(to_add_steps_name, nr);
 
             for(int i=0;i<ans_rows;++i){
                 delete[] answer[i];
