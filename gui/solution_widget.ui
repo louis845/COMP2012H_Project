@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>996</width>
-    <height>580</height>
+    <width>963</width>
+    <height>612</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -190,17 +190,11 @@
           </widget>
          </item>
          <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QPushButton" name="engine_btn">
+           <property name="text">
+            <string>Engine</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="previous_btn">
@@ -229,8 +223,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>357</width>
-           <height>438</height>
+           <width>402</width>
+           <height>470</height>
           </rect>
          </property>
         </widget>

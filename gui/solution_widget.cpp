@@ -83,8 +83,24 @@ void solution_widget::init_window(){
             method_dealer(i);
         });
     }
-
     ui->methods_btn->setMenu(method_menu);
+
+    QMenu *engine_menu = new QMenu(this);
+    QString engine_list[4]={
+        "Auto",
+        "R",
+        "Armadillo",
+        "Linear System"
+    };
+    for(int i=0;i<4;i++){
+        QAction *engine_menu_action=new QAction(engine_list[i],this);
+        engine_menu->addAction(engine_menu_action);
+        connect(engine_menu_action,&QAction::triggered,[=](){
+            ui->engine_btn->setText(engine_menu_action->text());
+            engine_choice_dealer(i);
+        });
+    }
+    ui->engine_btn->setMenu(engine_menu);
 
     connect(ui->jump_btn,&QPushButton::clicked,[=](){
         if (current_viewing_steps!=nullptr){
@@ -154,8 +170,9 @@ void solution_widget::handle_ascii_update(){
 }
 
 void solution_widget::handle_ascii_update_async(string text){
+    cur_input = text;
     parser.reset_input(text);
-    const Info& i=parser.parse();
+    const Info& i=parser.parse(selected_engine);
     /*qDebug()<<"engine used: "<<i.engine_used;
     qDebug()<<"success: "<<i.success;
     qDebug()<<"intepreted: "<<QString::fromStdString(i.interpreted_input);
@@ -169,7 +186,7 @@ void solution_widget::handle_ascii_update_async(string text){
     string* err_addr=nullptr;
 
     string engine_used = "<p>Engine used: R</p>";
-    if (i.engine_used)  engine_used = "<p>Engine used: Armadillo</p>";
+    if (i.engine_used == 2)  engine_used = "<p>Engine used: Armadillo</p>";
 
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
@@ -232,6 +249,8 @@ void solution_widget::run_solver(){
 }
 
 void solution_widget::run_solver_async(){
+    parser.reset_input(cur_input);
+    parser.parse(selected_engine);
     const Info& i=parser.getInfo();
     StepsHistory *steps=nullptr;
     if(i.success){
@@ -381,6 +400,11 @@ void solution_widget::method_dealer(int choice){
     selected_choice=choice;
 }
 
+void solution_widget::engine_choice_dealer(int choice)
+{
+    selected_engine = choice;
+}
+
 void solution_widget::display_answer(string answer){
 
     QString qs="<html><head><script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\\\(', '\\\\)']]},svg: {fontCache: 'global'}};</script><script type=\"text/javascript\" id=\"MathJax-script\" async src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\"></script></head><body>\n";
@@ -445,5 +469,4 @@ void solution_widget::closeEvent(QCloseEvent *event){
         QMessageBox::information(this,"Error","Sorry, cannot close window with ongoing computation!",QMessageBox::Ok);
     }
 }
-
 

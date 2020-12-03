@@ -30,6 +30,7 @@ public:
     void init_window();
     void paintEvent(QPaintEvent *event);
     void method_dealer(int choice);
+    void engine_choice_dealer(int choice);
     void display_answer(string answer);
     void display_preview(string preview);
     void display_preview_ascii(string preview);
@@ -58,6 +59,7 @@ private:
 
     string username;
     string password;
+    string cur_input;
     Parser parser;
 
     QVBoxLayout* scrollarea_layout;
@@ -75,6 +77,7 @@ private:
     int question_num = 0;
 
     int selected_choice;
+    int selected_engine = 0;
 
     std::vector<StepsHistory*> all_steps_list;
 
@@ -102,6 +105,8 @@ signals:
 public slots:
 
 
+
+private slots:
 
 };
 
