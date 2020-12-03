@@ -685,7 +685,7 @@ namespace LinearOperationsFunc{
 
                 if(num_free_vars>0){
                     string text="A particular solution is the column A, with solution space B";
-                    string latex="A particular solution is the column $A$, with solution space $B$\n";
+                    string latex="A particular solution is the column $A$, with solution space $B$. This means general solutions is of the form $A+Bv$ where $v$ is a column vector with height "+to_string(num_free_vars)+"\n";
                     MatrixSpaceStep *m=new MatrixSpaceStep{particular_solution, cols-1, 1, sol_space, cols-1, num_free_vars, text, latex};
                     steps->add_step(m);
                     steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
