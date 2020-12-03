@@ -61,7 +61,7 @@ ROperand ROperand::operator+(ROperand rhs)
         return result;
     }
 
-    if (type == Type::MAT && rhs.type == Type::NOR)      // scalar + matrix
+    if (type == Type::MAT && rhs.type == Type::NOR)      // matrix + scalar
     {
         ROperand result(*this);
         for (size_t i = 0; i < result.mat.size(); ++i)
@@ -74,7 +74,7 @@ ROperand ROperand::operator+(ROperand rhs)
         return result;
     }
 
-    if (type == Type::NOR && rhs.type == Type::MAT)     // matrix + scalar
+    if (type == Type::NOR && rhs.type == Type::MAT)     // scalar + matrix
         return rhs + (*this);       // huge time & space complexity here
 
     if (type == rhs.type)           // scalar + scalar or I + I

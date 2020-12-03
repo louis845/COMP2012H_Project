@@ -54,8 +54,8 @@ void Parser::reset_input(const std::string& input)
         if (!flag) break;
     }
     
-    this->input = input;
-    tokenizer.reset_input(input);
+    if (!input.empty()) this->input = input;
+    tokenizer.reset_input(this->input);
     getNextToken();
 }
 
@@ -734,7 +734,7 @@ void Parser::evalR(bool save, const string& var_name)
 
         res.eval_result = result.genTex();
 
-        if (save) 
+        if (save)
         {
             var_table.insert(make_pair(var_name, 2));
             r_table.insert(make_pair(var_name, result));

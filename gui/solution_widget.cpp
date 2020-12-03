@@ -270,39 +270,40 @@ void solution_widget::run_solver_async(){
                 const int cols=pr.second;
 
                 switch(selected_choice){
-                case 0:{
-                    LinearOperationsFunc::row_reduce(matrix, rows, cols, steps);
-                    break;
-                }
-                case 1:{
-                    LinearOperationsFunc::col_reduce(matrix, rows, cols, steps);
-                    break;
-                }
-                case 2:{
-                    LinearOperationsFunc::solve(matrix, rows, cols, steps);
-                    break;
-                }
-                case 3:{
-                    LinearOperationsFunc::invert(matrix, rows, cols, steps);
-                    break;
-                }
-                case 4:{
-                    LinearOperationsFunc::determinant(matrix, rows, cols, steps);
-                    break;
-                }
-                case 5:{
-                    LinearOperationsFunc::char_poly(matrix, rows, cols, steps);
-                    break;
-                }
-                case 6:{
-                    LinearOperationsFunc::orthogonalize(matrix, rows, cols, steps);
-                    break;
-                }
+                    case 0:{
+                        LinearOperationsFunc::row_reduce(matrix, rows, cols, steps);
+                        break;
+                    }
+                    case 1:{
+                        LinearOperationsFunc::col_reduce(matrix, rows, cols, steps);
+                        break;
+                    }
+                    case 2:{
+                        LinearOperationsFunc::solve(matrix, rows, cols, steps);
+                        break;
+                    }
+                    case 3:{
+                        LinearOperationsFunc::invert(matrix, rows, cols, steps);
+                        break;
+                    }
+                    case 4:{
+                        LinearOperationsFunc::determinant(matrix, rows, cols, steps);
+                        break;
+                    }
+                    case 5:{
+                        LinearOperationsFunc::char_poly(matrix, rows, cols, steps);
+                        break;
+                    }
+                    case 6:{
+                        LinearOperationsFunc::orthogonalize(matrix, rows, cols, steps);
+                        break;
+                    }
                 }
             }else{
                 steps=new StepsHistory;
                 steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
 
+                parser.reset_input();
                 parser.parse(parser_last_run_engine, true, to_add_steps_name);
             }
         }else if(i.engine_used==2){
@@ -316,6 +317,7 @@ void solution_widget::run_solver_async(){
                 ++index;
                 varname=prefix+to_string(index);
             }
+            parser.reset_input();
             parser.parse(parser_last_run_engine, true, varname);
         }
     }
