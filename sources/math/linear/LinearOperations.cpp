@@ -707,8 +707,6 @@ namespace LinearOperationsFunc{
 
             delete[] last_col; //No need to deep delete last col, since it just points to the last column of mat.
             RF::deallocate_matrix(mat,rows);
-
-            steps->setAnswer(last_col,rows,1);
         }else{
             steps=nullptr;
         }
