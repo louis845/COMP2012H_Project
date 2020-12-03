@@ -299,6 +299,11 @@ void solution_widget::run_solver_async(){
                     break;
                 }
                 }
+            }else{
+                steps=new StepsHistory;
+                steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
+
+                parser.parse(parser_last_run_engine, true, to_add_steps_name);
             }
         }else if(i.engine_used==2){
             steps=new StepsHistory;
