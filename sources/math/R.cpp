@@ -85,6 +85,15 @@ bool R::is_type_compatible(const R* const& arr, int length){
     return true;
 }
 
+void R::promote_to_field(R* const& arr, int length){
+    for(int i=0;i<length;++i){
+        if(!arr[i].is_field()){
+            R one=arr[i].promote_one();
+            arr[i]=RF{new Fraction{arr[i],one}};
+        }
+    }
+}
+
 /**
  * Binary operations/comparison. Internally, dynamically allocates a temporary Ring object if necessary to ensure the types are 
  * exactly equal before passing into the functions in Ring (and its subclasses)

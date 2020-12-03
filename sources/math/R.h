@@ -61,6 +61,8 @@ public:
 
     static bool is_type_compatible(const R* const& arr, int length);
 
+    static void promote_to_field(R* const& arr, int length);
+
     /**
      * Creates a ring wrapper to point to zero.
     */
