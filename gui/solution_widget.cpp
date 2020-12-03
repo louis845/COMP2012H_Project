@@ -83,8 +83,24 @@ void solution_widget::init_window(){
             method_dealer(i);
         });
     }
-
     ui->methods_btn->setMenu(method_menu);
+
+    QMenu *engine_menu = new QMenu(this);
+    QString engine_list[4]={
+        "Auto",
+        "R",
+        "Armadillo",
+        "Linear System"
+    };
+    for(int i=0;i<4;i++){
+        QAction *engine_menu_action=new QAction(engine_list[i],this);
+        engine_menu->addAction(engine_menu_action);
+        connect(engine_menu_action,&QAction::triggered,[=](){
+            ui->engine_btn->setText(engine_menu_action->text());
+            engine_choice_dealer(i);
+        });
+    }
+    ui->engine_btn->setMenu(engine_menu);
 
     connect(ui->jump_btn,&QPushButton::clicked,[=](){
         if (current_viewing_steps!=nullptr){
@@ -139,6 +155,7 @@ void solution_widget::handle_ascii_update(){
         running_handled=false;
         running_parser=true;
         progress_timer->start(20);
+        parser_last_run_engine=selected_engine;
 
         QString text=ui->ascii_textedit->toPlainText();
         std::string std_text=text.toStdString();
@@ -154,8 +171,9 @@ void solution_widget::handle_ascii_update(){
 }
 
 void solution_widget::handle_ascii_update_async(string text){
+    cur_input = text;
     parser.reset_input(text);
-    const Info& i=parser.parse();
+    const Info& i=parser.parse(parser_last_run_engine);
     /*qDebug()<<"engine used: "<<i.engine_used;
     qDebug()<<"success: "<<i.success;
     qDebug()<<"intepreted: "<<QString::fromStdString(i.interpreted_input);
@@ -228,12 +246,16 @@ void solution_widget::run_solver(){
         running=true;
         progress_timer->start(20);
 
+        to_add_steps_name=get_usable_steps_string();
+
         std::thread thrd{&solution_widget::run_solver_async, this};
         thrd.detach();
     }
 }
 
 void solution_widget::run_solver_async(){
+    parser.reset_input(cur_input);
+    parser.parse(selected_engine);
     const Info& i=parser.getInfo();
     StepsHistory *steps=nullptr;
     if(i.success){
@@ -281,6 +303,12 @@ void solution_widget::run_solver_async(){
         }else if(i.engine_used==2){
             steps=new StepsHistory;
             steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
+
+            /*string prefix="arma_";
+            int index=0;
+            while(!parser.parse(parser_last_run_engine, true, prefix+to_string(index))){
+                ++index;
+            }*/
         }
     }
 
@@ -366,21 +394,63 @@ void solution_widget::navigatePrev(){
     updateAnsDisp();
 }
 
-void solution_widget::setNewSteps(StepsHistory *new_step){
+string solution_widget::get_usable_steps_string(){
+    string found="";
+    int j=0;
+    while(true){
+        found="var_"+to_string(++j);
+        bool unique=true;
+        for(int i=0;i<ui->treeWidget->topLevelItemCount();++i){
+            QTreeWidgetItem* item=ui->treeWidget->topLevelItem(i);
+            QString text=item->text(0);
+            if(text.toStdString()==found){
+                unique=false;
+                break;
+            }
+        }
+        if(unique){
+            break;
+        }
+    }
+    return found;
+}
 
+void solution_widget::setNewSteps(StepsHistory *new_step){
     all_steps_list.push_back(new_step);
     current_viewing_steps=new_step;
     updateAnsDisp();
-    //QDateTime current_date_time =QDateTime::currentDateTime();
-    //QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
+
+    //We handle this only if
+    if(parser.getInfo().engine_used==1 || parser.getInfo().engine_used==3){
+        //Add the result to the variables.
+        R **answer;
+        int ans_cols;
+        int ans_rows;
+        current_viewing_steps->getAnswer(answer, ans_rows, ans_cols);
+        //It may be the case where there is no answer.
+        if(answer!=nullptr){
+            ROperand nr{answer, ans_rows, ans_cols};
+            parser.assignVar(to_add_steps_name, nr);
+
+            for(int i=0;i<ans_rows;++i){
+                delete[] answer[i];
+            }
+            delete[] answer;
+        }
+    }
     QTime current_time =QTime::currentTime();
-    QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList("History at "+current_time.toString()));
+    QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList(QString::fromStdString(to_add_steps_name)));
     ui->treeWidget->addTopLevelItem(ply_item);
     ui->treeWidget->setCurrentItem(ply_item);
 }
 
 void solution_widget::method_dealer(int choice){
     selected_choice=choice;
+}
+
+void solution_widget::engine_choice_dealer(int choice)
+{
+    selected_engine = choice;
 }
 
 void solution_widget::display_answer(string answer){
@@ -447,5 +517,4 @@ void solution_widget::closeEvent(QCloseEvent *event){
         QMessageBox::information(this,"Error","Sorry, cannot close window with ongoing computation!",QMessageBox::Ok);
     }
 }
-
 
