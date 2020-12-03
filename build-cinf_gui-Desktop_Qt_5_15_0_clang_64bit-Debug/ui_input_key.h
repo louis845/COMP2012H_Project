@@ -50,6 +50,8 @@ public:
         if (input_key->objectName().isEmpty())
             input_key->setObjectName(QString::fromUtf8("input_key"));
         input_key->resize(407, 449);
+        input_key->setMinimumSize(QSize(407, 449));
+        input_key->setMaximumSize(QSize(407, 449));
         widget = new QWidget(input_key);
         widget->setObjectName(QString::fromUtf8("widget"));
         widget->setGeometry(QRect(40, 260, 321, 61));

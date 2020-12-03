@@ -304,11 +304,14 @@ void solution_widget::run_solver_async(){
             steps=new StepsHistory;
             steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
 
-            /*string prefix="arma_";
-            int index=0;
-            while(!parser.parse(parser_last_run_engine, true, prefix+to_string(index))){
+            string prefix="arma_";
+            int index=1;
+            string varname=prefix+to_string(index);
+            while(parser.hasVarName(varname)){
                 ++index;
-            }*/
+                varname=prefix+to_string(index);
+            }
+            parser.parse(parser_last_run_engine, true, varname);
         }
     }
 

@@ -189,7 +189,7 @@ public:
         scrollArea->setWidgetResizable(true);
         steps_widget = new QWidget();
         steps_widget->setObjectName(QString::fromUtf8("steps_widget"));
-        steps_widget->setGeometry(QRect(0, 0, 361, 422));
+        steps_widget->setGeometry(QRect(0, 0, 360, 422));
         scrollArea->setWidget(steps_widget);
 
         verticalLayout_2->addWidget(scrollArea);
@@ -243,7 +243,7 @@ public:
     {
         solution_widget->setWindowTitle(QCoreApplication::translate("solution_widget", "Form", nullptr));
         scan_btn->setText(QCoreApplication::translate("solution_widget", "Scan", nullptr));
-        tabWidget_2->setTabText(tabWidget_2->indexOf(tab), QCoreApplication::translate("solution_widget", "Intepretation", nullptr));
+        tabWidget_2->setTabText(tabWidget_2->indexOf(tab), QCoreApplication::translate("solution_widget", "Interpretation", nullptr));
         original_image_display->setText(QString());
         tabWidget_2->setTabText(tabWidget_2->indexOf(tab_2), QCoreApplication::translate("solution_widget", "Original Image", nullptr));
         ascii_parser_err->setText(QString());
@@ -251,7 +251,7 @@ public:
         previous_btn->setText(QCoreApplication::translate("solution_widget", "Previous", nullptr));
         next_btn->setText(QCoreApplication::translate("solution_widget", "Next", nullptr));
         next_btn2->setText(QCoreApplication::translate("solution_widget", "Compute", nullptr));
-        jump_btn->setText(QCoreApplication::translate("solution_widget", "Jump To Anwser", nullptr));
+        jump_btn->setText(QCoreApplication::translate("solution_widget", "Jump To Answer", nullptr));
     } // retranslateUi
 
 };
