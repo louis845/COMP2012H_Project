@@ -5,6 +5,7 @@
 #include "math/R.h"
 #include <string>
 #include <algorithm>
+#include <vector>
 using namespace std;
 
 LinearOperations::LinearOperations(RF** mat, const int& rows, const int& cols, bool transpose, LinOpsRecorder* recorder){
@@ -615,16 +616,97 @@ namespace LinearOperationsFunc{
 
             o.toRREF();
 
-            //Now last col really represents a column matrix by itself, not referencing the addresses of mat.
-            for(int i=0;i<rows;i++){
-                last_col[i]=new RF[1]{last_col[i][0]};
-                //last_col[i][0] originally refers to the value of the mat in the lasts column (last_col[i] points to it)
-                //now do a value copy and last_col will be decoupled with mat.
+            bool solvable=true;
+            std::vector<int> fixed_variables_cols; //The columns representing the fixed variables.
+
+            for(int row=0;row<rows;++row){
+                bool has_var=false;
+                for(int col=0;col<cols-1;++col){
+                    if(mat[row][col].is_one()){
+                        has_var=true;
+                        fixed_variables_cols.push_back(col);
+                        break;
+                    }
+                }
+                if((!has_var) && !last_col[row][0].is_zero()){
+                    solvable=false;
+                }
             }
 
-            RF::deallocate_matrix(mat,rows);
+            if(solvable){
+                RF** particular_solution=new RF*[cols-1];
+                RF** sol_space;
 
-            steps->setAnswer(last_col,rows,1);
+                int num_free_vars = cols-1-fixed_variables_cols.size();
+
+                if(num_free_vars==0){ //All variables are fixed, no solution space
+                    sol_space=nullptr;
+                }else{
+                    sol_space=new RF*[cols-1];
+                }
+
+                for(int ncol=0;ncol<cols-1;++ncol){
+                    particular_solution[ncol]=new RF[1];
+                    particular_solution[ncol][0]=mat[0][0].promote(R::ZERO);
+                    if(num_free_vars>0){
+                        sol_space[ncol]=new RF[num_free_vars];
+                        for(int var=0;var<num_free_vars;++var){
+                            sol_space[ncol][var]=mat[0][0].promote(R::ZERO);
+                        }
+                    }
+                }
+
+                if(num_free_vars>0){
+                    int free_var_idx=0;
+                    for(int col=0;col<cols-1;++col){
+                        if(std::find(fixed_variables_cols.begin(),fixed_variables_cols.end(), col) == fixed_variables_cols.end()){
+
+                            //Whether the column represents a free variable.
+
+                            //Free variable contributes 1 to itself.
+                            sol_space[col][free_var_idx] = mat[0][0].promote_one();
+
+                            for(int row=0;row<rows;++row){
+                                //In the RREF, the last columns which are zero can be omitted.
+                                if(row < fixed_variables_cols.size()){
+                                    sol_space[fixed_variables_cols.at(row)][free_var_idx] = -mat[row][col]; //The free variable contributes -value to the corresponding first
+                                    //fixed variable column of the row.
+                                }
+                            }
+                            ++free_var_idx;
+                        }
+                    }
+                }
+
+                for(int row=0;row<rows;++row){
+                    if(row < fixed_variables_cols.size()){
+                        //In the RREF, the last columns which are zero can be omitted.
+                        particular_solution[fixed_variables_cols.at(row)][0]=mat[row][cols-1];
+                    }
+                }
+
+                if(num_free_vars>0){
+                    string text="A particular solution is the column A, with solution space B";
+                    string latex="A particular solution is the column $A$, with solution space $B$. This means general solutions is of the form $A+Bv$ where $v$ is a column vector with height "+to_string(num_free_vars)+"\n";
+                    MatrixSpaceStep *m=new MatrixSpaceStep{particular_solution, cols-1, 1, sol_space, cols-1, num_free_vars, text, latex};
+                    steps->add_step(m);
+                    steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
+                }else{
+                    MatrixSpaceStep *m=new MatrixSpaceStep{particular_solution, cols-1, 1, -1, true, "The unique solution (in column vector form) of the system is:"};
+                    steps->add_step(m);
+                    steps->setAnswer(m->get_matrix_copy(),m->get_matrix_rows(),m->get_matrix_cols());
+                }
+
+                RF::deallocate_matrix(particular_solution, cols-1);
+                if(num_free_vars>0){
+                    RF::deallocate_matrix(sol_space, cols-1);
+                }
+            }else{
+                steps->add_step(new StepText{"The system of linear equations is not solvable."});
+            }
+
+            delete[] last_col; //No need to deep delete last col, since it just points to the last column of mat.
+            RF::deallocate_matrix(mat,rows);
         }else{
             steps=nullptr;
         }
@@ -760,6 +842,9 @@ namespace LinearOperationsFunc{
 
     void determinant(R** mat_slow,int rows,int cols,StepsHistory*& steps){
         steps=nullptr;
+        if(rows!=cols){
+            return;
+        }
         RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
         if(mat!=nullptr){
             RF::promote_to_field(mat, rows, cols);
@@ -795,18 +880,19 @@ namespace LinearOperationsFunc{
             RF** answer=new RF*[1];
             answer[0]=new RF[1]{val};
             steps->setAnswer(answer,1,1);
-        }else{
-            steps=nullptr;
         }
     }
 
     void char_poly(R** mat_slow,int rows,int cols,StepsHistory*& steps){
         steps=nullptr;
+        if(rows!=cols){
+            return;
+        }
         RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
         if(mat!=nullptr){
 
-            //Only FRACTION COMPLEXIFY LONG, which means polynomials and rational polynomials are excluded.
-            if(!Ring::is_type_subset(NestedRingType::FRACTION_COMPLEX_LONG,mat[0][0].get_type())){
+            //Only FRACTION COMPLEXIFY LONG or FINITE_FIELD, which means polynomials and rational polynomials are excluded.
+            if( ( !Ring::is_type_subset(NestedRingType::FRACTION_COMPLEX_LONG,mat[0][0].get_type()) ) && mat[0][0].get_type().get_current_type()!=RingType::MOD_FIELD ){
                 //Not subset of FRACTION COMPLEXIFY LONG, dealloc and remove
                 RF::deallocate_matrix(mat,rows);
             }else{

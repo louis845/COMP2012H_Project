@@ -152,6 +152,17 @@ MatrixSpaceStep::MatrixSpaceStep(RF** mat,int rows,int cols,int cutoff,bool row_
     }
 }
 
+MatrixSpaceStep::MatrixSpaceStep(RF** matrix,int rows,int cols, RF** space, int space_rows, int space_cols, const std::string& text, const std::string& latex){
+    this->text=text;
+    this->latex=latex;
+    this->rows_space=space_rows;
+    this->cols_space=space_cols;
+    this->rows=rows;
+    this->cols=cols;
+    this->matrix=RF::copy_matrix(matrix, rows, cols);
+    this->space_matrix=RF::copy_matrix(space, space_rows, space_cols);
+}
+
 MatrixSpaceStep::~MatrixSpaceStep(){
     for(int i=0;i<rows;i++){
         delete[] matrix[i];

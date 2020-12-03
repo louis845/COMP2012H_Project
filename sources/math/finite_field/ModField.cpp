@@ -1,6 +1,10 @@
 #include "math/finite_field/ModField.h"
+#include "math/tools.h"
 
-ModField::ModField(const int& val, const int& mod) : Field(RingType::MOD_FIELD), val(val), mod(mod){}
+//Take modulo, but make sure the modulo is always positive.
+ModField::ModField(const int& val, const int& mod) : Field(RingType::MOD_FIELD), val( val%mod + ((val%mod)<0 ? mod : 0) ), mod(mod){
+    type->set_extra_info(mod); //Type of mod fields is equal iff the modulo is the same.
+}
 
 const Ring* ModField::addImpl(const Ring* r) const{
     const ModField* d=dynamic_cast<const ModField*>(r);
@@ -39,11 +43,24 @@ const Field* ModField::divImpl(const Ring* r) const{
         throw "invalid cast!";
     }
 #endif
-    return new ModField{val/(d->val)};
+    if(d->val==0){
+        throw "Divide by zero!";
+    }
+    int gcd,dis; //useless
+    int inverse;
+
+    xgcd(d->val,mod,gcd,inverse,dis);
+
+    return new ModField{inverse*val, mod};
 }
 
 const Field* ModField::invert() const{
-    return new ModField{1/val};
+    int gcd,dis; //useless
+    int inverse;
+
+    xgcd(val,mod,gcd,inverse,dis);
+
+    return new ModField{inverse, mod};
 }
 
 const Ring* ModField::negate() const{
@@ -55,9 +72,7 @@ const Ring* ModField::copy() const{
 }
 
 bool ModField::equalsImpl(const Ring* other) const{
-    // short circuit for the second condition, or else the cast would be invalid.
-    return (other->type_shallow==RingType::SPECIAL_ZERO && val==0) ||
-     (other->type_shallow!=RingType::SPECIAL_ZERO && val==(dynamic_cast<const Double*>(other))->val);
+    return val==(dynamic_cast<const ModField*>(other))->val;
 }
 
 string ModField::to_string() const{

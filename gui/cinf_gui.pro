@@ -14,6 +14,7 @@ SOURCES += \
     ../sources/math/Ring.cpp \
     ../sources/math/double/Double.cpp \
     ../sources/math/double/DoubleComplex.cpp \
+    ../sources/math/finite_field/ModField.cpp \
     ../sources/math/fraction/Fraction.cpp \
     ../sources/math/linear/CoupledOperations.cpp \
     ../sources/math/linear/LinOpsSteps.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     ../sources/math/Ring.h \
     ../sources/math/double/Double.h \
     ../sources/math/double/DoubleComplex.h \
+    ../sources/math/finite_field/ModField.h \
     ../sources/math/fraction/Fraction.h \
     ../sources/math/linear/CoupledOperations.h \
     ../sources/math/linear/GenDiagonalization.h \

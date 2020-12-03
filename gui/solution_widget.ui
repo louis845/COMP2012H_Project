@@ -68,7 +68,7 @@
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
-          <string>Intepretation</string>
+          <string>Interpretation</string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
@@ -256,7 +256,7 @@
          <item>
           <widget class="QPushButton" name="jump_btn">
            <property name="text">
-            <string>Jump To Anwser</string>
+            <string>Jump To Answer</string>
            </property>
           </widget>
          </item>

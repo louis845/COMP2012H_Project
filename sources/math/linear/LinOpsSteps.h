@@ -71,6 +71,12 @@ public:
 
     MatrixSpaceStep(RF** matrix,int rows,int cols,int cutoff,bool row_or_col,const std::string& text);
 
+    /**
+     * Directly passes two matrices into the MatrixSpaceStep. Does deep copy of the matrices.
+    */
+
+    MatrixSpaceStep(RF** matrix,int rows,int cols, RF** space, int space_rows, int space_cols, const std::string& text, const std::string& latex);
+
     ~MatrixSpaceStep();
 
     virtual void print_to_console() const override;

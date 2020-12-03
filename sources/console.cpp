@@ -13,6 +13,11 @@
 
 using namespace std;
 
+/**
+ * Equal to zero for normal mode. Equal to prime number for finite field mode.
+*/
+int finite_field=0;
+
 int input_integer(){
     int i;
     cin>>i;
@@ -44,7 +49,11 @@ R input_expression(bool& aborted){
             aborted=true;
             return value;
         }
-        parse_expression(input, error, value, success);
+        if(finite_field > 0){
+            parse_expression_modulo(input, error, value, success, finite_field);
+        }else{
+            parse_expression(input, error, value, success);
+        }
         if(success==-1){ //successful
             cout<<"Interpreted as: "<<value<<"\n";
 
@@ -152,6 +161,37 @@ R** input_matrix(const int& rows,const int& cols,bool& aborted,const string& dis
     return mat;
 }
 
+/**
+ * Inputs a matrix, along with choosing the dimensions of the matrix. Returns nullptr if aborted.
+*/
+R** input_matrix_with_dim(int& rows,int& cols,bool& aborted,const string& disp=""){
+    cout<<"Input matrix row:  ";
+    rows=input_integer();
+    while(rows<2 || rows>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        rows=input_integer();
+    }
+    cout<<"Input matrix columns:  ";
+    cols=input_integer();
+    while(cols<2 || cols>10){
+        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
+        cols=input_integer();
+    }
+    cout<<"Input matrix:\n";
+    // use integer for now
+    aborted=false;
+    R** mat_slow=input_matrix(rows,cols,aborted);
+    if(aborted){
+        for(int i=0;i<rows;i++){
+            delete[] mat_slow[i];
+        }
+        delete[] mat_slow;
+        mat_slow=nullptr;
+    }
+
+    return mat_slow;
+}
+
 void display_steps(StepsHistory& steps){
     if(steps.has_current_node()){
         while(true){
@@ -174,27 +214,11 @@ void display_steps(StepsHistory& steps){
 }
 
 void console_linear_operations(bool transpose){
-    cout<<"Input matrix row:  ";
-    int rows=input_integer();
-    while(rows<2 || rows>10){
-        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
-        rows=input_integer();
-    }
-    cout<<"Input matrix columns:  ";
-    int cols=input_integer();
-    while(cols<2 || cols>10){
-        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
-        cols=input_integer();
-    }
-    cout<<"Input matrix:\n";
-    // use integer for now
-    bool aborted=false;
-    R** mat_slow=input_matrix(rows,cols,aborted);
+    int rows,cols;
+    bool aborted;
+
+    R** mat_slow=input_matrix_with_dim(rows,cols,aborted);
     if(aborted){
-        for(int i=0;i<rows;i++){
-            delete[] mat_slow[i];
-        }
-        delete[] mat_slow;
         return;
     }
     StepsHistory* steps;
@@ -251,27 +275,11 @@ void console_linear_solve(){
 }
 
 void console_invert(){
-    cout<<"Input matrix row:  ";
-    int rows=input_integer();
-    while(rows<2 || rows>10){
-        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
-        rows=input_integer();
-    }
-    cout<<"Input matrix columns:  ";
-    int cols=input_integer();
-    while(cols<2 || cols>10){
-        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
-        cols=input_integer();
-    }
-    cout<<"Input matrix:\n";
-    // use integer for now
-    bool aborted=false;
-    R** mat_slow=input_matrix(rows,cols,aborted);
+    int rows,cols;
+    bool aborted;
+
+    R** mat_slow=input_matrix_with_dim(rows,cols,aborted);
     if(aborted){
-        for(int i=0;i<rows;i++){
-            delete[] mat_slow[i];
-        }
-        delete[] mat_slow;
         return;
     }
     StepsHistory *steps;
@@ -341,37 +349,21 @@ void console_char_poly(){
 }
 
 void console_orthogonalize(){
-    cout<<"Input matrix row:  ";
-    int rows=input_integer();
-    while(rows<2 || rows>10){
-        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
-        rows=input_integer();
-    }
-    cout<<"Input matrix columns:  ";
-    int cols=input_integer();
-    while(cols<2 || cols>10){
-        cout<<"Matrix dimensions must be between 2-10! Please enter again:\n";
-        cols=input_integer();
-    }
-    
-    cout<<"Input matrix:\n";
-    // use integer for now
-    bool aborted=false;
-    R** mat_slow=input_matrix(rows,cols,aborted);
+    int rows,cols;
+    bool aborted;
+
+    R** mat_slow=input_matrix_with_dim(rows,cols,aborted);
     if(aborted){
-        for(int i=0;i<rows;i++){
-            delete[] mat_slow[i];
-        }
-        delete[] mat_slow;
         return;
     }
+
     StepsHistory *steps;
     LinearOperationsFunc::orthogonalize(mat_slow,rows,cols,steps);
     if(steps!=nullptr){
         display_steps(*steps);
         delete steps;
     }else{
-        cout<<"Error: Orthogonalization only works on non polynomial type !\n";
+        cout<<"Error: Orthogonalization only works on non polynomial type, over real/complex fields!\n";
     }
 }
 
@@ -382,8 +374,11 @@ void to_lower_case(string& str){
 void console_main_loop(){
     while(true){
         string s;
-        cout<<"Enter desired computation. Available types are:\n";
-        cout<<"COMPUTE, SOLVE, REDUCE, INVERT, DETERMINANT, CHAR_POLY, ORTHOGONALIZE\n";
+        if(finite_field>0){
+            cout<<"FINITE FIELD MODE, MODULO "<<finite_field<<"\n\n";
+        }
+        cout<<"Enter desired computation. Available commands are:\n";
+        cout<<"COMPUTE, SOLVE, REDUCE, INVERT, DETERMINANT, CHAR_POLY, ORTHOGONALIZE, FINITE_FIELD\n";
         getline(cin, s);
         to_lower_case(s);
         
@@ -419,7 +414,34 @@ void console_main_loop(){
         }else if(s.rfind("char_poly",0)==0){
             console_char_poly();
         }else if(s.rfind("orthogonalize",0)==0){
-            console_orthogonalize();
+            if(finite_field>0){
+                cout<<"Orthogonalize only works for real/complex fields! Type FINITE_FIELD to change mode back\n";
+                cout<<"to real/complex.\n";
+            }else{
+                console_orthogonalize();
+            }
+        }else if(s.rfind("finite_field",0)==0){
+            int pos=s.find(" ");
+            if(pos==string::npos){
+                cout<<"Finite field mode disabled. Enter FINITE_FIELD <prime number> to enable using finite fields.\n\n";
+                finite_field=0;
+            }else{
+                int i=-1;
+                try{
+                    string arg=s.substr(pos+1,s.length()-pos-1);
+                    i = stoi(arg.c_str());
+                }catch(...){
+                    cout<<"Invalid integer!\n";
+                    continue;
+                }
+                if(!is_supported_prime(i)){
+                    cout<<"This number is not supported as modulo. Supported numbers are:\n";
+                    print_primes_to_console();
+                    continue;
+                }
+                finite_field=i;
+                cout<<"\n";
+            }
         }
     }
 }

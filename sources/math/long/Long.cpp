@@ -1,5 +1,6 @@
 #include "math/long/Long.h"
 #include "math/long/LongComplex.h"
+#include "math/finite_field/ModField.h"
 #include <string>
 #include <cmath>
 
@@ -140,6 +141,12 @@ const Long* Long::promote(const Ring* const& r) const{
 
 const Long* Long::promote_one() const{
     return new Long{1};
+}
+
+const Ring* Long::to_finite_field(int mod) const{
+    mpz_wrapper rem= val%mod;
+    int remint = rem.truncate_to_int();
+    return new ModField{remint, mod};
 }
 
 bool Long::is_one() const{

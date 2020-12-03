@@ -128,6 +128,10 @@ void mpz_wrapper::operator--() {
     mpz_sub_ui(value, value, 1);
 }
 
+int mpz_wrapper::truncate_to_int() const{
+    return mpz_get_si(value);
+}
+
 mpz_wrapper mpz_wrapper::operator-() const{
     mpz_wrapper val(0);
     mpz_neg(val.value,value);
