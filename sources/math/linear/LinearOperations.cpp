@@ -668,10 +668,11 @@ namespace LinearOperationsFunc{
                             for(int row=0;row<rows;++row){
                                 //In the RREF, the last columns which are zero can be omitted.
                                 if(row < fixed_variables_cols.size()){
-                                    sol_space[fixed_variables_cols.at(row)][free_var_idx++] = -mat[row][col]; //The free variable contributes -value to the corresponding first
+                                    sol_space[fixed_variables_cols.at(row)][free_var_idx] = -mat[row][col]; //The free variable contributes -value to the corresponding first
                                     //fixed variable column of the row.
                                 }
                             }
+                            ++free_var_idx;
                         }
                     }
                 }
