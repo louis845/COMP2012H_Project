@@ -60,11 +60,13 @@ void solution_widget::init_window(){
 
     connect(ui->imagefile_btn, &QPushButton::pressed, this, &solution_widget::openImageFile);
 
+    connect(ui->compute_btn, &QPushButton::clicked, this, &solution_widget::computeClicked);
+
     connect(ui->previous_btn,&QPushButton::pressed,this,&solution_widget::navigatePrev);
 
     connect(ui->next_btn,&QPushButton::pressed,this,&solution_widget::navigateNext);
 
-    connect(ui->next_btn2,&QPushButton::pressed,this,&solution_widget::run_solver);
+    connect(ui->next_btn2,&QPushButton::pressed,this,&solution_widget::saveStepAns);
 
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
@@ -344,15 +346,15 @@ void solution_widget::run_solver_async(){
                     }
                 }
 
-                parser.reset_input();
-                parser.parse(parser_last_run_engine, true, to_add_steps_name);
+                // parser.reset_input();
+                // parser.parse(parser_last_run_engine, true, to_add_steps_name);
 
             }else{
                 steps=new StepsHistory;
                 steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
 
-                parser.reset_input();
-                parser.parse(parser_last_run_engine, true, to_add_steps_name);
+                // parser.reset_input();
+                // parser.parse(parser_last_run_engine, true, to_add_steps_name);
             }
         }else if(i.engine_used==2){
             steps=new StepsHistory;
@@ -365,8 +367,8 @@ void solution_widget::run_solver_async(){
                 ++index;
                 varname=prefix+to_string(index);
             }*/
-            parser.reset_input();
-            parser.parse(parser_last_run_engine, true, to_add_steps_name);
+            // parser.reset_input();
+            // parser.parse(parser_last_run_engine, true, to_add_steps_name);
         }
     }
 
@@ -482,10 +484,12 @@ string solution_widget::get_usable_steps_string(){
 }
 
 void solution_widget::setNewSteps(StepsHistory *new_step){
-    all_steps_list.push_back(new_step);
+    // all_steps_list.push_back(new_step);
     current_viewing_steps=new_step;
     updateAnsDisp();
+    to_add_steps_name = get_usable_steps_string();
 
+    /*
     //We handle this only if
     if(parser.getInfo().engine_used==1 || parser.getInfo().engine_used==3){
         //Add the result to the variables.
@@ -496,8 +500,8 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
         //It may be the case where there is no answer.
         if(answer!=nullptr){
             ROperand nr{answer, ans_rows, ans_cols};
-            // parser.reset_input();
-            // parser.assignVar(to_add_steps_name, nr);
+            parser.reset_input();
+            parser.assignVar(to_add_steps_name, nr);
 
             for(int i=0;i<ans_rows;++i){
                 delete[] answer[i];
@@ -505,14 +509,17 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
             delete[] answer;
         }
     }
+
     QTime current_time =QTime::currentTime();
     QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList(QString::fromStdString(to_add_steps_name)));
     ui->treeWidget->addTopLevelItem(ply_item);
     ui->treeWidget->setCurrentItem(ply_item);
+    */
 }
 
 void solution_widget::method_dealer(int choice){
     selected_choice=choice;
+    run_solver();
 }
 
 void solution_widget::engine_choice_dealer(int choice)
@@ -607,4 +614,49 @@ void solution_widget::openImageFile()
     QPixmap image;
     if (image.load(filename))   receiveImage(image);
     else QMessageBox::warning(this, "Warning", "Fail to load the image, image may be corrupted");
+}
+
+void solution_widget::computeClicked()
+{
+    parser.reset_input(cur_input);
+    to_add_steps_name = get_usable_steps_string();
+    if (parser.parse(selected_engine, true, to_add_steps_name).success)
+    {
+        QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList(QString::fromStdString(to_add_steps_name)));
+        ui->treeWidget->addTopLevelItem(ply_item);
+        ui->treeWidget->setCurrentItem(ply_item);
+    }
+    run_solver();
+}
+
+void solution_widget::saveStepAns()
+{
+    to_add_steps_name = get_usable_steps_string();
+    //We handle this only if
+    if(parser.getInfo().engine_used==1 || parser.getInfo().engine_used==3){
+        //Add the result to the variables.
+        R **answer;
+        int ans_cols;
+        int ans_rows;
+        current_viewing_steps->getAnswer(answer, ans_rows, ans_cols);
+        //It may be the case where there is no answer.
+        if(answer!=nullptr){
+            ROperand nr{answer, ans_rows, ans_cols};
+            parser.reset_input();
+            parser.assignVar(to_add_steps_name, nr);
+
+            for(int i=0;i<ans_rows;++i){
+                delete[] answer[i];
+            }
+            delete[] answer;
+        }
+
+        QTime current_time =QTime::currentTime();
+        QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList(QString::fromStdString(to_add_steps_name)));
+        ui->treeWidget->addTopLevelItem(ply_item);
+        ui->treeWidget->setCurrentItem(ply_item);
+        all_steps_list.push_back(new_step_ptr);
+    }
+
+    QMessageBox::warning(this, "Warning", "Cannot save Armadillo result in step-by-step funtion");
 }

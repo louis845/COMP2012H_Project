@@ -65,7 +65,7 @@
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="geometry">
        <rect>
-        <x>9</x>
+        <x>10</x>
         <y>43</y>
         <width>329</width>
         <height>360</height>
@@ -163,10 +163,10 @@
      <widget class="QPlainTextEdit" name="ascii_textedit">
       <property name="geometry">
        <rect>
-        <x>9</x>
-        <y>409</y>
+        <x>10</x>
+        <y>410</y>
         <width>329</width>
-        <height>153</height>
+        <height>121</height>
        </rect>
       </property>
       <property name="tabStopDistance">
@@ -239,6 +239,19 @@
        </property>
       </widget>
      </widget>
+     <widget class="QPushButton" name="compute_btn">
+      <property name="geometry">
+       <rect>
+        <x>9</x>
+        <y>532</y>
+        <width>331</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Compute</string>
+      </property>
+     </widget>
     </widget>
    </item>
    <item>
@@ -307,7 +320,7 @@
          <item>
           <widget class="QPushButton" name="next_btn2">
            <property name="text">
-            <string>Compute</string>
+            <string>Save</string>
            </property>
           </widget>
          </item>
