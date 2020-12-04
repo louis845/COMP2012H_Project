@@ -96,7 +96,7 @@ public:
          
     ROperand evalR(Info& res) override;
     ArmaOperand eval() override;
-    std::string genAsciiMath() const override { return raw; }; 
+    std::string genAsciiMath() const override; 
 
 private:
     static constexpr long double PI = 3.141592653589793;        // obsoleted

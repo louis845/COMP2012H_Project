@@ -73,6 +73,14 @@ NumberExprAst::NumberExprAst(TokName name, const string& raw): name(name), raw(r
 }
 
 
+string NumberExprAst::genAsciiMath() const
+{
+    if (raw.find('e') != string::npos || raw.find('E') != string::npos)
+        return "text(" + raw + ")";
+    return raw;
+}
+
+
 ROperand NumberExprAst::evalR(Info& res)
 {
     switch (name)
@@ -651,6 +659,10 @@ string FunctionExprAst::genAsciiMath() const
     switch (op) 
     {
         case TokName::ORTH: result = "text(orth)("; break;
+
+        case TokName::ABS:  
+            result = "|" + args[0]->genAsciiMath() + "|";
+            return result;
 
         case TokName::ROOT:
             result = "root(" + args[1]->genAsciiMath() + ")(" + args[0]->genAsciiMath() + ")";
