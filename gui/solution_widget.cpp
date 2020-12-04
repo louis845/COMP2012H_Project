@@ -344,8 +344,8 @@ void solution_widget::run_solver_async(){
                     }
                 }
 
-                /*parser.reset_input();
-                parser.parse(parser_last_run_engine, true, to_add_steps_name);*/
+                parser.reset_input();
+                parser.parse(parser_last_run_engine, true, to_add_steps_name);
 
             }else{
                 steps=new StepsHistory;
@@ -496,8 +496,8 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
         //It may be the case where there is no answer.
         if(answer!=nullptr){
             ROperand nr{answer, ans_rows, ans_cols};
-            parser.reset_input();
-            parser.assignVar(to_add_steps_name, nr);
+            // parser.reset_input();
+            // parser.assignVar(to_add_steps_name, nr);
 
             for(int i=0;i<ans_rows;++i){
                 delete[] answer[i];
@@ -518,6 +518,7 @@ void solution_widget::method_dealer(int choice){
 void solution_widget::engine_choice_dealer(int choice)
 {
     selected_engine = choice;
+    handle_ascii_update();
 }
 
 void solution_widget::display_answer(string answer){
