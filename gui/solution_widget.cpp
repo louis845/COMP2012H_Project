@@ -15,6 +15,7 @@
 #include <QWebEngineView>
 #include <QWebEngineSettings>
 #include <QProgressBar>
+#include <QFileDialog>
 #include <algorithm>
 
 #include "math/linear/LinearOperations.h"
@@ -56,6 +57,8 @@ void solution_widget::init_window(){
     connect(ui->ascii_textedit,&QPlainTextEdit::textChanged,this,&solution_widget::handle_ascii_update);
 
     connect(ui->scan_btn,&QPushButton::pressed,this,&solution_widget::captureMathExpression);
+
+    connect(ui->imagefile_btn, &QPushButton::pressed, this, &solution_widget::openImageFile);
 
     connect(ui->previous_btn,&QPushButton::pressed,this,&solution_widget::navigatePrev);
 
@@ -429,11 +432,18 @@ void solution_widget::receiveImage(QPixmap p){
     ui->original_image_display->resize(p.width(),p.height());
     dynamic_cast<QWidget*>(ui->original_image_display->parent())->resize(p.width(),p.height());
 
-    std::pair<string, string> result=Ocr::getInstance().request(p);
-    string asciimath=result.second;
-    ui->ascii_textedit->setPlainText(QString::fromStdString(asciimath));
-    handle_ascii_update();
-
+    try
+    {
+        std::pair<string, string> result=Ocr::getInstance().request(p);
+        string asciimath=result.second;
+        ui->ascii_textedit->setPlainText(QString::fromStdString(asciimath));
+        handle_ascii_update();
+    }
+    catch (const std::runtime_error& err)
+    {
+        ui->ascii_textedit->setPlainText(QString::fromStdString(string(err.what())));
+        handle_ascii_update();
+    }
 }
 
 void solution_widget::updateAnsDisp(){
@@ -575,3 +585,25 @@ void solution_widget::closeEvent(QCloseEvent *event){
     }
 }
 
+
+void solution_widget::openImageFile()
+{
+    if(username==""){
+        QMessageBox::information(this,"Error","OCR is not enabled.",QMessageBox::Ok);
+        return;
+    }
+    if(!running_handled){
+        QMessageBox::information(this,"Error","Sorry, cannot do OCR with ongoing computation.",QMessageBox::Ok);
+        return;
+    }
+
+    QString filename = QFileDialog::getOpenFileName(this, tr("Open an image for OCR"), ".", tr("images(*.png *jpeg)"));
+    if (filename.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Fail to open the image");
+        return;
+    }
+
+    QPixmap image;
+    if (image.load(filename))   receiveImage(image);
+    else QMessageBox::warning(this, "Warning", "Fail to load the image, image may be corrupted");
+}

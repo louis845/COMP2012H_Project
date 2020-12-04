@@ -123,6 +123,7 @@ public slots:
 
 private slots:
 
+    void openImageFile();
 };
 
 #endif // SOLUTION_WIDGET_H
