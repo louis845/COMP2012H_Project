@@ -52,7 +52,7 @@ run
 * Requires QT WebEngine
 * Requires MSVC x64 compiler `VS 2015,2017,2019, Windows Kits`
 * Open the file `cinf_gui.pro` in the `GUI` folder.
-* Choose `MSVC x64 compiler` as build configuration
+* Choose `MSVC x64 compiler` as build configuration (2015, 2017, 2019)
 
 ### QT WebEngine installation
 * Modify QT using `MaintenanceTool.exe`
