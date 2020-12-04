@@ -36,8 +36,23 @@ run
 Note that the console requires to press Ctrl+C to quit. Alternatively it is possible to use build_console_win64.bat.
 The program will be compiled inside the compile folder.
 
-## Compilation - MacOSX version (with some finite fields supported)
+## Compilation - Console version MacOSX (with some finite fields supported)
 * 
+
+## Compilation - GUI version Windows x64
+* Requires QT Creator latest version (5.12.10).
+* Requires QT WebEngine
+* Requires MSVC x64 compiler (VS 2015,2017,2019, Windows Kits)
+
+### QT WebEngine installation
+* Modify QT using MaintenanceTool.exe
+* It is in the QT installation folder, e.g. C:\Qt\Qt5.12.10
+
+## Compilation - GUI version MacOSX
+* Requires QT Creator latest version (5.12.10).
+* Requires QT WebEngine
+* Seems to work on the default MacOSX compiler clang.
+* If it doesn't compile, try 64bit and 32bit.
 
 ## Documentation for the Internal Math Library R
 
