@@ -1343,8 +1343,14 @@ bool Parser::assignVar(const string& var_name, const ROperand& value)
     r_table[name] = value;
     
     auto var_iter = var_table.find(name);
-    if (var_iter != var_table.end() && !var_iter->second) 
+    if (var_iter != var_table.end())
+    {
         var_iter->second = 1;
+    }
+    else
+    {
+        var_table[name] = 1;
+    }
 
     return true;
 }

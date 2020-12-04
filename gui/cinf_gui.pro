@@ -35,6 +35,7 @@ SOURCES += \
     input_key.cpp \
     main.cpp \
     begin_widget.cpp \
+    matrixchooserdialog.cpp \
     show_capture.cpp \
     solution_widget.cpp \
     window_capture.cpp
@@ -69,6 +70,7 @@ HEADERS += \
     ../sources/utils/ocr_api.h \
     begin_widget.h \
     input_key.h \
+    matrixchooserdialog.h \
     show_capture.h \
     solution_widget.h \
     window_capture.h \
@@ -76,6 +78,7 @@ HEADERS += \
 FORMS += \
     begin_widget.ui \
     input_key.ui \
+    matrixchooserdialog.ui \
     show_capture.ui \
     solution_widget.ui
 
