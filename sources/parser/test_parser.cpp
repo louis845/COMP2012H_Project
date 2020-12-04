@@ -59,8 +59,12 @@ int main()
     p.parse();
      */
 
-    Parser p("1 + 2");
-    cout << "var name ok? : " << boolalpha << p.checkVarNameValid("a_1_2323 ") << endl;
+    Parser p("[[3, 4], [5, 6]]");
+    p.parse(1, true, "var_1");
+    p.reset_input("[[3, 4], [5, 6]]");
+    p.parse(1, true, "var_2");
+    p.reset_input("var_1");
+    cout << "var test: " << p.parse().eval_result << endl;
 
 
     string linear{R"(4*5t x_alpha + (5+2i)/t y_ - 6z'_1 + 2 = 0 \\ (t^2 - 6) x_alpha - 4y_ = 3 + z'_1 \\ 5t^4z'_1 = 3 + 5/6 y_)"};

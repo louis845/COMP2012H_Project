@@ -1301,8 +1301,9 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
         r_table[name] = value;
         
         auto var_iter = var_table.find(name);
-        if (var_iter != var_table.end() && !var_iter->second) 
-            var_iter->second = 1;
+        if (var_iter == var_table.end())    var_table[name] = 2;
+        else if (!var_iter->second)     var_iter->second = 1;
+
         return true;
     }
 
@@ -1318,9 +1319,9 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
     arma_table[name] = value;
     
     auto var_iter = var_table.find(name);
-    if (var_iter != var_table.end() && !var_iter->second) 
-        var_iter->second = 1;
-
+    if (var_iter == var_table.end())    var_table[name] = 2;
+    else if (!var_iter->second)     var_iter->second = 1;
+    
     return true;
 }
 
@@ -1328,8 +1329,6 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
 // Explicitly assign values to variables by passing the corresponding ROperand
 // Therefore, users can use the intermediate steps of linear operations as
 // variables to reduce the effort of input
-//
-// If returning false, err_msg in Info object will be updated
 bool Parser::assignVar(const string& var_name, const ROperand& value)
 {
     string name = checkVarNameValid(var_name);
@@ -1340,14 +1339,8 @@ bool Parser::assignVar(const string& var_name, const ROperand& value)
     r_table[name] = value;
     
     auto var_iter = var_table.find(name);
-    if (var_iter != var_table.end())
-    {
-        var_iter->second = 1;
-    }
-    else
-    {
-        var_table[name] = 1;
-    }
+    if (var_iter == var_table.end())    var_table[name] = 2;
+    else if (!var_iter->second)     var_iter->second = 1;
 
     return true;
 }
@@ -1440,7 +1433,7 @@ string Parser::checkVarNameValid(const std::string& var_name) const
 }
 
 
-// Check whether the given var_name exists
+// Check whether the given variable name exists
 bool Parser::hasVarName(const std::string& var_name) const
 {
     return var_table.count(var_name) > 0;

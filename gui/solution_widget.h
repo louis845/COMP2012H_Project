@@ -122,7 +122,9 @@ public slots:
 
 
 private slots:
-
+    void openImageFile();
+    void computeClicked();
+    void saveStepAns();
 };
 
 #endif // SOLUTION_WIDGET_H
