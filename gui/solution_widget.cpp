@@ -449,6 +449,7 @@ void solution_widget::receiveImage(QPixmap p){
 }
 
 void solution_widget::updateAnsDisp(){
+    if (current_viewing_steps == nullptr)   return;
     display_answer(current_viewing_steps->get_current_node().get_html_latex());
 }
 
@@ -484,7 +485,7 @@ string solution_widget::get_usable_steps_string(){
 }
 
 void solution_widget::setNewSteps(StepsHistory *new_step){
-    // all_steps_list.push_back(new_step);
+    all_steps_list.push_back(new_step);
     current_viewing_steps=new_step;
     updateAnsDisp();
     to_add_steps_name = get_usable_steps_string();
@@ -563,6 +564,7 @@ void solution_widget::on_treeWidget_itemPressed(QTreeWidgetItem *item){
     //int total_steps_num = all_steps_list.size();
     int chosen_steps = ui->treeWidget->indexOfTopLevelItem(item);
     current_viewing_steps = all_steps_list.at(chosen_steps);
+    if (current_viewing_steps == nullptr)   return;
     updateAnsDisp();
 }
 
@@ -619,14 +621,15 @@ void solution_widget::openImageFile()
 void solution_widget::computeClicked()
 {
     parser.reset_input(cur_input);
+    // all_steps_list.push_back(nullptr);
     to_add_steps_name = get_usable_steps_string();
     if (parser.parse(selected_engine, true, to_add_steps_name).success)
     {
         QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList(QString::fromStdString(to_add_steps_name)));
         ui->treeWidget->addTopLevelItem(ply_item);
         ui->treeWidget->setCurrentItem(ply_item);
+        run_solver();
     }
-    run_solver();
 }
 
 void solution_widget::saveStepAns()
@@ -642,6 +645,7 @@ void solution_widget::saveStepAns()
         //It may be the case where there is no answer.
         if(answer!=nullptr){
             ROperand nr{answer, ans_rows, ans_cols};
+            if (ans_cols == 1 && ans_rows == 1) nr = ROperand(answer[0][0]);
             parser.reset_input();
             parser.assignVar(to_add_steps_name, nr);
 
@@ -657,6 +661,5 @@ void solution_widget::saveStepAns()
         ui->treeWidget->setCurrentItem(ply_item);
         all_steps_list.push_back(new_step_ptr);
     }
-
-    QMessageBox::warning(this, "Warning", "Cannot save Armadillo result in step-by-step funtion");
+    else QMessageBox::warning(this, "Warning", "Cannot save Armadillo result in step-by-step funtion");
 }
