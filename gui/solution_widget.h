@@ -7,6 +7,7 @@
 #include <string>
 #include <QWebEngineView>
 #include <atomic>
+#include <thread>
 
 #include "steps/StepsHistory.h"
 #include "utils/ocr_api.h"
@@ -93,6 +94,7 @@ private:
     /**
     * Async variables. Either use atomic or make sure no two variables can be changed with the same thread.
     */
+    std::thread *thread_hdl;
 
     /**
     * Run parser async
