@@ -21,6 +21,23 @@ Aside with that, all the other dependencies should be in place, and you can open
 
 In case you want to test the OCR function, we attached a separate file with API key and id in the submitted files. Internet is required for both the OCR and the rendering of the math expressions since we use the [MathJax]((https://www.mathjax.org/)) hosted scripts.
 
+## Compilation - Console version Windows x64 (with some finite fields supported)
+* Requires MinGW 64 (http://mingw-w64.org/doku.php)
+* Requires GNU Make
+* We used MinGW64 g++ 8.1.0, and GNU Make 4.3
+<pre>
+mkdir compile
+cd sources
+make -f makefile
+cd ..
+cd compile
+run
+</pre>
+Note that the console requires to press Ctrl+C to quit. Alternatively it is possible to use build_console_win64.bat.
+The program will be compiled inside the compile folder.
+
+## Compilation - MacOSX version (with some finite fields supported)
+* 
 
 ## Documentation for the Internal Math Library R
 
