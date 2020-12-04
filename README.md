@@ -34,7 +34,7 @@ cd compile
 run
 </pre>
 Note that the console requires to press Ctrl+C to quit. Alternatively it is possible to use build_console_win64.bat.
-The program will be compiled inside the compile folder.
+The program will be compiled inside the compile folder, namely compile/run.exe
 
 ## Compilation - Console version MacOSX (with some finite fields supported)
 * 
