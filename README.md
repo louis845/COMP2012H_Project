@@ -159,7 +159,7 @@ The input format largely follows the [AsciiMath](http://asciimath.org/#syntax) s
     * please refer to the evaluation sector or the full [token list](#token-list)
   * constants, numbers and special symbols
     * ![](https://latex.codecogs.com/svg.latex?\pi,e,i) have their usual meaning, and ![](https://latex.codecogs.com/svg.latex?I) is indentity matrix as usual
-    * you can use newline to separate your linear equations in [linear system mode](), in other modes the newline has the same effect as any other whitespace characters
+    * you can use newline to separate your linear equations in [linear system mode](#dedicated-linear-systems-mode), in other modes the newline has the same effect as any other whitespace characters
     * you can use integers and decimals with scientific notation: ![](https://latex.codecogs.com/svg.latex?-1.34e-5,23E6) are valid. As convention, please do not put decimal at the exponential part.
   * variables and greek letters
     * you can use any alphabet characters or words with any length of subscripts as the name of the variables, as long as they are NOT used as a reserved word for functions of constants.
