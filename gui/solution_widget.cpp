@@ -28,7 +28,7 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("CINF");
     this->init_window();
-    selected_choice=0;
+    selected_choice=7;
 
     running=false;
     running_parser=false;
@@ -351,10 +351,10 @@ void solution_widget::run_solver_async(){
                     case 6:{
                         LinearOperationsFunc::orthogonalize(matrix, rows, cols, steps);
                         break;
+                    }
                     case 7:{
                         LinearOperationsFunc::identity(matrix, rows, cols, steps);
                         break;
-                    }
                     }
                 }
 
