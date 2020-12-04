@@ -634,6 +634,8 @@ void solution_widget::computeClicked()
 
 void solution_widget::saveStepAns()
 {
+    if (!parser.getInfo().success || !parser.getInfo().mat_size.size())  return;
+
     to_add_steps_name = get_usable_steps_string();
     //We handle this only if
     if(parser.getInfo().engine_used==1 || parser.getInfo().engine_used==3){
