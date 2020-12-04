@@ -138,5 +138,7 @@ namespace LinearOperationsFunc{
     void char_poly(R** mat,int rows,int cols,StepsHistory*& steps);
 
     void orthogonalize(R** mat,int rows,int cols,StepsHistory*& steps);
+
+    void identity(R** mat,int rows,int cols,StepsHistory*& steps);
 }
 #endif

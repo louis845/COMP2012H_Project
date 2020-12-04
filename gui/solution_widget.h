@@ -43,12 +43,16 @@ public:
     void run_solver();
     void run_solver_async();
 
+    void save_arma_steps();
+    void save_arma_steps_async();
+
     void fetch_async_loop();
 
     void navigatePrev();
     void navigateNext();
     void updateAnsDisp();
     void setNewSteps(StepsHistory* s);
+    void addNewSteps(StepsHistory* s);
 
     void receiveImage(QPixmap p);
     void on_treeWidget_itemPressed(QTreeWidgetItem *item);

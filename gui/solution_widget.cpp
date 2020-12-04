@@ -66,23 +66,24 @@ void solution_widget::init_window(){
 
     connect(ui->next_btn,&QPushButton::pressed,this,&solution_widget::navigateNext);
 
-    connect(ui->next_btn2,&QPushButton::pressed,this,&solution_widget::saveStepAns);
+    connect(ui->save_btn,&QPushButton::pressed,this,&solution_widget::saveStepAns);
 
     ui->scrollArea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
     scrollarea_layout = new QVBoxLayout(this);
 
     QMenu * method_menu = new QMenu(this);
-    QString list[7]={
+    QString list[8]={
         "RREF",
         "RCEF",
         "Solve equation",
         "Inverse matrix",
         "Determinant",
         "Characteristc polynomial",
-        "Orthogonalization"
+        "Orthogonalization",
+        "Save input"
     };
-    for(int i=0;i<7;i++){
+    for(int i=0;i<8;i++){
         QAction *menu_action=new QAction(list[i],this);
         method_menu->addAction(menu_action);
         connect(menu_action,&QAction::triggered,[=](){
@@ -91,6 +92,8 @@ void solution_widget::init_window(){
         });
     }
     ui->methods_btn->setMenu(method_menu);
+    method_dealer(7);
+    ui->methods_btn->setText("Save input");
 
     QMenu *engine_menu = new QMenu(this);
     QString engine_list[4]={
@@ -135,6 +138,8 @@ void solution_widget::init_window(){
     input_window=new begin_widget{username,password};
     input_window->setVisible(false);
     input_window->parent_window=this;
+
+    ui->save_btn->setEnabled(false);
 }
 
 /**
@@ -161,8 +166,10 @@ void solution_widget::handle_ascii_update(){
         running_parser=true;
         progress_timer->start(20);
         ui->methods_btn->setDisabled(true);
+        ui->save_btn->setDisabled(true);
 
         parser_last_run_engine=selected_engine;
+
 
         QString text=ui->ascii_textedit->toPlainText();
         std::string std_text=text.toStdString();
@@ -266,6 +273,7 @@ void solution_widget::run_solver(){
         running=true;
         progress_timer->start(20);
         ui->methods_btn->setDisabled(true);
+        ui->save_btn->setDisabled(true);
 
         to_add_steps_name=get_usable_steps_string();
 
@@ -343,6 +351,10 @@ void solution_widget::run_solver_async(){
                     case 6:{
                         LinearOperationsFunc::orthogonalize(matrix, rows, cols, steps);
                         break;
+                    case 7:{
+                        LinearOperationsFunc::identity(matrix, rows, cols, steps);
+                        break;
+                    }
                     }
                 }
 
@@ -353,8 +365,8 @@ void solution_widget::run_solver_async(){
                 steps=new StepsHistory;
                 steps->add_step(new StepText{R"(\begin{align*} )" + i.eval_result + R"( \end{align*})"});
 
-                // parser.reset_input();
-                // parser.parse(parser_last_run_engine, true, to_add_steps_name);
+                /*parser.reset_input();
+                parser.parse(parser_last_run_engine, true, to_add_steps_name);*/
             }
         }else if(i.engine_used==2){
             steps=new StepsHistory;
@@ -367,12 +379,41 @@ void solution_widget::run_solver_async(){
                 ++index;
                 varname=prefix+to_string(index);
             }*/
-            // parser.reset_input();
-            // parser.parse(parser_last_run_engine, true, to_add_steps_name);
+            /*parser.reset_input();
+            parser.parse(parser_last_run_engine, true, to_add_steps_name);*/
         }
     }
 
     new_step_ptr=steps;
+    running=false;
+}
+
+void solution_widget::save_arma_steps(){
+    const Info& i=parser.getInfo();
+    if(running_handled && i.success){
+        running_handled=false;
+        running=true;
+        progress_timer->start(20);
+        ui->methods_btn->setDisabled(true);
+        ui->save_btn->setDisabled(true);
+
+        to_add_steps_name=get_usable_steps_string();
+
+        std::thread thrd{&solution_widget::save_arma_steps_async, this};
+        thrd.detach();
+    }
+}
+
+void solution_widget::save_arma_steps_async(){
+    const Info& i=parser.getInfo();
+    if(i.success){
+        if(i.engine_used==1 || i.engine_used==3){
+
+        }else if(i.engine_used==2){
+            parser.reset_input();
+            parser.parse(parser_last_run_engine, true, to_add_steps_name);
+        }
+    }
     running=false;
 }
 
@@ -485,12 +526,19 @@ string solution_widget::get_usable_steps_string(){
 }
 
 void solution_widget::setNewSteps(StepsHistory *new_step){
-    all_steps_list.push_back(new_step);
+    if(new_step!=nullptr){
+        current_viewing_steps=new_step;
+        updateAnsDisp();
+        ui->save_btn->setEnabled(true);
+    }
+}
+
+void solution_widget::addNewSteps(StepsHistory *new_step){
     current_viewing_steps=new_step;
     updateAnsDisp();
+    ui->save_btn->setEnabled(false);
     to_add_steps_name = get_usable_steps_string();
 
-    /*
     //We handle this only if
     if(parser.getInfo().engine_used==1 || parser.getInfo().engine_used==3){
         //Add the result to the variables.
@@ -509,13 +557,15 @@ void solution_widget::setNewSteps(StepsHistory *new_step){
             }
             delete[] answer;
         }
+    }else{
+        save_arma_steps();
     }
 
-    QTime current_time =QTime::currentTime();
+    all_steps_list.push_back(new_step);
+    //QTime current_time =QTime::currentTime();
     QTreeWidgetItem* ply_item = new QTreeWidgetItem(QStringList(QString::fromStdString(to_add_steps_name)));
     ui->treeWidget->addTopLevelItem(ply_item);
     ui->treeWidget->setCurrentItem(ply_item);
-    */
 }
 
 void solution_widget::method_dealer(int choice){
@@ -564,8 +614,8 @@ void solution_widget::on_treeWidget_itemPressed(QTreeWidgetItem *item){
     //int total_steps_num = all_steps_list.size();
     int chosen_steps = ui->treeWidget->indexOfTopLevelItem(item);
     current_viewing_steps = all_steps_list.at(chosen_steps);
-    if (current_viewing_steps == nullptr)   return;
     updateAnsDisp();
+    ui->save_btn->setEnabled(false);
 }
 
 void solution_widget::paintEvent(QPaintEvent *event)
@@ -620,6 +670,11 @@ void solution_widget::openImageFile()
 
 void solution_widget::computeClicked()
 {
+    if(!running_handled){
+        QMessageBox::information(this,"Error","Sorry, computation already ongoing!",QMessageBox::Ok);
+        return;
+    }
+    /*
     parser.reset_input(cur_input);
     // all_steps_list.push_back(nullptr);
     to_add_steps_name = get_usable_steps_string();
@@ -630,11 +685,13 @@ void solution_widget::computeClicked()
         ui->treeWidget->setCurrentItem(ply_item);
         run_solver();
     }
+    */
+    run_solver();
 }
 
 void solution_widget::saveStepAns()
 {
-    if (!parser.getInfo().success || !parser.getInfo().mat_size.size())  return;
+    /*if (!parser.getInfo().success || !parser.getInfo().mat_size.size())  return;
 
     to_add_steps_name = get_usable_steps_string();
     //We handle this only if
@@ -663,5 +720,6 @@ void solution_widget::saveStepAns()
         ui->treeWidget->setCurrentItem(ply_item);
         all_steps_list.push_back(new_step_ptr);
     }
-    else QMessageBox::warning(this, "Warning", "Cannot save Armadillo result in step-by-step funtion");
+    else QMessageBox::warning(this, "Warning", "Cannot save Armadillo result in step-by-step funtion");*/
+    addNewSteps(current_viewing_steps);
 }

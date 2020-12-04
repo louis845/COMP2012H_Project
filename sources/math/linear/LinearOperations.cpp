@@ -980,4 +980,19 @@ namespace LinearOperationsFunc{
             }
         }
     }
+
+    void identity(R** mat_slow,int rows,int cols,StepsHistory*& steps){
+        steps=nullptr;
+        RF** mat=RF::copy_and_promote_if_compatible(mat_slow, rows, cols);
+        if(mat!=nullptr){
+            RF::promote_to_field(mat,rows,cols);
+            steps=new StepsHistory;
+            LinOpsRecorder rc{steps, mat, rows, cols};
+            rc.capture_initial();
+
+            steps->setAnswer(mat,rows,cols);
+        }else{
+            steps=nullptr;
+        }
+    }
 }
