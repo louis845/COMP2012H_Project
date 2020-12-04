@@ -132,6 +132,31 @@ The answer will be given with corresponding variable names arranged in ascending
 [^]: if no exact solution is found, Armadillo will automatically attempt to find approximated solutions
 
 
+## A Quick Overview of the Parser & Evaluator Part
+
+This part of the application handles the OCR request, interpertation of the input(either form OCR or manual input), and also the evaluation. **It is just a simple summary here, for more detailed information, please go and check the source code of each files.**
+
+It consists of the following classes:
+
+* `\sources\parser\tokens.h`: The base class `Token`, which is the basis of the lexer and the parser. It is a data type to store the properties and raw values of each token. It has several derived classes representing different token types.
+  
+* `\sources\parser\lexer.h`: The class `Lexer` will handle raw input and tokenize it into a token stream. It uses regex to classify each token
+  
+* `\sources\utils\math_wrapper.h`: Contains two classes `ROperand` and `ArmaOperand`, the former is a wrapper for our own `R` class so as to unify matrices and scalars as a single data type to facilitate development. It also overload some operators. The `ArmaOperand` is more or less the same. The rest of the header file also includes some handy inline functions for instantiating `R` objects.
+  
+* `\sources\parser\expr_ast.h`: The classes related to the abstract syntax tree used in the parser. It contains a base class `ExprAST` and several derived classes, each representing different kinds of node on the AST. The member funtions of each derived classes also handles the evaluation of its own type of tree node. As a result, the whole AST can be constructed, destructed, or evaluated with ease by traversing through the tree.
+* In addition, the `expr_ast.h` also contains an `Info` struct for the communications between the parser and the GUI.
+  
+* `\sources\parser\parser.h`: Core part of the parser. It includes a giant class `Parser`. It is basically an LL(1) parser with some features of the LL(*) parser. It is also shipped with some dedicated parser components for special cases, variable assignment and management functions, the driver functions for evaluation, and a whole bunch of exception handling.
+  
+* `\sources\utils\ocr_api.h`: The `Ocr` class encapsulates the OCR request functions. It manages the credentials, converts the image input, constructs the HTTP requests, does the post and parse the response. Finally it returns the OCR results in LaTeX and AsciiMath format.
+
+For more information, please check the [readme] under `/sources/parser` as well as the comment in source code.
+
+
+
+
+
 ## Parser class API
 
 1. Simply initialize it with the AsciiMath string or user input string you want to parse. You can reset the input anytime to avoid instantiate `Parser` multiple times.
