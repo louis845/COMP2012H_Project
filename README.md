@@ -75,30 +75,30 @@ The input format largely follows the [AsciiMath](http://asciimath.org/#syntax) s
 
   * basic binary operators: 
     * +,- remain unchanged
-    * single asterisk "*" is dot product: $\cdot$
-    * two asterisk " ** " will be asterisk $*$ in AsciiMath
-    * "xx" is cross product: $\times$
-    * double slash "//" is division: $/$
+    * single asterisk "*" is dot product: ![formula](https://render.githubusercontent.com/render/math?math=\\cdot)
+    * two asterisk " ** " will be asterisk ![formula](https://render.githubusercontent.com/render/math?math=*) in AsciiMath
+    * "xx" is cross product: ![formula](https://render.githubusercontent.com/render/math?math=\\times)
+    * double slash "//" is division: ![formula](https://render.githubusercontent.com/render/math?math=\/)
     * single slash "/" is now fraction i.e. `/frac{}{}` in LaTeX
     * superscript ^ remains unchanged
     * "%" is parsed but will be treated as ERROR during calculations
-    * assume multiplication between two adjacent operands: $xy = x*y$
-    * division or fraction is only effective on the next operand: $3/xy$ will be interpreted as $3 / x * y$
+    * assume multiplication between two adjacent operands: ![formula](https://render.githubusercontent.com/render/math?math=xy=x*y)
+    * division or fraction is only effective on the next operand: ![formula](https://render.githubusercontent.com/render/math?math=3/xy) will be interpreted as ![formula](https://render.githubusercontent.com/render/math?math=3/x*y)
   * matrices
-    * matrices: [[a, b], [c, d]] now yields to $\left[ \begin{smallmatrix} a & b \\ c & d \\ \end{smallmatrix} \right]$
-    * round brackets matrices: ([a, b], [c , d]) now yields to $\left( \begin{smallmatrix} a & b \\ c & d \\ \end{smallmatrix} \right)$
+    * matrices: [[a, b], [c, d]] now yields to ![](https://latex.codecogs.com/svg.latex?\left[\begin{smallmatrix}a&b\\\\c&d\\\\\end{smallmatrix}\right])
+    * round brackets matrices: ([a, b], [c , d]) now yields to ![](https://latex.codecogs.com/svg.latex?\left(\begin{smallmatrix}a&b\\\\c&d\\\\\end{smallmatrix}\right))
     * "{}" are interchangeable with "[]": {{a, b}, {c ,d}} has the same effect as [[a, b], {c, d}]
     * however, note that the inner rows of the matrix MUST be enclosed in square brackets, each row should have the same number of entries, seperated by commas
   * functions
     * please refer to the evaluation sector or the full [token list](#token-list)
   * constants, numbers and special symbols
-    * $\pi$, $e$ and $i$ have their usual meaning, and $I$ is indentity matrix as usual
+    * ![](https://latex.codecogs.com/svg.latex?\pi,e,i) have their usual meaning, and ![](https://latex.codecogs.com/svg.latex?I) is indentity matrix as usual
     * you can use newline to separate your linear equations in [linear system mode](), in other modes the newline has the same effect as any other whitespace characters
-    * you can use integers and decimals with scientific notation: $-1.34e-5, 23E6$ are valid. As convention, please do not put decimal at the exponential part.
+    * you can use integers and decimals with scientific notation: ![](https://latex.codecogs.com/svg.latex?-1.34e-5,23E6) are valid. As convention, please do not put decimal at the exponential part.
   * variables and greek letters
     * you can use any alphabet characters or words with any length of subscripts as the name of the variables, as long as they are NOT used as a reserved word for functions of constants.
-    * example: $x$ $X$ $variable$ $my_{variable_x}$ $x_1$ $a_{1_2}$ $X_\alpha$ are all valid variable names
-    * we support some but not all greek letters: $\alpha\beta\theta\lambda\mu\phi\varphi\omega$, you can simply use their name to represent them, or check the [token list](#token-list) if you like. Note that their capital forms are not supported
+    * example: ![](https://latex.codecogs.com/svg.latex?x,X,variable,my_{variable_x},x_1,a_{1_2},X_\alpha) are all valid variable names
+    * we support some but not all greek letters: ![](https://latex.codecogs.com/svg.latex?\alpha\beta\theta\lambda\mu\phi\varphi\omega), you can simply use their name to represent them, or check the [token list](#token-list) if you like. Note that their capital forms are not supported
     * you can add single quotes "'" to your variables, but they must appear before subscripts, if any
 
 
@@ -142,9 +142,9 @@ Since converting linear systems to augmented matrices is not as natural as input
 
 You can input or scan a linear system using this mode, but there are a few restrictions:
   * make sure each linear equation starts a newline or separated by "\\"
-  * each variable should be separated, i.e. not bounded by a same pair of parentheses, e.g. $3x + (4 - 5i)y + 6z(7 * 8 / 9) = 10a - 42$ is a valid linear equation
-  * however, $3(x + y + z) = 0$ is not, although it is linear
-  * variable name "t" is reserved for representing the parameter: $tx = 1$ will give a solution $x = 1/t$
+  * each variable should be separated, i.e. not bounded by a same pair of parentheses, e.g. ![](https://latex.codecogs.com/svg.latex?3x+(4-5i)y+6z(7*8/9)=10a-42) is a valid linear equation
+  * however, ![](https://latex.codecogs.com/svg.latex?3(x+y+z)=0) is not, although it is linear
+  * variable name "t" is reserved for representing the parameter: ![](https://latex.codecogs.com/svg.latex?tx=1) will give a solution ![](https://latex.codecogs.com/svg.latex?x=1/t)
 
 The answer will be given with corresponding variable names arranged in ascending order, which may be different from their order in the linear system. A hint for the ordering of the variables in the output will also be given in the interpretation of the AsciiMath input so that you can figure out which variable the column of the augmented matrix in the step-by-step history corresponds to.
 
@@ -152,36 +152,36 @@ The answer will be given with corresponding variable names arranged in ascending
 
 #### General Operations supported by both
 
-* $+~-~*~\cdot~\times$ ^ , note that currently $*~\cdot~\times$ are not distinguished, and exponential only supports natural numbers in R, complex numbers in Armadillo
-* currently we do not support superscript with special meanings e.g. $A^{-1}~B^*~C^{T}~D^+$. It may be added soon, but so far superscript is only for exponentiation
+* ![](https://latex.codecogs.com/svg.latex?+~-~*~\cdot~\times) ^ , note that currently ![](https://latex.codecogs.com/svg.latex?*~\cdot~\times) are not distinguished, and exponential only supports natural numbers in R, complex numbers in Armadillo
+* currently we do not support superscript with special meanings e.g. ![](https://latex.codecogs.com/svg.latex?A^{-1}~B^*~C^{T}~D^+). It may be added soon, but so far superscript is only for exponentiation
   
 #### Linear Operations supported by R with step-by-step
 
-* $rref(A)$: row reduce
-* $inv(A)$: inverse
-* $det(A)$: determinant
-* $orth(A)$: orthogonalization
-* $solve(A)$: solve augmented matrix
-* $charpoly(A)$: find characteristic polynomial
+* rref(A): row reduce
+* inv(A): inverse
+* det(A): determinant
+* orth(A): orthogonalization
+* solve(A): solve augmented matrix
+* charpoly(A): find characteristic polynomial
 
 #### Functions and Linear Operations in Armadillo
 
-* trigonometry: $\sin(x)~\cos(x)~\tan(x)~\arcsin(x)~\arccos(x)~\arctan(x)$
-* $\exp(x)~\ln(x)~\sqrt x~\sqrt[a]{x}$
-* $rref(A)$: row reduce
-* $orth(A)$: give the orthnormal basis of the column space of a given matrix
-* $ker(A)$: find orthonomal basis of the kernel of given matrix
-* $trans(A)$: matrix transpose
-* $norm(A)$: norm of a vector/matrix<sup>[*](#norm-info)</sup>
-* $det(A)$: determinant
-* $trace(A)~or~tr(A)$: trace
-* $inv(A)$: inverse
-* $pinv(A)$: pseudo-inverse
-* $solve(A, B(optional))$: solve<sup>[^](#solve-info)</sup> an augmented matrix $A$ or a linear system $Ax=B$
-* $eigen(A)$: eigen decomposition
-* $schur(A$: Schur decomposition
-* $qr(A)$: QR decomposition
-* $svd(A)$: singular value decomposition
+* trigonometry: ![](https://latex.codecogs.com/svg.latex?\sin(x)~\cos(x)~\tan(x)~\arcsin(x)~\arccos(x)~\arctan(x))
+* ![](https://latex.codecogs.com/svg.latex?\exp(x)~\ln(x)~\sqrt{x}~\sqrt[a]{x})
+* rref(A): row reduce
+* orth(A): give the orthnormal basis of the column space of a given matrix
+* ker(A): find orthonomal basis of the kernel of given matrix
+* trans(A): matrix transpose
+* norm(A): norm of a vector/matrix<sup>[*](#norm-info)</sup>
+* det(A): determinant
+* trace(A) or tr(A): trace
+* inv(A): inverse
+* pinv(A): pseudo-inverse
+* solve(A, B(optional)): solve<sup>[^](#solve-info)</sup> an augmented matrix A or a linear system Ax=B
+* eigen(A): eigen decomposition
+* schur(A: Schur decomposition
+* qr(A): QR decomposition
+* svd(A): singular value decomposition
 
 <span id="norm-info"> 
 [*]: p = 2 for both vectors and matrices
