@@ -327,7 +327,7 @@
          <item>
           <widget class="QPushButton" name="jump_btn">
            <property name="text">
-            <string>Jump To Answer</string>
+            <string>Jump to Answer</string>
            </property>
           </widget>
          </item>
