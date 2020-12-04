@@ -1,20 +1,26 @@
-# Docs for CINF
+# CINF - Computation Is Not Fun
 
 ## About the Project
 
 CINF (a.k.a. Computation Is Not Fun) is a course project for COMP2012H, fall 2020. It is a computation tools built with Qt which can automatically evaluate the math expressions given by the users. Here lists the main features:
 
 * Built-in math library `R` which can do evaluations with parameters, demonstrate step-by-step solutions, and providing exact solutions without losing precision.
-
 * OCR function to let you simply scan your formulae by screeshots, saves your time from manually input.
-  
 * A built-in parser which can handle very general input with a human-friendly format [AsciiMath](http://asciimath.org/), you can even embed a matrix in another (if the result is reasonable).
-
 * A third-party linear algebra library [Armadillo](http://arma.sourceforge.net/) as a supplement of `R`, which includes support for decimals, decompositions and many other common elementary functions & linear algebra operations
-  
 * Basic symbolic computation and variable assignment so that you can traverse between results easily, these variables can be reused directly later in computations by just type in their name in the expression.
-
 * A sleek and elegant rendering of all the math expressions based on [MathJax](https://www.mathjax.org/).
+
+## Get Started
+
+### Troubleshooting Guide for Graders
+
+The project uses `QWebEngine` class for rendering math expressions, therefore a Qt with MSVC correctly setup is required for compilation.
+
+Aside with that, all the other dependencies should be in place, and you can open the [cinf_gui.pro](gui\cinf_gui.pro) under `\gui` and run it directly. If there does exist some problems with linking or compilation, please contact us.
+
+In case you want to test the OCR function, we attached a separate file with API key and id in the submitted files. Internet is required for both the OCR and the rendering of the math expressions since we use the [MathJax]((https://www.mathjax.org/)) hosted scripts.
+
 
 ## Documentation for the Internal Math Library R
 
