@@ -17,37 +17,37 @@ CINF (a.k.a. Computation Is Not Fun) is a course project for COMP2012H, fall 202
 
 The project uses `QWebEngine` class for rendering math expressions, therefore a Qt with MSVC correctly setup is required for compilation.
 
-Aside with that, all the other dependencies should be in place, and you can open the [cinf_gui.pro](gui\cinf_gui.pro) under `\gui` and run it directly. If there does exist some problems with linking or compilation, please contact us.
+Aside with that, all the other dependencies should be in place, and you can open the [cinf_gui.pro](gui/cinf_gui.pro) under `/gui` and run it directly. If there does exist some problems with linking or compilation, please contact us.
 
 In case you want to test the OCR function, we attached a separate file with API key and id in the submitted files. Internet is required for both the OCR and the rendering of the math expressions since we use the [MathJax]((https://www.mathjax.org/)) hosted scripts.
 
-## Compilation - Console version Windows x64 (with some finite fields supported)
-* Requires `MinGW 64` (http://mingw-w64.org/doku.php)
+### Compilation - Console version Windows x64 (with some finite fields supported)
+* Requires [MinGW 64](http://mingw-w64.org/doku.php)
 * MinGW64 needs to be run in `64bits` (of course)
 * Requires GNU Make
 * We used `MinGW64 g++ 8.1.0`, and `GNU Make 4.3`
-<pre>
+```bash
 mkdir compile
 cd sources
 make -f makefile
 cd ..
 cd compile
 run
-</pre>
+```
 Note that the console requires to press Ctrl+C to quit. Alternatively it is possible to use `build_console_win64.bat`.
 The program will be compiled inside the compile folder, namely `compile/run.exe`
 
-## Compilation - Console version MacOSX (with some finite fields supported)
-<pre>
+### Compilation - Console version MacOSX (with some finite fields supported)
+```bash
 mkdir compile
 cd sources
 make -f makefile_osx
 cd ..
 cd compile
 run
-</pre>
+```
 
-## Compilation - GUI version Windows x64
+### Compilation - GUI version Windows x64
 * Requires QT Creator latest version (`5.12.10`).
 * Requires QT WebEngine
 * Requires MSVC x64 compiler `VS 2015,2017,2019, Windows Kits`
@@ -56,20 +56,46 @@ run
 * Modify QT using `MaintenanceTool.exe`
 * It is in the QT installation folder, e.g. `C:\Qt\Qt5.12.10`
 
-## Compilation - GUI version MacOSX
+### Compilation - GUI version MacOSX
 * Requires QT Creator latest version `5.12.10`
 * Requires QT WebEngine
 * Seems to work on the default MacOSX compiler `clang`.
 * If it doesn't compile, try `64bit` and `32bit`.
 
+
 ## Documentation for the Internal Math Library R
 
-Please refer to the well written [MathLibDocs.pdf](MathLibDocs.pdf).
+Please refer to the well written [MathLibDocs.pdf](MathLibDocs.pdf). Source code of this part is under `/sources/math` and `/sources/steps`
 
 
 ## Documentation & Users' Guide for GUI Part
 
-**placeholder**
+1. Input api key
+  - input api key (for mathpix) to enable OCR 
+
+  ![gui-demo1](/images/gui_demo1.png)
+
+  - choose “Do not use ocr” to skip
+
+2. Scan
+  -	the button works only when OCR is enabled
+  -	click the button to begin screen capture
+  -	during screen capture, specify the area which the user would like to emphasize
+  -	after screen capture, check the interpretation in “interpretation” and the original image in “original image”. If the interpretation is incorrect, change it through the textedit window.
+3. Input matrix
+  -	If ocr is not enabled, use Asciimath to input matrix through the textedit window
+4. Calculation
+  -	choose the type of computation
+  -	click “compute” to start calculation
+  -	sometimes the calculation is slow, user may check on the progress bar at the bottom of the page to make sure the progress is still on
+  -	click “next” or “previous” to goto the next or previous step
+  -	click “Jump to answer” to jump to final step
+  -	click “save” to save current calculation to history
+  -	find previous calculations in “History”, click to jump to the chosen one 
+
+  ![gui-demo2](/images/gui_demo2.png)
+
+  -	right click the solution window to copy the solution to the clip board
 
 ## Docs for Parser, Evaluator & OCR
 
@@ -77,24 +103,24 @@ Please refer to the well written [MathLibDocs.pdf](MathLibDocs.pdf).
 
 This part is an introduction to the constituent classes for graders and people who are interested. For users, check [below](#use-the-ocr-function) for users' guide.
 
-This part of the application handles the OCR request, interpertation of the input(either form OCR or manual input), and also the evaluation. **It is just a simple summary here, for more detailed information, please go and check the source code of each files.**
+This part of the application handles the OCR request, interpertation of the input(either form OCR or manual input), and also the evaluation. **It is just a simple summary here, for more detailed information, please go and check the [source code](/sources/parser) of each files.**
 
 It consists of the following classes:
 
-* `\sources\parser\tokens.h`: The base class `Token`, which is the basis of the lexer and the parser. It is a data type to store the properties and raw values of each token. It has several derived classes representing different token types.
+* `/sources/parser/tokens.h`: The base class `Token`, which is the basis of the lexer and the parser. It is a data type to store the properties and raw values of each token. It has several derived classes representing different token types.
   
-* `\sources\parser\lexer.h`: The class `Lexer` will handle raw input and tokenize it into a token stream. It uses regex to classify each token
+* `/sources/parser/lexer.h`: The class `Lexer` will handle raw input and tokenize it into a token stream. It uses regex to classify each token
   
-* `\sources\utils\math_wrapper.h`: Contains two classes `ROperand` and `ArmaOperand`, the former is a wrapper for our own `R` class so as to unify matrices and scalars as a single data type to facilitate development. It also overload some operators. The `ArmaOperand` is more or less the same. The rest of the header file also includes some handy inline functions for instantiating `R` objects.
+* `/sources/utils/math_wrapper.h`: Contains two classes `ROperand` and `ArmaOperand`, the former is a wrapper for our own `R` class so as to unify matrices and scalars as a single data type to facilitate development. It also overload some operators. The `ArmaOperand` is more or less the same. The rest of the header file also includes some handy inline functions for instantiating `R` objects.
   
-* `\sources\parser\expr_ast.h`: The classes related to the abstract syntax tree used in the parser. It contains a base class `ExprAST` and several derived classes, each representing different kinds of node on the AST. The member funtions of each derived classes also handles the evaluation of its own type of tree node. As a result, the whole AST can be constructed, destructed, or evaluated with ease by traversing through the tree.
+* `/sources/parser/expr_ast.h`: The classes related to the abstract syntax tree used in the parser. It contains a base class `ExprAST` and several derived classes, each representing different kinds of node on the AST. The member funtions of each derived classes also handles the evaluation of its own type of tree node. As a result, the whole AST can be constructed, destructed, or evaluated with ease by traversing through the tree.
 * In addition, the `expr_ast.h` also contains an `Info` struct for the communications between the parser and the GUI.
   
-* `\sources\parser\parser.h`: Core part of the parser. It includes a giant class `Parser`. It is basically an LL(1) parser with some features of the LL(*) parser. It is also shipped with some dedicated parser components for special cases, variable assignment and management functions, the driver functions for evaluation, and a whole bunch of exception handling.
+* `/sources/parser/parser.h`: Core part of the parser. It includes a giant class `Parser`. It is basically an LL(1) parser with some features of the LL(*) parser. It is also shipped with some dedicated parser components for special cases, variable assignment and management functions, the driver functions for evaluation, and a whole bunch of exception handling.
   
-* `\sources\utils\ocr_api.h`: The `Ocr` class encapsulates the OCR request functions. It manages the credentials, converts the image input, constructs the HTTP requests, does the post and parse the response. Finally it returns the OCR results in LaTeX and AsciiMath format.
+* `/sources/utils/ocr_api.h`: The `Ocr` class encapsulates the OCR request functions. It manages the credentials, converts the image input, constructs the HTTP requests, does the post and parse the response. Finally it returns the OCR results in LaTeX and AsciiMath format.
 
-For more information, please check the [readme] under `/sources/parser` as well as the comment in source code.
+For more information, please check the [readme](/sources/parser/README.md) under `/sources/parser` as well as the comment in source code.
 
 
 ### Use the OCR Function
