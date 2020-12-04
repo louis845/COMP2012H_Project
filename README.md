@@ -53,8 +53,8 @@ run
 * Requires MSVC x64 compiler `VS 2015,2017,2019, Windows Kits`
 
 ### QT WebEngine installation
-* Modify QT using MaintenanceTool.exe
-* It is in the QT installation folder, e.g. C:\Qt\Qt5.12.10
+* Modify QT using `MaintenanceTool.exe`
+* It is in the QT installation folder, e.g. `C:\Qt\Qt5.12.10`
 
 ## Compilation - GUI version MacOSX
 * Requires QT Creator latest version `5.12.10`
