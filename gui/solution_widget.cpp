@@ -28,7 +28,6 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     this->setAttribute(Qt::WA_DeleteOnClose);
     this->setWindowTitle("CINF");
     this->init_window();
-    selected_choice=7;
 
     running=false;
     running_parser=false;
@@ -38,6 +37,8 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     new_intepret_err=nullptr;
     ascii_or_latex=true;
     matrix_chosen=-1;
+
+    thread_hdl=nullptr;
 }
 
 void solution_widget::init_window(){
@@ -408,7 +409,10 @@ void solution_widget::save_arma_steps_async(){
     const Info& i=parser.getInfo();
     if(i.success){
         if(i.engine_used==1 || i.engine_used==3){
-
+            if(i.parsed_mat.size()==0){
+                parser.reset_input();
+                parser.parse(parser_last_run_engine, true, to_add_steps_name);
+            }
         }else if(i.engine_used==2){
             parser.reset_input();
             parser.parse(parser_last_run_engine, true, to_add_steps_name);
@@ -541,21 +545,25 @@ void solution_widget::addNewSteps(StepsHistory *new_step){
 
     //We handle this only if
     if(parser.getInfo().engine_used==1 || parser.getInfo().engine_used==3){
-        //Add the result to the variables.
-        R **answer;
-        int ans_cols;
-        int ans_rows;
-        current_viewing_steps->getAnswer(answer, ans_rows, ans_cols);
-        //It may be the case where there is no answer.
-        if(answer!=nullptr){
-            ROperand nr{answer, ans_rows, ans_cols};
-            parser.reset_input();
-            parser.assignVar(to_add_steps_name, nr);
+        if(parser.getInfo().parsed_mat.size()>0){
+            //Add the result to the variables.
+            R **answer;
+            int ans_cols;
+            int ans_rows;
+            current_viewing_steps->getAnswer(answer, ans_rows, ans_cols);
+            //It may be the case where there is no answer.
+            if(answer!=nullptr){
+                ROperand nr{answer, ans_rows, ans_cols};
+                parser.reset_input();
+                parser.assignVar(to_add_steps_name, nr);
 
-            for(int i=0;i<ans_rows;++i){
-                delete[] answer[i];
+                for(int i=0;i<ans_rows;++i){
+                    delete[] answer[i];
+                }
+                delete[] answer;
             }
-            delete[] answer;
+        }else{
+            save_arma_steps();
         }
     }else{
         save_arma_steps();
