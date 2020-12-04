@@ -37,8 +37,6 @@ solution_widget::solution_widget(string username, string password, QWidget *pare
     new_intepret_err=nullptr;
     ascii_or_latex=true;
     matrix_chosen=-1;
-
-    thread_hdl=nullptr;
 }
 
 void solution_widget::init_window(){

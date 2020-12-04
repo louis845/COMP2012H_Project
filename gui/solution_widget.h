@@ -94,7 +94,6 @@ private:
     /**
     * Async variables. Either use atomic or make sure no two variables can be changed with the same thread.
     */
-    std::thread *thread_hdl;
 
     /**
     * Run parser async
