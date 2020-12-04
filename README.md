@@ -37,7 +37,14 @@ Note that the console requires to press Ctrl+C to quit. Alternatively it is poss
 The program will be compiled inside the compile folder, namely compile/run.exe
 
 ## Compilation - Console version MacOSX (with some finite fields supported)
-* 
+<pre>
+mkdir compile
+cd sources
+make -f makefile_osx
+cd ..
+cd compile
+run
+</pre>
 
 ## Compilation - GUI version Windows x64
 * Requires QT Creator latest version (5.12.10).
