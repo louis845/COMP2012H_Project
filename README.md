@@ -57,10 +57,10 @@ run
 * It is in the QT installation folder, e.g. C:\Qt\Qt5.12.10
 
 ## Compilation - GUI version MacOSX
-* Requires QT Creator latest version (5.12.10).
+* Requires QT Creator latest version `5.12.10`
 * Requires QT WebEngine
-* Seems to work on the default MacOSX compiler clang.
-* If it doesn't compile, try 64bit and 32bit.
+* Seems to work on the default MacOSX compiler `clang`.
+* If it doesn't compile, try `64bit` and `32bit`.
 
 ## Documentation for the Internal Math Library R
 
