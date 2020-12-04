@@ -178,14 +178,14 @@
        <rect>
         <x>9</x>
         <y>568</y>
-        <width>16</width>
-        <height>17</height>
+        <width>331</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="minimumSize">
        <size>
-        <width>0</width>
-        <height>0</height>
+        <width>330</width>
+        <height>30</height>
        </size>
       </property>
       <property name="text">
