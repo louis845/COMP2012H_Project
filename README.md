@@ -22,9 +22,10 @@ Aside with that, all the other dependencies should be in place, and you can open
 In case you want to test the OCR function, we attached a separate file with API key and id in the submitted files. Internet is required for both the OCR and the rendering of the math expressions since we use the [MathJax]((https://www.mathjax.org/)) hosted scripts.
 
 ## Compilation - Console version Windows x64 (with some finite fields supported)
-* Requires MinGW 64 (http://mingw-w64.org/doku.php)
+* Requires `MinGW 64` (http://mingw-w64.org/doku.php)
+* MinGW64 needs to be run in `64bits` (of course)
 * Requires GNU Make
-* We used MinGW64 g++ 8.1.0, and GNU Make 4.3
+* We used `MinGW64 g++ 8.1.0`, and `GNU Make 4.3`
 <pre>
 mkdir compile
 cd sources
@@ -33,8 +34,8 @@ cd ..
 cd compile
 run
 </pre>
-Note that the console requires to press Ctrl+C to quit. Alternatively it is possible to use build_console_win64.bat.
-The program will be compiled inside the compile folder, namely compile/run.exe
+Note that the console requires to press Ctrl+C to quit. Alternatively it is possible to use `build_console_win64.bat`.
+The program will be compiled inside the compile folder, namely `compile/run.exe`
 
 ## Compilation - Console version MacOSX (with some finite fields supported)
 <pre>
@@ -47,9 +48,9 @@ run
 </pre>
 
 ## Compilation - GUI version Windows x64
-* Requires QT Creator latest version (5.12.10).
+* Requires QT Creator latest version (`5.12.10`).
 * Requires QT WebEngine
-* Requires MSVC x64 compiler (VS 2015,2017,2019, Windows Kits)
+* Requires MSVC x64 compiler `VS 2015,2017,2019, Windows Kits`
 
 ### QT WebEngine installation
 * Modify QT using MaintenanceTool.exe
