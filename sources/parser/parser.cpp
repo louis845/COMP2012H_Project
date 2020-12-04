@@ -1301,10 +1301,8 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
         r_table[name] = value;
         
         auto var_iter = var_table.find(name);
-        if (var_iter != var_table.end() && !var_iter->second) 
-            var_iter->second = 1;
-        else 
-            var_table[name] = 2;
+        if (var_iter == var_table.end())    var_table[name] = 2;
+        else if (!var_iter->second)     var_iter->second = 1;
 
         return true;
     }
@@ -1321,11 +1319,9 @@ bool Parser::assignVar(const string& var_name, const string& raw, int type)
     arma_table[name] = value;
     
     auto var_iter = var_table.find(name);
-    if (var_iter != var_table.end() && !var_iter->second) 
-        var_iter->second = 1;
-    else
-        var_table[name] = 2;
-
+    if (var_iter == var_table.end())    var_table[name] = 2;
+    else if (!var_iter->second)     var_iter->second = 1;
+    
     return true;
 }
 
@@ -1343,14 +1339,8 @@ bool Parser::assignVar(const string& var_name, const ROperand& value)
     r_table[name] = value;
     
     auto var_iter = var_table.find(name);
-    if (var_iter != var_table.end())
-    {
-        var_iter->second = 1;
-    }
-    else
-    {
-        var_table[name] = 1;
-    }
+    if (var_iter == var_table.end())    var_table[name] = 2;
+    else if (!var_iter->second)     var_iter->second = 1;
 
     return true;
 }
