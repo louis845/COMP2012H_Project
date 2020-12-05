@@ -10,8 +10,8 @@ int main(int argc, char* argv[])
 
     Ocr::getInstance().testSslSettings();
 
-    string app_id = "zymk73_gmail_com_0f4cf4";     // user input app_id
-    string app_key = "2433a3fce24bd809b0a0";    // user input app_key
+    string app_id = "";     // user input app_id
+    string app_key = "";    // user input app_key
 
     Ocr::getInstance().setCredentials(app_id, app_key);    // set the credentials
 
